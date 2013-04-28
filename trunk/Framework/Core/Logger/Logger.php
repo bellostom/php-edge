@@ -4,19 +4,20 @@ namespace Framework\Core\Logger;
 use Framework\Core\Settings;
 
 class Logger{
-	public static $ERROR = PEAR_LOG_CRIT;
 
 	public static function log($message, $type=null){
+        $settings = Settings::getInstance();
+        $conf = array(
+            'mode' => 0600,
+            'timeFormat' => $settings->logger->dateFormat,
+            'locking' => true
+        );
+        $logger = Log::singleton('file', $settings->logger->file,
+            $settings->logger->identity, $conf);
 		if(is_null($type))
-			$type = Logger::$ERROR;
-		$settings = Settings::getInstance();
-		$conf = array(
-			'mode' => 0600,
-			'timeFormat' => $settings->logger->dateFormat,
-			'locking' => true
-		);
-		$logger = Log::singleton('file', $settings->logger->file,
-								  $settings->logger->identity, $conf);
+			$type = PEAR_LOG_CRIT;
+
+
 		$logger->log($message, $type);
 	}
 }

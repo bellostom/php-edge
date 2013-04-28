@@ -1,5 +1,5 @@
 <?php
-namespace Framework\Core\Utils;
+namespace Framework\Utils;
 
 /**
  * Project:     Securimage: A PHP class for creating and managing form CAPTCHA images<br />

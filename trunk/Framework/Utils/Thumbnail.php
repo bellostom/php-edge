@@ -1,5 +1,5 @@
 <?php
-namespace Framework\Core\Utils;
+namespace Framework\Utils;
 
 class Thumbnail
 {

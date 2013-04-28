@@ -1,5 +1,5 @@
 <?php
-namespace Framework\Core\Utils;
+namespace Framework\Utils;
 /**
  * cssmin.php - A simple CSS minifier.
  * --

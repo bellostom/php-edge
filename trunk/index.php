@@ -8,7 +8,6 @@ $loader->registerNamespaces(array(
 ));
 $loader->register();
 
-use Framework\Core\Router;
 use Framework\Core;
 
 //Load our application's configuration
@@ -19,6 +18,6 @@ $config->register(array(
 ));
 
 //init bootstrap
-$oRouter = new Router();
+$oRouter = new Core\Router();
 $oRouter->invoke();
 ?>

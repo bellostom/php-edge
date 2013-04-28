@@ -1,5 +1,6 @@
 <?php
 namespace Framework\Core\Database;
+use Framework\Core\Settings;
 
 class WriteDB extends BaseDB {
 

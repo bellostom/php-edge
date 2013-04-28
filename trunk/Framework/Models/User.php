@@ -1,27 +1,16 @@
 <?php
 namespace Framework\Models;
 use Framework\Core\Database\DB;
+use Framework\Utils\Utils;
+
 
 class User extends Identifiable {
-	public $pass;
-	public $username;
-	public $surname;
-	public $salt;
-	public $role;
-	public static $table = array(
-						  "table"=>"users",
-						  "PK"=>array(
-			  			   	"id"=>null
-			  			  )
-						 );
-	const GUEST = 1;
-	const ADMIN = 3;
-	const AUTH_USER = 5;
+    protected static $_members = array(
+        'username', 'pass', 'salt', 'surname', 'role'
+    );
 
-	const ROLE_NONE = '0';
-	const ROLE_EDITOR = '1';
-	const ROLE_PUBLISHER = '2';
-	const ROLE_ADMIN = '4';
+	const GUEST = 1;
+	const AUTH_USER =3;
 
 	public function __construct(array &$data=array()) {
 		parent::__construct($data);
@@ -29,95 +18,28 @@ class User extends Identifiable {
 			$this->salt = Utils::genRandom();
 	}
 
-	/**
-	 * Abstract method implementation
-	 * Return an instance of the stored user
-	 * @see intralot/schema/Publishable::getItem()
-	 */
-	public function getItem()
-	{
-		return User::getItemById($this->id);
+    public static function getPk(){
+        return array("id");
+    }
+
+    public static function getTable(){
+        return 'users';
+    }
+
+	public function isAdmin(){
+		return $this->id == User::ADMIN;
 	}
 
-	/**
-	 * Abstract method implementation
-	 * Get the objet description, for logging
-	 * purposes.
-	 * @see intralot/schema/Publishable::getActionDescription()
-	 */
-	protected function getActionDescription()
-	{
-		return sprintf("User %s %s", $this->name,
-									 $this->surname);
-	}
-
-	/**
-	 *
-	 * Return a textual representation
-	 * of the user's cms role
-	 */
-	public function getCmsRole()
-	{
-		$roles = array(
-			1 => 'editor',
-			2 => 'publisher',
-			4 => 'admin'
-		);
-		return $roles[$this->role];
-	}
-
-	/**
-	 *
-	 * Check if the user has access
-	 * to the cms area
-	 */
-	public function hasCmsAccess()
-	{
-		return $this->role != User::ROLE_NONE;
-	}
-
-	/**
-	 *
-	 * Check if user has publishing
-	 * privileges
-	 */
-	public function isPublisher()
-	{
-		return $this->role == User::ROLE_PUBLISHER ||
-				$this->role == User::ROLE_ADMIN;
-	}
-
-	public function isAdmin()
-	{
-		return $this->role == User::ROLE_ADMIN;
-	}
-
-	/**
-	 *
-	 * Get all users
-	 */
-	public static function getUsers()
-	{
-		return parent::getAllItemsByTable();
-	}
-
-	/**
-	 *
-	 * Get only cms users
-	 */
-	public static function getCmsUsers()
-	{
-		$q = "SELECT * FROM users WHERE id > 5";
-		return parent::query($q, true);
-	}
+    public function isGuest(){
+        return $this->id & User::GUEST;
+    }
 
 	/**
 	 *
 	 * Get user by id
 	 * @param int $id
 	 */
-	public static function getUserById($id)
-	{
+	public static function getUserById($id)	{
 		return parent::getItemById($id);
 	}
 
@@ -126,13 +48,8 @@ class User extends Identifiable {
 	 * Get user by username
 	 * @param string $name
 	 */
-	public static function getUserByUsername($name)
-	{
-		$db = DB::getInstance();
-		$q = sprintf("SELECT * FROM %s
-					  WHERE username='%s'",  static::getTable(),
-					  $db->db_escape_string($name));
-		return parent::query($q);
+	public static function getUserByUsername($name)	{
+        return parent::find(array("username" => $name));
 	}
 
 	/**
@@ -151,18 +68,15 @@ class User extends Identifiable {
 	 * Prepend a random string (unique per user)
 	 * to avoid rainbow attacks.
 	 */
-	private function encodePassword()
-	{
+	private function encodePassword(){
 		$this->pass = sha1($this->salt.$this->pass);
 	}
 
 	/**
 	 * Interface implementation
 	 * Encode pass before saving
-	 * @see intralot/schema/Publishable::on_create()
 	 */
-	public function on_create()
-	{
+	public function on_create(){
 		$this->encodePassword();
 		parent::on_create();
 	}
@@ -171,11 +85,9 @@ class User extends Identifiable {
 	 * Interface implementation
 	 * Before updating user check if passwd
 	 * has changed
-	 * @see intralot/schema/Publishable::on_update()
 	 */
-	public function on_update()
-	{
-		$user = $this->getItem();
+	public function on_update()	{
+		$user = $this->getUserById($this->id);
 		if(empty($this->pass))
 			$this->pass = $user->pass;
 		else if($user->pass != $this->pass)
