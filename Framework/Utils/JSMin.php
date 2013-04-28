@@ -1,5 +1,5 @@
 <?php
-namespace Framework\Core\Utils;
+namespace Framework\Utils;
 /**
  * jsmin.php - PHP implementation of Douglas Crockford's JSMin.
  *

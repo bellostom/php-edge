@@ -1,5 +1,7 @@
 <?php
 namespace Framework\Core\Session;
+
+use Framework\Core\Singleton;
 /**
  *
  * Custom session handler.
@@ -7,13 +9,11 @@ namespace Framework\Core\Session;
  * @author thomas
  *
  */
-class MSession extends Singleton
-{
+class MSession extends Singleton{
 	protected $lifeTime;
 	protected $memcache;
 
-	protected function __construct()
-	{
+	protected function __construct(){
 		session_set_save_handler(array(&$this,"open"),
 			                       array(&$this,"close"),
 			                       array(&$this,"read"),
@@ -23,34 +23,28 @@ class MSession extends Singleton
 		$this->memcache = MSessionCache::getInstance();
 	}
 
-	public function open($savePath, $sessName)
-	{
+	public function open($savePath, $sessName){
 		$this->lifeTime = get_cfg_var("session.gc_maxlifetime");
 		return true;
 	}
 
-	public function close()
-	{
+	public function close(){
 		return true;
 	}
 
-	public function read($sessID)
-	{
+	public function read($sessID){
 		return $this->memcache->get($sessID);
 	}
 
-	public function write($sessID, $sessData)
-	{
+	public function write($sessID, $sessData){
 		return $this->memcache->add($sessID, $sessData, false, $this->lifeTime);
 	}
 
-	public function destroy($sessID)
-	{
+	public function destroy($sessID){
 		return $this->memcache->delete($sessID);
 	}
 
-	public function __destruct()
-	{
+	public function __destruct(){
 		session_write_close();
 	}
 

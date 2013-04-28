@@ -1,15 +1,11 @@
 <?php
 namespace Framework\Core\Database\ResultSet;
 
-class CachedObjectSet extends ObjectSet {
+class CachedObjectSet extends ResultSet {
 
-    protected function setRows() {
-        $this->totalRows = count($this->result);
-    }
-
-    public function offsetGet($offset) {
+    public function getRecord($offset) {
         $data = $this->result[$offset];
-        return new $this->class_name($data);
+        return new $this->className($data);
     }
 }
 ?>

@@ -29,18 +29,17 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varbinary(100) DEFAULT NULL,
-  `pass` varbinary(100) DEFAULT NULL,
-  `username` varbinary(100) DEFAULT NULL,
+  `pass` char(40) DEFAULT NULL,
+  `username` varbinary(40) DEFAULT NULL,
   `surname` varchar(100) DEFAULT NULL,
-  `salt` varchar(12) DEFAULT NULL,
-  `role` enum('0','1','2','4') DEFAULT '0',
+  `salt` char(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username_idx` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Data for the table `users` */
 
-insert  into `users`(`id`,`name`,`pass`,`username`,`surname`,`salt`,`role`) values (1,'Guest','1eea42010865310f6f42a000b1225658098ef935','guest',NULL,'958Om0MoGgt','0'),(3,'Administrator','3e4e2b155727719b28f6c6e0d335cca003665adb','admin',NULL,'4JTMCHKM1t9','4'),(5,'Authenticated User','52557ca0ca35c801ce80a5be7baf954ff41e31aa','auth',NULL,'reLJeHOKNME','0');
+insert  into `users`(`id`,`name`,`pass`,`username`,`surname`,`salt`) values (1,'Guest','1eea42010865310f6f42a000b1225658098ef935','guest',NULL,'958Om0MoGgt'),(3,'Administrator','3e4e2b155727719b28f6c6e0d335cca003665adb','admin',NULL,'4JTMCHKM1t9');
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;

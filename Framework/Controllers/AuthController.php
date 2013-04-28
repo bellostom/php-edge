@@ -9,8 +9,7 @@
  */
 namespace Framework\Controllers;
 
-class AuthController extends BaseController
-{
+class AuthController extends BaseController{
 
 	/**
 	 * Access control implementation.
@@ -19,8 +18,7 @@ class AuthController extends BaseController
 	 * or under privileged users cannot call these
 	 * methods
 	 */
-	public function on_request()
-	{
+	public function on_request(){
 		$context = Context::getInstance();
 		if($context->user->id == User::GUEST){
 			$proto = 'http';
