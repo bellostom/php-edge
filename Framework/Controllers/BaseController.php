@@ -11,6 +11,8 @@ abstract class BaseController implements Interfaces\I18n, Interfaces\ACLControl{
 
 	public function on_request(){}
 	public function get_login_url(){}
+    public function preProcess(){}
+    public function postProcess(){}
 
 	/**
 	 * Interface implementations

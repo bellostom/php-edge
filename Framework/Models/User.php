@@ -1,12 +1,11 @@
 <?php
 namespace Framework\Models;
-use Framework\Core\Database\DB;
 use Framework\Utils\Utils;
 
 
 class User extends Identifiable {
     protected static $_members = array(
-        'username', 'pass', 'salt', 'surname', 'role'
+        'username', 'pass', 'salt', 'surname'
     );
 
 	const GUEST = 1;
@@ -31,7 +30,7 @@ class User extends Identifiable {
 	}
 
     public function isGuest(){
-        return $this->id & User::GUEST;
+        return $this->id == User::GUEST;
     }
 
 	/**

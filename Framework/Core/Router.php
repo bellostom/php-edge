@@ -191,7 +191,58 @@ class Router{
 		}
 	}
 
-	public function invoke(){
+    public function invoke(){
+        $context = Context::getInstance();
+        $class = sprintf('Application\Controllers\%s', $this->class);
+        $instance = new $class;
+        $instance->on_request();
+        if(method_exists($instance, $this->method)){
+            try{
+                $processed = false;
+                $retries = 0;
+                $max_retries = 20;
+
+                while(!$processed && ($retries < $max_retries)) {
+                    try{
+                        $retries++;
+                        $instance->preProcess();
+                        /*if(!$context->loadedFromCache){
+                            $context->response->body = $this->invokeRequest();
+                            $this->handleJsonResponse();
+                        }*/
+                        $context->response->body = call_user_func_array(array($instance, $this->method), $this->args);
+                        $instance->postProcess();
+                        if($context->autoCommit){
+                            $_db = Database\WriteDB::getInstance();
+                            $_db->commit();
+                        }
+                        $processed = true;
+                    }catch(DeadLockException $e) {
+                        Logger::log('RETRYING');
+                        usleep(100);
+                    }
+                }
+                if(!$processed) {
+                    Logger::log('DEADLOCK ERROR');
+                    throw new Exception('Deadlock detected');
+                }
+            }
+            catch(UnauthorizedException $e){
+                $context->response->httpCode = 401;
+            }
+            catch(\ReflectionException $e){
+                Logger::log($e->getMessage());
+                $this->handle404Error();
+            }
+            catch(\Exception $e){
+                Logger::log($e->getMessage());
+                $this->handleServerError();
+            }
+        }
+        $context->response->write();
+    }
+
+	public function invoke1(){
 		$context = Context::getInstance();
 		try{
 			$this->oReflection = new \ReflectionClass(sprintf('Application\Controllers\%s', $this->class));
