@@ -5,10 +5,9 @@ use Framework\Core;
 class MemoryCache extends BaseCache {
 	private $link;
 
-	public function __construct() {
-		$settings = Core\Settings::getInstance();
+	public function __construct(array $settings) {
 		$this->link = new \Memcache();
-		foreach($settings->memcached_servers as $server){
+		foreach($settings as $server){
 			list($server, $port, $weight) = explode(':', $server);
 			$this->link->addServer($server, (int) $port, 0, (int) $weight);
 		}

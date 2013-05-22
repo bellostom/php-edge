@@ -2,7 +2,7 @@
 namespace Framework\Core\Database;
 use Framework\Core\Settings;
 
-class WriteDB extends BaseDB {
+class WriteDB extends MysqlSlave {
 
     protected function connect() {
         $settings = Settings::getInstance();

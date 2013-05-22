@@ -2,7 +2,7 @@
 namespace Framework\Core\Database;
 use Framework\Core;
 
-class DB extends BaseDB {
+class DB extends MysqlSlave {
 
     public static function getInstance() {
         if(self::$isTransactional){
