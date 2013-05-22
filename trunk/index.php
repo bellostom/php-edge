@@ -8,16 +8,20 @@ $loader->registerNamespaces(array(
 ));
 $loader->register();
 
-use Framework\Core;
+use Framework\Core\WebApp,
+    Framework\Core\Router;
 
+$webApp = new WebApp(__DIR__."/Application/Config/config.php");
+var_dump(WebApp::instance()->get('user'));
+exit;
 //Load our application's configuration
-$config = Core\Configuration::getInstance();
+/*$config = new Core\Configuration();
 $config->register(array(
     'name'=> 'Application',
     'config' => __DIR__."/Application/Config/config.php"
-));
+));*/
 
 //init bootstrap
-$oRouter = new Core\Router();
+$oRouter = new Router();
 $oRouter->invoke();
 ?>

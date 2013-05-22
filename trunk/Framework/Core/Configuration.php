@@ -4,14 +4,14 @@ namespace Framework\Core;
 /**
  * Class responsible for loading configurations options
  */
-class Configuration extends Singleton{
+class Configuration{
 
     private $settings = array();
 
     /**
     * Load framework configuration file by default.
     */
-    protected function __construct(){
+    public function __construct(){
          $this->register(array(
              'name'=> 'Framework',
              'config' => __DIR__."/../Config/config.php"

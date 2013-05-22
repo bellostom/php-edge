@@ -1,24 +1,22 @@
 <?php
 namespace Framework\Core\Logger;
 
-use Framework\Core\Settings;
-
 class Logger{
+    private $logger;
 
-	public static function log($message, $type=null){
-        $settings = Settings::getInstance();
+    public function __construct($file, $identity, $dateFormat){
         $conf = array(
             'mode' => 0600,
-            'timeFormat' => $settings->logger->dateFormat,
+            'timeFormat' => $dateFormat,
             'locking' => true
         );
-        $logger = Log::singleton('file', $settings->logger->file,
-            $settings->logger->identity, $conf);
+        $this->logger = Log::singleton('file', $file, $identity, $conf);
+    }
+
+	public function log($message, $type=null){
 		if(is_null($type))
 			$type = PEAR_LOG_CRIT;
-
-
-		$logger->log($message, $type);
+		$this->logger->log($message, $type);
 	}
 }
 ?>

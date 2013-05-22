@@ -3,18 +3,25 @@ namespace Framework\Core\Database;
 
 use Framework\Core;
 
-abstract class BaseDB extends Core\Singleton {
+class MysqlSlave {
 
     protected $link = null;
-    protected static $isTransactional = false;
+    protected $host;
+    protected $db;
+    protected $user;
+    protected $pass;
+    public $isTransactional = false;
 
-    protected function __construct(){}
+    public function __construct($host, $db, $user, $pass){
+        $this->host = $host;
+        $this->db = $db;
+        $this->user = $user;
+        $this->pass = $pass;
+    }
 
-    abstract protected function connect();
-
-    protected function _connect($host, $db, $user, $pass) {
-        list($host, $port) = explode(':', $host);
-        $this->link = new \mysqli($host, $user,	$pass, $db, $port);
+    protected function connect() {
+        list($host, $port) = explode(':', $this->host);
+        $this->link = new \mysqli($host, $this->user,	$this->pass, $this->db, $port);
         if($this->link->connect_errno){
             throw new Core\Exceptions\AppException("Error connecting to the {$db} db. Error: ". $this->link->connect_error);
         }
@@ -117,7 +124,7 @@ abstract class BaseDB extends Core\Singleton {
         if(!is_null($this->link)) {
             $this->link->close();
         }
-        self::$isTransactional = false;
+        $this->isTransactional = false;
     }
 
     protected function is_alive() {
