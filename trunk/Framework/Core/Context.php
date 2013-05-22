@@ -15,7 +15,7 @@ class Context extends Singleton {
 		$settings = Settings::getInstance();
 		$this->session = Session\Session::getInstance();
 		$this->response = Response::getInstance();
-		$this->user = call_user_func($settings->user_class.'::getUserById', $this->session->userID);
+		//$this->user = call_user_func($settings->user_class.'::getUserById', $this->session->userID);
 	}
 }
 ?>
