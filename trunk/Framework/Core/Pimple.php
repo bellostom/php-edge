@@ -75,7 +75,7 @@ class Pimple implements \ArrayAccess
     public function offsetGet($id)
     {
         if (!array_key_exists($id, $this->values)) {
-            throw new InvalidArgumentException(sprintf('Identifier "%s" is not defined.', $id));
+            throw new \InvalidArgumentException(sprintf('Identifier "%s" is not defined.', $id));
         }
 
         $isFactory = is_object($this->values[$id]) && method_exists($this->values[$id], '__invoke');

@@ -247,7 +247,7 @@ class Table implements Interfaces\EventHandler, Interfaces\Cacheable {
 	 */
 	public function delete() {
 		$this->on_delete();
-		$db = Database\WriteDB::getInstance();
+		$db = Database\MysqlMaster::getInstance();
 		$q = "DELETE FROM ".static::getTable()." WHERE ". $this->getPkValues();
 		if(Context::$autoCommit){
 			$db->start_transaction();
@@ -287,7 +287,7 @@ class Table implements Interfaces\EventHandler, Interfaces\Cacheable {
 		catch(InvalidValue $e){
 			throw new AppException($e->getMessage());
 		}
-		$db = Database\WriteDB::getInstance();
+		$db = Database\MysqlMaster::getInstance();
 		if(Context::$autoCommit){
 			$db->start_transaction();
 		}
@@ -379,7 +379,7 @@ class Table implements Interfaces\EventHandler, Interfaces\Cacheable {
 		$v = array_values($data);
 		$c = join(",", array_map(array($this, 'joinAll'), $k, $v));
 		$q = "UPDATE ".static::getTable()." SET $c WHERE $pk";
-		$db = Database\WriteDB::getInstance();
+		$db = Database\MysqlMaster::getInstance();
 		if(Context::$autoCommit){
 			$db->start_transaction();
 		}

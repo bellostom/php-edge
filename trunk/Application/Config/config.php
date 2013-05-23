@@ -1,33 +1,71 @@
 <?php
 return array(
     'services' => array(
+
         'memoryCache' => array(
-            'class' => 'Framework\Core\Cache\MemoryCache',
+            'invokable' => 'Framework\Core\Cache\MemoryCache',
             'args' => array(
                 array('master:11211:1')
             ),
             'shared' => true
         ),
+
         'logger' => array(
-            'class' => 'Framework\Core\Logger\Logger',
+            'invokable' => 'Framework\Core\Logger\Logger',
             'args' => array('/var/log/phorm.log', 'phpfrm', '%a, %d %b %Y %X'),
             'shared' => true
         ),
+
+        'mysqlCredentials' => array(
+            'invokable' => array(
+                'master' => array(
+                    'host' => '127.0.0.1:3306',
+                    'db' => 'frm',
+                    'user' => 'root',
+                    'pass' => ''
+                ),
+                'slave' => array(
+                    'host' => '127.0.0.1:3306',
+                    'db' => 'frm',
+                    'user' => 'root',
+                    'pass' => ''
+                )
+            ),
+            'type' => 'variable'
+        ),
+
         'db' => array(
-            'class' => 'Framework\Core\Database\MysqlSlave',
-            'args' => array('127.0.0.1:3306', 'frm', 'root', ''),
+            'invokable' => function($c){
+                static $obj;
+                if(is_null($obj)){
+                    $c['isTransactional'] = false;
+                    $obj = new Framework\Core\Database\MysqlSlave($c['mysqlCredentials']['slave']);
+                }
+                return ($c['isTransactional'])?$c['writedb']:$obj;
+            }
+        ),
+
+        'writedb' => array(
+            'invokable' => function($c){
+                $c['isTransactional'] = true;
+                return new Framework\Core\Database\MysqlMaster($c['mysqlCredentials']['master']);
+            },
             'shared' => true
         ),
-        'user' => function($c){
-            return new Framework\Models\User($c['db']);
-        }
-    )
+
+        'user' => array(
+            'invokable' => function($c){
+                return new Framework\Models\User($c['db']);
+            }
+        )
+    ),
+    'timezone' => 'Europe/Athens'
 );
 $settings = new stdClass();
 
 $settings->db_username = 'root';
 $settings->db_passwd = '';
-$settings->db_database = 'frm';
+$settings->db_database = 'inooz';
 $settings->use_cache = false;
 $settings->default_lang = 'uk';
 

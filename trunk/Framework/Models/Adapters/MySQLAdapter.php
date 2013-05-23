@@ -6,7 +6,7 @@
  *
  */
 namespace Framework\Models\Adapters;
-use Framework\Core\Database\WriteDB;
+use Framework\Core\Database\MysqlMaster;
 use Framework\Core\Database\DB;
 use Framework\Core\Database\ResultSet\MySQLResultSet;
 use Framework\Models\ActiveRecord;
@@ -119,7 +119,7 @@ class MySQLAdapter implements AdapterInterface{
      * @param \Framework\Models\ActiveRecord $entry
      */
     public function save(ActiveRecord $entry){
-        $db = WriteDB::getInstance();
+        $db = MysqlMaster::getInstance();
         $data = array_map(function($v) use ($db){
             return sprintf('"%s"', $db->db_escape_string($v));
         }, $entry->getAttributes());
@@ -140,7 +140,7 @@ class MySQLAdapter implements AdapterInterface{
         $table = $entry->getTable();
         $pks = $entry->getPk();
         if(count($pks) > 0){
-            $db = WriteDB::getInstance();
+            $db = MysqlMaster::getInstance();
             $metadata = $db->db_metadata($table);
             foreach($pks as $attr){
                 if(isset($metadata[$attr]) && $metadata[$attr][1] & \MYSQLI_AUTO_INCREMENT_FLAG){
@@ -194,7 +194,7 @@ class MySQLAdapter implements AdapterInterface{
      * ));
      */
     public function joinConditions(array $conditions){
-        $db = WriteDB::getInstance();
+        $db = MysqlMaster::getInstance();
         $data = array_map(function($k, $v) use ($db){
             if(is_array($v)){
                 $v = join(",", $v);
@@ -211,7 +211,7 @@ class MySQLAdapter implements AdapterInterface{
      * @param array $criteria
      */
     public function delete(ActiveRecord $entry, array $criteria=array()){
-        $db = WriteDB::getInstance();
+        $db = MysqlMaster::getInstance();
         $where = array();
         if(count($criteria) > 0){
             if(array_key_exists('conditions', $criteria)){
@@ -233,7 +233,7 @@ class MySQLAdapter implements AdapterInterface{
     public function update(ActiveRecord $entry){
         $pks = $this->getPkValues($entry);
         $data = array_diff_assoc($entry->getAttributes(), $pks);
-        $db = WriteDB::getInstance();
+        $db = MysqlMaster::getInstance();
         $k = array_keys($data);
         $v = array_values($data);
         $c = join(", ", array_map(function($k, $v) use ($db){

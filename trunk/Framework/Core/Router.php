@@ -213,7 +213,7 @@ class Router{
                         $context->response->body = call_user_func_array(array($instance, $this->method), $this->args);
                         $instance->postProcess();
                         if($context->autoCommit){
-                            $_db = Database\WriteDB::getInstance();
+                            $_db = Database\MysqlMaster::getInstance();
                             $_db->commit();
                         }
                         $processed = true;
@@ -267,7 +267,7 @@ class Router{
 					}
 					$this->postProcess();
 					if($context->autoCommit){
-                        $_db = Database\WriteDB::getInstance();
+                        $_db = Database\MysqlMaster::getInstance();
                         $_db->commit();
 					}
 					$processed = true;
