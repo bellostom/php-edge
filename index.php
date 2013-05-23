@@ -12,7 +12,10 @@ use Framework\Core\WebApp,
     Framework\Core\Router;
 
 $webApp = new WebApp(__DIR__."/Application/Config/config.php");
-var_dump(WebApp::instance()->get('user'));
+var_dump(WebApp::instance()->db);
+var_dump(WebApp::instance()->writedb);
+var_dump(WebApp::instance()->db);
+$webApp->logger->log('test');
 exit;
 //Load our application's configuration
 /*$config = new Core\Configuration();

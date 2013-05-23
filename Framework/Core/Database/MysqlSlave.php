@@ -10,13 +10,16 @@ class MysqlSlave {
     protected $db;
     protected $user;
     protected $pass;
-    public $isTransactional = false;
+    protected $timezone = false;
 
-    public function __construct($host, $db, $user, $pass){
-        $this->host = $host;
-        $this->db = $db;
-        $this->user = $user;
-        $this->pass = $pass;
+    public function __construct(array $settings){
+        $this->host = $settings['host'];
+        $this->db = $settings['db'];
+        $this->user = $settings['user'];
+        $this->pass = $settings['pass'];
+        if(array_key_exists('timezone', $settings)){
+            $this->timezone = $settings['timezone'];
+        }
     }
 
     protected function connect() {
@@ -26,6 +29,9 @@ class MysqlSlave {
             throw new Core\Exceptions\AppException("Error connecting to the {$db} db. Error: ". $this->link->connect_error);
         }
         $this->link->set_charset('utf8');
+        if($this->timezone !== false){
+            $this->link->query(sprintf("SET time_zone='%s'", $this->timezone));
+        }
     }
 
     public function db_metadata($table) {
@@ -124,7 +130,6 @@ class MysqlSlave {
         if(!is_null($this->link)) {
             $this->link->close();
         }
-        $this->isTransactional = false;
     }
 
     protected function is_alive() {

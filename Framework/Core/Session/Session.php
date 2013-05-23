@@ -1,9 +1,8 @@
 <?php
 namespace Framework\Core\Session;
-use Framework\Core\Singleton;
 use Framework\Models\User;
 
-class Session extends Singleton {
+class Session {
 	CONST IS_IP = '/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/';
 	public $sessionID;
 
