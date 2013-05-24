@@ -1,7 +1,7 @@
 <?php
 namespace Framework\Core;
 
-class Response extends Singleton {
+class Response {
 	public $contentType = 'text/html';
 	public $charset = 'UTF-8';
 	public $body;
