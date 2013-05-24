@@ -1,7 +1,5 @@
 <?php
 namespace Framework\Core;
-use Framework\Core\Logger\Logger;
-use Framework\Core\Database;
 
 class Router{
 	protected $class;
@@ -11,12 +9,14 @@ class Router{
 	protected $oReflectionMethod;
 	protected $instance;
 	protected $id;
+    protected $response;
 
 	const RPC_MATCH = '/jsonrpc.+[\'"]method[\'"]\s*:\s*[\'"](.*?)[\'"]/';
 
 	public function __construct(){
-		$context = Context::getInstance();
-		$context->router = $this;
+		//$context = Context::getInstance();
+		//$context->router = $this;
+        $this->response = new Response();
 		try{
 			$this->setAttrs();
 		}catch(Exception $e){
@@ -68,12 +68,12 @@ class Router{
 	}
 
 	protected function setAttrs(){
-		$context = Context::getInstance();
+		//$context = Context::getInstance();
         $url = '';
         if(array_key_exists('PATH_INFO', $_SERVER)){
 		    $url = $_SERVER['PATH_INFO'];
         }
-		$settings = Settings::getInstance();
+		//$settings = Settings::getInstance();
 		if(empty($url)){
 			$url = $settings->default_url;
 		}
@@ -102,7 +102,7 @@ class Router{
 			}
 			else if(array_key_exists('CONTENT_TYPE', $_SERVER) &&
 					strstr($_SERVER['CONTENT_TYPE'], 'application/json')){
-				$context->response->contentType = 'application/json';
+				$this->response->contentType = 'application/json';
 				$request = file_get_contents("php://input");
 
 				if(!preg_match(Router::RPC_MATCH, $request)){
@@ -181,18 +181,16 @@ class Router{
 	protected function handleJsonResponse(){
 		if(array_key_exists('CONTENT_TYPE', $_SERVER) &&
 						strstr($_SERVER['CONTENT_TYPE'], 'application/json')){
-			$context = Context::getInstance();
 			$payload = array(
 				'jsonrpc' => '2.0',
-				'result' => $context->response->body,
+				'result' => $this->response->body,
 				'id' => $this->id
 			);
-			$context->response->body = json_encode($payload);
+            $this->response->body = json_encode($payload);
 		}
 	}
 
     public function invoke(){
-        $context = Context::getInstance();
         $class = sprintf('Application\Controllers\%s', $this->class);
         $instance = new $class;
         $instance->on_request();
@@ -210,12 +208,12 @@ class Router{
                             $context->response->body = $this->invokeRequest();
                             $this->handleJsonResponse();
                         }*/
-                        $context->response->body = call_user_func_array(array($instance, $this->method), $this->args);
+                        $this->response->body = call_user_func_array(array($instance, $this->method), $this->args);
                         $instance->postProcess();
-                        if($context->autoCommit){
+                        /*if($context->autoCommit){
                             $_db = Database\MysqlMaster::getInstance();
                             $_db->commit();
-                        }
+                        }*/
                         $processed = true;
                     }catch(DeadLockException $e) {
                         Logger::log('RETRYING');
@@ -228,7 +226,7 @@ class Router{
                 }
             }
             catch(UnauthorizedException $e){
-                $context->response->httpCode = 401;
+                $this->response->httpCode = 401;
             }
             catch(\ReflectionException $e){
                 Logger::log($e->getMessage());
@@ -239,60 +237,7 @@ class Router{
                 $this->handleServerError();
             }
         }
-        $context->response->write();
+        $this->response->write();
     }
-
-	public function invoke1(){
-		$context = Context::getInstance();
-		try{
-			$this->oReflection = new \ReflectionClass(sprintf('Application\Controllers\%s', $this->class));
-			if(!($this->oReflection->isSubclassOf('Framework\Controllers\BaseController'))){
-				throw new \ReflectionException('Bad request');
-			}
-			$this->instance = $this->oReflection->newInstance();
-			$this->oReflectionMethod = $this->oReflection->getMethod($this->method);
-			$this->checkAuth();
-
-			$processed = false;
-			$retries = 0;
-			$max_retries = 20;
-
-            while(!$processed && ($retries < $max_retries)) {
-				try{
-					$retries++;
-					$this->preProcess();
-					if(!$context->loadedFromCache){
-						$context->response->body = $this->invokeRequest();
-                        $this->handleJsonResponse();
-					}
-					$this->postProcess();
-					if($context->autoCommit){
-                        $_db = Database\MysqlMaster::getInstance();
-                        $_db->commit();
-					}
-					$processed = true;
-				}catch(DeadLockException $e) {
-					Logger::log('RETRYING');
-					usleep(100);
-				}
-			}
-			if(!$processed) {
-				Logger::log('DEADLOCK ERROR');
-				throw new Exception('Deadlock detected');
-			}
-		}
-		catch(UnauthorizedException $e){
-			$context->response->httpCode = 401;
-		}
-		catch(\ReflectionException $e){
-			Logger::log($e->getMessage());
-			$this->handle404Error();
-		}
-		catch(\Exception $e){
-			Logger::log($e->getMessage());
-			$this->handleServerError();
-		}
-		$context->response->write();
-	}
 }
 ?>
