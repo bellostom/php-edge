@@ -13,4 +13,3 @@ class Home extends BaseController{
         return 'hello world';
     }
 }
-?>
