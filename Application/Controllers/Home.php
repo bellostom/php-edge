@@ -1,18 +1,16 @@
 <?php
 namespace Application\Controllers;
 
-use Framework\Controllers as Base;
+use Edge\Controllers\BaseController;
 
-class Home extends Base\BaseController{
+class Home extends BaseController{
+
+    protected function dependencies(){
+        return array_merge(parent::dependencies(), array('db'));
+    }
 
     public function index(){
         return 'hello world';
     }
-
-    /**
-     * Framework\Core\Interfaces\I18n
-     * Override default behavior
-     */
-    public function translate(){}
 }
 ?>
