@@ -10,6 +10,7 @@ class Edge{
 
     private $container;
     private static $__instance;
+    private $routes;
 
     public function __construct($config){
         if(is_string($config)){
@@ -18,6 +19,7 @@ class Edge{
         $this->container = new Pimple();
         $this->registerServices($config['services']);
         date_default_timezone_set($config['timezone']);
+        $this->routes = $config['routes'];
         self::$__instance = $this;
     }
 
@@ -48,6 +50,10 @@ class Edge{
 
     public function __get($service){
         return $this->container[$service];
+    }
+
+    public function getRoutes(){
+        return $this->routes;
     }
 
     public static function app(){
