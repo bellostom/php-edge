@@ -10,10 +10,12 @@ class Router{
 	protected $instance;
 	protected $id;
     protected $response;
+    protected $routes;
 
 	const RPC_MATCH = '/jsonrpc.+[\'"]method[\'"]\s*:\s*[\'"](.*?)[\'"]/';
 
-	public function __construct(){
+	public function __construct(array $routes){
+        $this->routes = $routes;
         $this->response = new Response();
 		try{
 			$this->setAttrs();
@@ -56,48 +58,96 @@ class Router{
 		$context->response->body = call_user_func(array($class, $settings->not_found[1]), $arg);
 	}
 
-	protected static function populateFiles(){
-		$search_for = '/_name|_tmp_name|_size|_type/';
-		foreach($_POST as $key=>$value) {
-			if(preg_match($search_for, $key)){
-				$field = explode('_', $key, 2);
-				$_FILES[$field[0]][$field[1]] = $value;
-			}
-		}
-	}
+    private static function uriResolver($url, $routes){
+        $final_path = FALSE;
+        $url_path = explode('/', $url);
+        $url_path_length = count($url_path);
+
+        foreach($routes as $controller => $filter){
+            $parameters = array();
+            $action = false;
+            $filter = explode("/", $filter);
+            $controller = explode("/", $controller);
+
+            // this filter is irrelevant
+            if($url_path_length <> count($filter)){
+                continue;
+            }
+
+            foreach($filter as $i => $key){
+                if(strpos($key, ':') === 0){
+                    if($i == 1){
+                        $action = $url_path[$i];
+                    }else{
+                        $parameters[] = $url_path[$i];
+                    }
+                }
+                elseif($i == 1){
+                    $action = $url_path[$i];
+                }
+                // this filter is irrelevant
+                else if($key != $url_path[$i]){
+                    continue 2;
+                }
+            }
+            $final_path = $controller[0];
+            if(count($controller) > 1){
+                $action = $controller[1];
+            }
+            break;
+        }
+
+        return $final_path ? array(
+            'controller' => $final_path,
+            'action' => $action,
+            'parameters' => $parameters) : FALSE;
+    }
+
+    protected function resolveRoute($uri){
+        $httpMethod = $_SERVER['REQUEST_METHOD'];
+        $routes = $this->routes[$httpMethod];
+        $route = static::uriResolver($uri, $routes);
+        if(!$route){
+            $route = static::uriResolver($uri, $this->routes['*']);
+        }
+        return $route;
+    }
 
 	protected function setAttrs(){
-		//$context = Context::getInstance();
         $url = '';
         if(array_key_exists('PATH_INFO', $_SERVER)){
 		    $url = $_SERVER['PATH_INFO'];
         }
-		//$settings = Settings::getInstance();
+
 		if(empty($url)){
-			$url = $settings->default_url;
+			$url = "///";
 		}
 		if ($url[strlen($url)-1] == '/'){
 			$url = substr($url, 0, -1);
 		}
 		$url = substr($url, 1);
-		$url = explode("/", $url);
+        $route = $this->resolveRoute($url);
+        if(!$route){
+            echo 'Not Found';
+            exit;
+        }
+		//$url = explode("/", $url);
 
-		$url = array_map('htmlspecialchars', $url);
-		$this->class = ucfirst(array_shift($url));
-		if(count($url) > 0) {
+		//$url = array_map('htmlspecialchars', $url);
+		$this->class = ucfirst($route['controller']);
+        $this->method = $route['action'];
+        $this->args = $route['parameters'];
+		/*if(count($url) > 0) {
 			$this->method = array_shift($url);
 			if(count($url) > 0){
 				$this->args = $url;
 			}
-		}
+		}*/
 
 		if($_SERVER['REQUEST_METHOD'] == 'POST'){
 			if(strstr($_SERVER['CONTENT_TYPE'], 'application/x-www-form-urlencoded') ||
 				strstr($_SERVER['CONTENT_TYPE'] , 'multipart/form-data')){
 				$this->args = array(&$_POST);
-				if(strstr($_SERVER['CONTENT_TYPE'] , 'multipart/form-data')){
-					static::populateFiles();
-				}
 			}
 			else if(array_key_exists('CONTENT_TYPE', $_SERVER) &&
 					strstr($_SERVER['CONTENT_TYPE'], 'application/json')){
@@ -120,61 +170,6 @@ class Router{
 				$this->method = $settings->default_method;
 			}
 		}
-	}
-
-	private function passMethodArgs(){
-		return $this->oReflectionMethod->getNumberOfParameters() > 0;
-	}
-
-	private function checkAuth(){
-		$methods = array('on_request');
-		foreach($methods as $meth){
-			$method = $this->oReflection->getMethod($meth);
-			$method->invoke($this->instance);
-		}
-	}
-
-	private function postProcess(){
-		$oInstance = $this->oReflection;
-		$ints = $oInstance->getInterfaces();
-		if (count($ints) > 0)
-		{
-			foreach ($ints as $oInt){
-				if ($oInt->getName() == 'PostProcessFilter' ||
-					$oInt->isSubclassOf(new \ReflectionClass('Edge\Core\Interfaces\PostProcessFilter'))) {
-					foreach($oInt->getMethods() as $method)	{
-						$oRefMethod = $oInstance->getMethod($method->getName());
-						$oRefMethod->invoke($this->instance);
-					}
-				}
-			}
-		}
-	}
-
-	private function preProcess(){
-		$oInstance = $this->oReflection;
-		if (count($oInstance->getInterfaces()) > 0) {
-			foreach ($oInstance->getInterfaces() as $oInt) {
-				if ($oInt->getName() == 'PreProcessFilter' ||
-					$oInt->isSubclassOf(new \ReflectionClass('Edge\Core\Interfaces\PreProcessFilter'))) {
-					foreach($oInt->getMethods() as $method)	{
-						$oRefMethod = $oInstance->getMethod($method->getName());
-						$oRefMethod->invoke($this->instance);
-					}
-				}
-			}
-		}
-	}
-
-	protected function invokeRequest(){
-		if ($this->passMethodArgs()){
-			$resp = $this->oReflectionMethod->invokeArgs($this->instance,
-														 $this->args);
-		}
-		else{
-			$resp = $this->oReflectionMethod->invoke($this->instance);
-		}
-		return $resp;
 	}
 
 	protected function handleJsonResponse(){

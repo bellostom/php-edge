@@ -67,7 +67,7 @@ return array(
         'session' => array(
             'invokable' => function($c){
                 $settings = array(
-                    'session.name' => 'bellos',
+                    'session.name' => 'edge',
                     'session.timeout' => 20,
                     'session.path' => '/tmp/session',
                     'link' => $c['memoryCache']
@@ -77,6 +77,7 @@ return array(
             'shared' => true
         )
     ),
+    'routes' => include(__DIR__."/routes.php"),
     'timezone' => 'Europe/Athens'
 );
 /*$settings = new stdClass();

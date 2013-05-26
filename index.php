@@ -15,5 +15,5 @@ use Edge\Core\Edge,
     Edge\Core\Router;
 
 $webApp = new Edge(__DIR__."/Application/Config/config.php");
-$oRouter = new Router();
+$oRouter = new Router($webApp->getRoutes());
 $oRouter->invoke();
