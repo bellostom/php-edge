@@ -3,15 +3,15 @@ return array(
     'services' => array(
 
         'memoryCache' => array(
-            'invokable' => 'Framework\Core\Cache\MemoryCache',
+            'invokable' => 'Edge\Core\Cache\MemoryCache',
             'args' => array(
-                array('master:11211:1')
+                array('master:11311:1')
             ),
             'shared' => true
         ),
 
         'logger' => array(
-            'invokable' => 'Framework\Core\Logger\Logger',
+            'invokable' => 'Edge\Core\Logger\Logger',
             'args' => array('/var/log/phorm.log', 'phpfrm', '%a, %d %b %Y %X'),
             'shared' => true
         ),
@@ -39,7 +39,7 @@ return array(
                 static $obj;
                 if(is_null($obj)){
                     $c['isTransactional'] = false;
-                    $obj = new Framework\Core\Database\MysqlSlave($c['mysqlCredentials']['slave']);
+                    $obj = new Edge\Core\Database\MysqlSlave($c['mysqlCredentials']['slave']);
                 }
                 return ($c['isTransactional'])?$c['writedb']:$obj;
             }
@@ -48,20 +48,38 @@ return array(
         'writedb' => array(
             'invokable' => function($c){
                 $c['isTransactional'] = true;
-                return new Framework\Core\Database\MysqlMaster($c['mysqlCredentials']['master']);
+                return new Edge\Core\Database\MysqlMaster($c['mysqlCredentials']['master']);
             },
             'shared' => true
         ),
 
         'user' => array(
             'invokable' => function($c){
-                return new Framework\Models\User($c['db']);
+                return new Edge\Models\User($c['db']);
             }
+        ),
+
+        'sessionStorage' => array(
+            'invokable' => 'Edge\Core\Session\SessionMemcacheStorage',
+            'type' => 'variable'
+        ),
+
+        'session' => array(
+            'invokable' => function($c){
+                $settings = array(
+                    'session.name' => 'bellos',
+                    'session.timeout' => 20,
+                    'session.path' => '/tmp/session',
+                    'link' => $c['memoryCache']
+                );
+                return new Edge\Core\Session\Session($c['sessionStorage'], $settings);
+            },
+            'shared' => true
         )
     ),
     'timezone' => 'Europe/Athens'
 );
-$settings = new stdClass();
+/*$settings = new stdClass();
 
 $settings->db_username = 'root';
 $settings->db_passwd = '';
@@ -86,4 +104,4 @@ $settings->master = '127.0.0.1:3306';
 $settings->memcached_servers = array(
     'master:11311:1'
 );
-?>
+*/
