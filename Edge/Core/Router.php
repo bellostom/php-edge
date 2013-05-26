@@ -263,4 +263,3 @@ class Router{
         $this->response->write();
     }
 }
-?>

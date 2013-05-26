@@ -54,4 +54,3 @@ class Edge{
         return self::$__instance;
     }
 }
-?>

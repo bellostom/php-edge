@@ -12,7 +12,6 @@ abstract class BaseController implements Interfaces\ACLControl{
     protected $_components = array();
 
     public function __construct(Core\Response $response){
-        //$this->request = $request;
         $this->response = $response;
     }
 
@@ -176,4 +175,3 @@ abstract class BaseController implements Interfaces\ACLControl{
 		return $content;
 	}
 }
-?>
