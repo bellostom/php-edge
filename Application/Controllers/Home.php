@@ -12,4 +12,8 @@ class Home extends BaseController{
     public function index(){
         return 'hello world';
     }
+
+    public function test(){
+        return 'hello test';
+    }
 }
