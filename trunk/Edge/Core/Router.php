@@ -59,9 +59,35 @@ class Router{
 	}
 
     private static function uriResolver($url, $routes){
+        if(isset($routes[$url])){
+            $ret = $routes[$url];
+            $ret[] = array();
+            return $ret;
+        }
+
         $final_path = FALSE;
-        $url_path = explode('/', $url);
-        $url_path_length = count($url_path);
+        $urlDashes = substr_count($url, "/");
+        foreach($routes as $requestedUrl => $attrs){
+            if(substr_count($requestedUrl, "/") != $urlDashes){
+                continue;
+            }
+            $parts = explode(":", $requestedUrl);
+
+            if(count($parts) > 1){
+                $urlToMatch = substr($parts[0], 0, -1);
+                if(strncmp ($url, $urlToMatch, strlen($urlToMatch)) === 0){
+                    $args = explode("/", substr($url, strlen($urlToMatch), strlen($url)));
+                    unset($args[0]);
+                    $attrs[] = $args;
+                    return $attrs;
+                }
+            }
+        }
+        return false;
+
+
+        //$url_path = explode('/', $url);
+        //$url_path_length = count($url_path);
 
         foreach($routes as $controller => $filter){
             $parameters = array();
@@ -97,10 +123,7 @@ class Router{
             break;
         }
 
-        return $final_path ? array(
-            'controller' => $final_path,
-            'action' => $action,
-            'parameters' => $parameters) : FALSE;
+        return $final_path ? array($final_path, $action, $parameters) : FALSE;
     }
 
     protected function resolveRoute($uri){
@@ -120,12 +143,11 @@ class Router{
         }
 
 		if(empty($url)){
-			$url = "///";
+			$url = "//";
 		}
 		if ($url[strlen($url)-1] == '/'){
 			$url = substr($url, 0, -1);
 		}
-		$url = substr($url, 1);
         $route = $this->resolveRoute($url);
         if(!$route){
             echo 'Not Found';
@@ -134,9 +156,9 @@ class Router{
 		//$url = explode("/", $url);
 
 		//$url = array_map('htmlspecialchars', $url);
-		$this->class = ucfirst($route['controller']);
-        $this->method = $route['action'];
-        $this->args = $route['parameters'];
+		$this->class = ucfirst($route[0]);
+        $this->method = $route[1];
+        $this->args = $route[2];
 		/*if(count($url) > 0) {
 			$this->method = array_shift($url);
 			if(count($url) > 0){
@@ -147,7 +169,7 @@ class Router{
 		if($_SERVER['REQUEST_METHOD'] == 'POST'){
 			if(strstr($_SERVER['CONTENT_TYPE'], 'application/x-www-form-urlencoded') ||
 				strstr($_SERVER['CONTENT_TYPE'] , 'multipart/form-data')){
-				$this->args = array(&$_POST);
+				$this->args[] = array(&$_POST);
 			}
 			else if(array_key_exists('CONTENT_TYPE', $_SERVER) &&
 					strstr($_SERVER['CONTENT_TYPE'], 'application/json')){
