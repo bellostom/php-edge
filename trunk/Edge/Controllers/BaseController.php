@@ -11,7 +11,7 @@ abstract class BaseController implements Interfaces\ACLControl{
     protected $response;
     protected $_components = array();
 
-    public function __construct(Core\Response $response){
+    public function __construct(Core\Http\Response $response){
         $this->response = $response;
     }
 

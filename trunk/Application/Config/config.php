@@ -17,19 +17,17 @@ return array(
         ),
 
         'mysqlCredentials' => array(
-            'value' => array(
-                'master' => array(
-                    'host' => '127.0.0.1:3306',
-                    'db' => 'frm',
-                    'user' => 'root',
-                    'pass' => ''
-                ),
-                'slave' => array(
-                    'host' => '127.0.0.1:3306',
-                    'db' => 'frm',
-                    'user' => 'root',
-                    'pass' => ''
-                )
+            'master' => array(
+                'host' => '127.0.0.1:3306',
+                'db' => 'frm',
+                'user' => 'root',
+                'pass' => ''
+            ),
+            'slave' => array(
+                'host' => '127.0.0.1:3306',
+                'db' => 'frm',
+                'user' => 'root',
+                'pass' => ''
             )
         ),
 
@@ -58,17 +56,11 @@ return array(
             }
         ),
 
-        'notFound' => array(
-            'value' => array("Home", "notFound")
-        ),
+        'notFound' => array("Home", "notFound"),
 
-        'serverError' => array(
-            'value' => array("Home", "serverError")
-        ),
+        'serverError' => array("Home", "serverError"),
 
-        'sessionStorage' => array(
-            'value' => 'Edge\Core\Session\SessionMemcacheStorage'
-        ),
+        'sessionStorage' => 'Edge\Core\Session\SessionMemcacheStorage',
 
         'session' => array(
             'invokable' => function($c){

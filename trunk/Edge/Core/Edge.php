@@ -31,25 +31,25 @@ class Edge{
      */
     protected function registerServices(array $services){
         foreach($services as $name=>$params){
-            $shared = array_key_exists('shared', $params)?$params['shared']:false;
-            if(array_key_exists('invokable', $params) && is_callable($params['invokable'])){
-                $closure = $params['invokable'];
-            }else{
-                if(array_key_exists('value', $params)){
-                    $shared = false;
-                    $closure = $params['value'];
-                }
-                else{
-                    $closure = function($c) use ($params){
+            if(is_array($params) && array_key_exists('invokable', $params)){
+                $shared = array_key_exists('shared', $params)?$params['shared']:false;
+                if(array_key_exists('invokable', $params) && is_callable($params['invokable'])){
+                    $value = $params['invokable'];
+                }else{
+                    $value = function($c) use ($params){
                         $class = new \ReflectionClass($params['invokable']);
                         return $class->newInstanceArgs($params['args']);
                     };
                 }
             }
+            else{
+                $shared = false;
+                $value = $params;
+            }
             if($shared){
-                $this->container[$name] = $this->container->share($closure);
+                $this->container[$name] = $this->container->share($value);
             }else{
-                $this->container[$name] = $closure;
+                $this->container[$name] = $value;
             }
         }
     }
