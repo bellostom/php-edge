@@ -1,7 +1,7 @@
 <?php
-namespace Edge\Core;
+namespace Edge\Core\Http;
 
-class Response {
+class Response{
 	public $contentType = 'text/html';
 	public $charset = 'UTF-8';
 	public $body;

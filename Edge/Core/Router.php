@@ -16,7 +16,7 @@ class Router{
 
 	public function __construct(array $routes){
         $this->routes = $routes;
-        $this->response = new Response();
+        $this->response = new Http\Response();
 		try{
 			$this->setAttrs();
 		}catch(Exception $e){
