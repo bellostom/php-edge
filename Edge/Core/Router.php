@@ -37,25 +37,19 @@ class Router{
 	}
 
 	protected function handleServerError(){
-		$context = Context::getInstance();
-		$settings = Settings::getInstance();
+        $edge = Edge::app();
 		$arg = strtolower($_SERVER['REQUEST_METHOD']);
-		$class = new $settings->server_error[0]();
-		$this->oReflection = new ReflectionClass($settings->server_error[0]);
-		$this->instance = $this->oReflection->newInstance();
-		$context->response->httpCode = 500;
-		$context->response->body = call_user_func(array($class, $settings->server_error[1]), $arg);
+		$class = new $edge->serverError[0]();
+		$this->response->httpCode = 500;
+		$this->response->body = call_user_func(array($class, $edge->serverError[1]), $arg);
 	}
 
 	protected function handle404Error(){
-		$context = Context::getInstance();
-		$settings = Settings::getInstance();
-		$arg = strtolower($_SERVER['REQUEST_METHOD']);
-		$class = new $settings->not_found[0]();
-		$this->oReflection = new \ReflectionClass($settings->not_found[0]);
-		$this->instance = $this->oReflection->newInstance();
-		$context->response->httpCode = 404;
-		$context->response->body = call_user_func(array($class, $settings->not_found[1]), $arg);
+        $edge = Edge::app();
+        $arg = strtolower($_SERVER['REQUEST_METHOD']);
+        $class = new $edge->notFound[0]();
+        $this->response->httpCode = 404;
+        $this->response->body = call_user_func(array($class, $edge->notFound[1]), $arg);
 	}
 
     private static function uriResolver($url, $routes){
@@ -65,7 +59,6 @@ class Router{
             return $ret;
         }
 
-        $final_path = FALSE;
         $urlDashes = substr_count($url, "/");
         foreach($routes as $requestedUrl => $attrs){
             if(substr_count($requestedUrl, "/") != $urlDashes){
@@ -78,58 +71,27 @@ class Router{
                 if(strncmp ($url, $urlToMatch, strlen($urlToMatch)) === 0){
                     $args = explode("/", substr($url, strlen($urlToMatch), strlen($url)));
                     unset($args[0]);
-                    $attrs[] = $args;
+                    $attrs[] = array_map('htmlspecialchars', $args);
                     return $attrs;
                 }
             }
         }
         return false;
-
-
-        //$url_path = explode('/', $url);
-        //$url_path_length = count($url_path);
-
-        foreach($routes as $controller => $filter){
-            $parameters = array();
-            $action = false;
-            $filter = explode("/", $filter);
-            $controller = explode("/", $controller);
-
-            // this filter is irrelevant
-            if($url_path_length <> count($filter)){
-                continue;
-            }
-
-            foreach($filter as $i => $key){
-                if(strpos($key, ':') === 0){
-                    if($i == 1){
-                        $action = $url_path[$i];
-                    }else{
-                        $parameters[] = $url_path[$i];
-                    }
-                }
-                elseif($i == 1){
-                    $action = $url_path[$i];
-                }
-                // this filter is irrelevant
-                else if($key != $url_path[$i]){
-                    continue 2;
-                }
-            }
-            $final_path = $controller[0];
-            if(count($controller) > 1){
-                $action = $controller[1];
-            }
-            break;
-        }
-
-        return $final_path ? array($final_path, $action, $parameters) : FALSE;
     }
 
+    /**
+     * Map URI to Controller and Action based on the
+     * http method
+     * @param $uri
+     * @return array|bool
+     */
     protected function resolveRoute($uri){
         $httpMethod = $_SERVER['REQUEST_METHOD'];
-        $routes = $this->routes[$httpMethod];
-        $route = static::uriResolver($uri, $routes);
+        $route = false;
+        if(array_key_exists($httpMethod, $this->routes)){
+            $routes = $this->routes[$httpMethod];
+            $route = static::uriResolver($uri, $routes);
+        }
         if(!$route){
             $route = static::uriResolver($uri, $this->routes['*']);
         }
@@ -153,18 +115,10 @@ class Router{
             echo 'Not Found';
             exit;
         }
-		//$url = explode("/", $url);
 
-		//$url = array_map('htmlspecialchars', $url);
 		$this->class = ucfirst($route[0]);
         $this->method = $route[1];
         $this->args = $route[2];
-		/*if(count($url) > 0) {
-			$this->method = array_shift($url);
-			if(count($url) > 0){
-				$this->args = $url;
-			}
-		}*/
 
 		if($_SERVER['REQUEST_METHOD'] == 'POST'){
 			if(strstr($_SERVER['CONTENT_TYPE'], 'application/x-www-form-urlencoded') ||
@@ -186,10 +140,6 @@ class Router{
 			}
 			else{
 				throw new \ReflectionException('Unknown content type for POST method');
-			}
-		}else{
-			if(is_null($this->method)){
-				$this->method = $settings->default_method;
 			}
 		}
 	}

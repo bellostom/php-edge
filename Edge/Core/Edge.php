@@ -23,15 +23,21 @@ class Edge{
         self::$__instance = $this;
     }
 
+    /**
+     * Register the services specified in the config
+     * file. These services reside in an IoC object
+     * and are not initialized until they are invoked
+     * @param array $services
+     */
     protected function registerServices(array $services){
         foreach($services as $name=>$params){
             $shared = array_key_exists('shared', $params)?$params['shared']:false;
-            if(is_callable($params['invokable'])){
+            if(array_key_exists('invokable', $params) && is_callable($params['invokable'])){
                 $closure = $params['invokable'];
             }else{
-                if(array_key_exists('type', $params)){
+                if(array_key_exists('value', $params)){
                     $shared = false;
-                    $closure = $params['invokable'];
+                    $closure = $params['value'];
                 }
                 else{
                     $closure = function($c) use ($params){

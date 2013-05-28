@@ -1,30 +1,23 @@
 <?php
 namespace Edge\Core\Session;
 
-
 class Session{
-    private $driver;
 
     public function __construct($storage, $settings){
-        $this->driver = new $storage($settings);
-        session_set_save_handler($this->driver, true);
+        $driver = new $storage($settings);
+        session_set_save_handler($driver, true);
         session_start();
         if (!isset($_SESSION['initiated'])) {
             session_regenerate_id(true);
             $_SESSION['initiated'] = true;
         }
         if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > $settings['session.timeout'])) {
-            /*$params = session_get_cookie_params();
-            setcookie(session_name(), '', time() - 42000,
-                $params["path"], $params["domain"],
-                $params["secure"], $params["httponly"]
-            );*/
             session_unset();     // unset $_SESSION variable for the run-time
             session_destroy();   // destroy session data in storage
-            //session_regenerate_id(true);
+            $_SESSION = array();
             $_SESSION['initiated'] = true;
         }
-        $_SESSION['LAST_ACTIVITY'] = time(); // update last activity time stamp
+        $_SESSION['LAST_ACTIVITY'] = time();
     }
 
     public function __get($key) {
