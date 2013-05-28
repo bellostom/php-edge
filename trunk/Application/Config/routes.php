@@ -1,16 +1,13 @@
 <?php
 return array(
     //controller/action => URI matching
-    'POST' => array(
-        /*'home/index' => '/',
-        'foo' => 'page/:action/:name/:id',
-        'bar/thomas' => 'page/:action'*/
+    'GET' => array(
         '/' => array("Home", "index"),
         '/page/action/:name/:id' => array("Home", "index"),
-        '/new/test/:id' => array("Home", "test"),
-        '/θωμα' => array("Home", "index")
+        '/new/test/:id' => array("Home", "test")
 
     ),
-    'GET'=>array(),
-    '*' => array()
+    '*' => array(
+        '/api/update/:id' => array("Home", "test")
+    )
 );

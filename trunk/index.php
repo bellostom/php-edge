@@ -1,6 +1,4 @@
 <?php
-//print substr("Thomas bellos", 2, strlen("Thomas bellos"));
-//exit;
 //Register class loader
 require('Edge/Core/ClassLoader.php');
 $loader = new ClassLoader();
