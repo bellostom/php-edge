@@ -16,4 +16,11 @@ class Home extends BaseController{
     public function test(){
         return 'hello test';
     }
+
+    public function post($id, $attrs){
+        return array(
+            "thomas" => "bellos",
+            "hello" => "there"
+        );
+    }
 }

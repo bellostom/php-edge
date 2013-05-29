@@ -10,6 +10,7 @@ class Router{
 	protected $instance;
 	protected $id;
     protected $response;
+    protected $request;
     protected $routes;
 
 	const RPC_MATCH = '/jsonrpc.+[\'"]method[\'"]\s*:\s*[\'"](.*?)[\'"]/';
@@ -17,6 +18,7 @@ class Router{
 	public function __construct(array $routes){
         $this->routes = $routes;
         $this->response = new Http\Response();
+        $this->request = new Http\Request();
 		try{
 			$this->setAttrs();
 		}catch(Exception $e){
@@ -120,40 +122,12 @@ class Router{
         $this->method = $route[1];
         $this->args = $route[2];
 
-		if($_SERVER['REQUEST_METHOD'] == 'POST'){
-			if(strstr($_SERVER['CONTENT_TYPE'], 'application/x-www-form-urlencoded') ||
-				strstr($_SERVER['CONTENT_TYPE'] , 'multipart/form-data')){
-				$this->args[] = array(&$_POST);
-			}
-			else if(array_key_exists('CONTENT_TYPE', $_SERVER) &&
-					strstr($_SERVER['CONTENT_TYPE'], 'application/json')){
-				$this->response->contentType = 'application/json';
-				$request = file_get_contents("php://input");
-
-				if(!preg_match(Router::RPC_MATCH, $request)){
-					throw new \ReflectionException('Server supports the jsonrpc 2.0 protocol');
-				}
-				$ob = json_decode($request, true);
-				$this->method = $ob['method'];
-				$this->args = $ob['params'];
-				$this->id = $ob['id'];
-			}
-			else{
-				throw new \ReflectionException('Unknown content type for POST method');
-			}
-		}
-	}
-
-	protected function handleJsonResponse(){
-		if(array_key_exists('CONTENT_TYPE', $_SERVER) &&
-						strstr($_SERVER['CONTENT_TYPE'], 'application/json')){
-			$payload = array(
-				'jsonrpc' => '2.0',
-				'result' => $this->response->body,
-				'id' => $this->id
-			);
-            $this->response->body = json_encode($payload);
-		}
+        if(!$this->request->is('get')){
+            $this->args[] = $this->request->getParams();
+            if($this->request->isJsonRpc()){
+                $this->method = $this->request->getTransformer()->method;
+            }
+        }
 	}
 
     /**
@@ -227,6 +201,6 @@ class Router{
                 $this->handleServerError();
             }
         }
-        $this->response->write();
+        $this->response->write($this->request->getTransformer());
     }
 }

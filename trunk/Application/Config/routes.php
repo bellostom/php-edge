@@ -7,6 +7,9 @@ return array(
         '/new/test/:id' => array("Home", "test")
 
     ),
+    'POST' => array(
+        '/rest/api/:id' => array('Home', 'post')
+    ),
     '*' => array(
         '/api/update/:id' => array("Home", "test")
     )

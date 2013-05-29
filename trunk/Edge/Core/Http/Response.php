@@ -37,7 +37,7 @@ class Response{
 		$this->addHeader("Last-Modified", gmdate("D, d M Y H:i:s", $modified)." GMT");
 	}
 
-	public function write()	{
+	public function write(Transformer $transformer)	{
 		//ob_start('ob_gzhandler');
 		header("Pragma: no-cache");
 		header("Cache-Control: no-cache,no-store");
@@ -48,7 +48,7 @@ class Response{
 		foreach($this->headers as $key=>$val) {
 			header("$key: $val", true);
 		}
-		echo $this->body;
+		echo $transformer->encode($this->body);
 		exit();
 	}
 
