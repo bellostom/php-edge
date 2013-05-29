@@ -17,13 +17,25 @@ class XmlTransformer extends Transformer{
         return (array) $xml;
     }
 
+    private function array2xml($array, $tag) {
+        function ia2xml($array) {
+            $xml="";
+            foreach ($array as $key=>$value) {
+                if (is_array($value)) {
+                    $xml.="<$key>".ia2xml($value)."</$key>";
+                } else {
+                    $xml.="<$key>".$value."</$key>";
+                }
+            }
+            return $xml;
+        }
+        return simplexml_load_string("<$tag>".ia2xml($array)."</$tag>");
+    }
+
     public function encode($body){
         if(!is_array($body)){
             $body = array($body);
         }
-        $body = array_flip($body);
-        $xml = new \SimpleXMLElement('<root/>');
-        array_walk_recursive($body, array ($xml, 'addChild'));
-        return $xml->asXML();
+        return $this->array2xml($body, "response")->asXml();
     }
 }

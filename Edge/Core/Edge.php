@@ -11,6 +11,8 @@ class Edge{
     private $container;
     private static $__instance;
     private $routes;
+    private $request;
+    private $response;
 
     public function __construct($config){
         if(is_string($config)){
@@ -64,5 +66,21 @@ class Edge{
 
     public static function app(){
         return self::$__instance;
+    }
+
+    public function setResponse(Http\Response $response){
+        $this->response = $response;
+    }
+
+    public function setRequest(Http\Request $request){
+        $this->request = $request;
+    }
+
+    public function getResponse(){
+        return $this->response;
+    }
+
+    public function getRequest(){
+        return $this->request;
     }
 }
