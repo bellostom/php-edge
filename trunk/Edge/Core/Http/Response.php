@@ -1,6 +1,8 @@
 <?php
 namespace Edge\Core\Http;
 
+use Edge\Core\Edge;
+
 class Response{
 	public $contentType = 'text/html';
 	public $charset = 'UTF-8';
@@ -37,18 +39,19 @@ class Response{
 		$this->addHeader("Last-Modified", gmdate("D, d M Y H:i:s", $modified)." GMT");
 	}
 
-	public function write(Transformer $transformer)	{
+	public function write()	{
 		//ob_start('ob_gzhandler');
 		header("Pragma: no-cache");
 		header("Cache-Control: no-cache,no-store");
 		header("Expires:");
 		header('HTTP/1.0 '. Response::$httpCodes[$this->httpCode]);
-		$contentType = sprintf("%s; charset=%s", $this->contentType, $this->charset);
+        $contentType = Edge::app()->getRequest()->getContentType();
+		$contentType = sprintf("%s; charset=%s", $contentType, $this->charset);
 		header('Content-Type: '.$contentType, true);
 		foreach($this->headers as $key=>$val) {
 			header("$key: $val", true);
 		}
-		echo $transformer->encode($this->body);
+		echo Edge::app()->getRequest()->getTransformer()->encode($this->body);
 		exit();
 	}
 

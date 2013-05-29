@@ -1,6 +1,8 @@
 <?php
 namespace Edge\Core\Http;
 
+use Edge\Core\Edge;
+
 class Request {
 
     CONST RPC_MATCH = '/jsonrpc.+[\'"]method[\'"]\s*:\s*[\'"](.*?)[\'"]/';
@@ -8,6 +10,7 @@ class Request {
     private $httpMethod;
     private $transformer;
     private $params = array();
+    private $contentType = "text/html";
 
     public function __construct(){
         $this->httpMethod = $_SERVER['REQUEST_METHOD'];
@@ -20,6 +23,7 @@ class Request {
     private function init(){
         if(strstr($_SERVER['CONTENT_TYPE'], 'application/json')){
             $transformer = 'json';
+            $this->contentType = "application/json";
             if(!$this->is('get')){
                 $body = $this->getBody();
                 if(preg_match(Request::RPC_MATCH, $body)){
@@ -29,6 +33,7 @@ class Request {
         }
         elseif(strstr($_SERVER['CONTENT_TYPE'], 'application/xml')){
             $transformer = 'xml';
+            $this->contentType = "application/xml";
         }
         else{
             $transformer = 'html';
@@ -38,6 +43,10 @@ class Request {
             $data = $this->getBody();
             $this->params = $this->transformer->decode($data);
         }
+    }
+
+    public function getContentType(){
+        return $this->contentType;
     }
 
     public function is($method){

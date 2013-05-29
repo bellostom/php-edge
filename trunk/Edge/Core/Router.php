@@ -5,25 +5,20 @@ class Router{
 	protected $class;
 	protected $method;
 	protected $args = array();
-	protected $oReflection;
-	protected $oReflectionMethod;
-	protected $instance;
-	protected $id;
     protected $response;
     protected $request;
     protected $routes;
-
-	const RPC_MATCH = '/jsonrpc.+[\'"]method[\'"]\s*:\s*[\'"](.*?)[\'"]/';
 
 	public function __construct(array $routes){
         $this->routes = $routes;
         $this->response = new Http\Response();
         $this->request = new Http\Request();
+        Edge::app()->setResponse($this->response);
+        Edge::app()->setRequest($this->request);
 		try{
 			$this->setAttrs();
 		}catch(Exception $e){
 			Logger::log($e->getMessage());
-            print $e->getMessage();
 			$response = Response::getInstance();
 			$response->httpCode = 500;
 			$response->write();
@@ -201,6 +196,6 @@ class Router{
                 $this->handleServerError();
             }
         }
-        $this->response->write($this->request->getTransformer());
+        $this->response->write();
     }
 }

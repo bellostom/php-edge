@@ -20,7 +20,11 @@ class Home extends BaseController{
     public function post($id, $attrs){
         return array(
             "thomas" => "bellos",
-            "hello" => "there"
+            "hello" => "there",
+            "data" => array(
+                "name" => "Stergios",
+                "surname" => "Bellos"
+            )
         );
     }
 }
