@@ -8,7 +8,7 @@
  */
 
 namespace Edge\Core\Cache\Validator;
-use Edge\Core\Database\DB;
+use Edge\Core\Edge;
 
 /**
  * Class QueryValidator
@@ -27,7 +27,6 @@ class QueryValidator extends CacheValidator{
     }
 
     protected function validate(){
-        $db = DB::getInstance();
-        return $db->db_fetch_one($this->sql);
+        return Edge::app()->db->db_fetch_one($this->sql);
     }
 }

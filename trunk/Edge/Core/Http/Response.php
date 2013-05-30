@@ -50,7 +50,7 @@ class Response{
 		foreach($this->headers as $key=>$val) {
 			header("$key: $val", true);
 		}
-		echo Edge::app()->request->getTransformer()->encode($this->body);
+		echo $this->body;
 		exit();
 	}
 

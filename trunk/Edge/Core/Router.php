@@ -101,6 +101,7 @@ class Router{
 
 		if(empty($url)){
 			$url = "//";
+            $_SERVER['PATH_INFO'] = "/";
 		}
 		if ($url[strlen($url)-1] == '/'){
 			$url = substr($url, 0, -1);
@@ -129,6 +130,19 @@ class Router{
      * services.
      * @param \Edge\Controllers\BaseController $instance
      */
+    protected static function getFilters(\Edge\Controllers\BaseController $instance){
+        $reflection = new \ReflectionClass($instance);
+        $method = $reflection->getMethod('filters');
+        $method->setAccessible(true);
+        return $method->invoke($instance);
+    }
+
+    /**
+     * Inject the dependencies specified by the Controller class
+     * Invoke the dependencies method and assign the requested
+     * services.
+     * @param \Edge\Controllers\BaseController $instance
+     */
     protected static function setDependencies(\Edge\Controllers\BaseController $instance){
         $reflection = new \ReflectionClass($instance);
         $method = $reflection->getMethod('dependencies');
@@ -146,12 +160,17 @@ class Router{
         }
     }
 
+    private function runPreProcess(array $filters){
+        
+    }
+
     public function invoke(){
         $class = sprintf('Application\Controllers\%s', $this->class);
         $instance = new $class($this->response);
         static::setDependencies($instance);
         $instance->on_request();
         if(method_exists($instance, $this->method)){
+            $filters = static::getFilters($instance);
             try{
                 $processed = false;
                 $retries = 0;
@@ -160,26 +179,30 @@ class Router{
                 while(!$processed && ($retries < $max_retries)) {
                     try{
                         $retries++;
-                        $instance->preProcess();
+                        //$instance->preProcess();
+                        //$this->preProcess($instance);
                         /*if(!$context->loadedFromCache){
                             $context->response->body = $this->invokeRequest();
                             $this->handleJsonResponse();
                         }*/
-                        $this->response->body = call_user_func_array(array($instance, $this->method), $this->args);
+                        $this->response->body = $this->request
+                                                      ->getTransformer()
+                                                      ->encode(call_user_func_array(array($instance, $this->method),
+                                                                                    $this->args));
                         $instance->postProcess();
                         /*if($context->autoCommit){
                             $_db = Database\MysqlMaster::getInstance();
                             $_db->commit();
                         }*/
                         $processed = true;
-                    }catch(DeadLockException $e) {
+                    }catch(Exceptions\DeadLockException $e) {
                         Logger::log('RETRYING');
                         usleep(100);
                     }
                 }
                 if(!$processed) {
                     Logger::log('DEADLOCK ERROR');
-                    throw new Exception('Deadlock detected');
+                    throw new \Exception('Deadlock detected');
                 }
             }
             catch(UnauthorizedException $e){
