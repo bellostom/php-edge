@@ -45,6 +45,10 @@ class Request {
         }
     }
 
+    public function getRequestUrl(){
+        return $_SERVER['PATH_INFO'];
+    }
+
     public function getContentType(){
         return $this->contentType;
     }
