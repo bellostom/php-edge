@@ -40,18 +40,17 @@ class Response{
 	}
 
 	public function write()	{
-		//ob_start('ob_gzhandler');
 		header("Pragma: no-cache");
 		header("Cache-Control: no-cache,no-store");
 		header("Expires:");
 		header('HTTP/1.0 '. Response::$httpCodes[$this->httpCode]);
-        $contentType = Edge::app()->getRequest()->getContentType();
+        $contentType = Edge::app()->request->getContentType();
 		$contentType = sprintf("%s; charset=%s", $contentType, $this->charset);
 		header('Content-Type: '.$contentType, true);
 		foreach($this->headers as $key=>$val) {
 			header("$key: $val", true);
 		}
-		echo Edge::app()->getRequest()->getTransformer()->encode($this->body);
+		echo Edge::app()->request->getTransformer()->encode($this->body);
 		exit();
 	}
 
