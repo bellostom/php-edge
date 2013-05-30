@@ -11,10 +11,8 @@ class Router{
 
 	public function __construct(array $routes){
         $this->routes = $routes;
-        $this->response = new Http\Response();
-        $this->request = new Http\Request();
-        Edge::app()->setResponse($this->response);
-        Edge::app()->setRequest($this->request);
+        $this->response = Edge::app()->response;
+        $this->request = Edge::app()->request;
 		try{
 			$this->setAttrs();
 		}catch(Exception $e){
@@ -83,7 +81,7 @@ class Router{
      * @return array|bool
      */
     protected function resolveRoute($uri){
-        $httpMethod = $_SERVER['REQUEST_METHOD'];
+        $httpMethod = Edge::app()->request->getMethod();;
         $route = false;
         if(array_key_exists($httpMethod, $this->routes)){
             $routes = $this->routes[$httpMethod];

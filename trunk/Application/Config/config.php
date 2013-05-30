@@ -10,6 +10,18 @@ return array(
             'shared' => true
         ),
 
+        'request' => array(
+            'invokable' => 'Edge\Core\Http\Request',
+            'args' => array(),
+            'shared' => true
+        ),
+
+        'response' => array(
+            'invokable' => 'Edge\Core\Http\Response',
+            'args' => array(),
+            'shared' => true
+        ),
+
         'logger' => array(
             'invokable' => 'Edge\Core\Logger\Logger',
             'args' => array('/var/log/phorm.log', 'phpfrm', '%a, %d %b %Y %X'),

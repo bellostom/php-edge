@@ -76,4 +76,8 @@ class Request {
         }
         return $body;
     }
+
+    public function getMethod(){
+        return $this->httpMethod;
+    }
 }
