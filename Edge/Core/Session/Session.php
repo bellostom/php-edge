@@ -20,6 +20,10 @@ class Session{
         $_SESSION['LAST_ACTIVITY'] = time();
     }
 
+    public function getSessionId(){
+        return session_id();
+    }
+
     public function __get($key) {
         if(array_key_exists($key, $_SESSION))
             return $_SESSION[$key];

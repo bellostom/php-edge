@@ -4,7 +4,8 @@ return array(
     'GET' => array(
         '/' => array("Home", "index"),
         '/page/action/:name/:id' => array("Home", "index"),
-        '/new/test/:id' => array("Home", "test")
+        '/new/test/:id' => array("Home", "test"),
+        '/new/test/thomas' => array("Home", "test")
 
     ),
     'POST' => array(

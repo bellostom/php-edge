@@ -2,7 +2,7 @@
 namespace Application\Controllers;
 
 use Edge\Controllers\BaseController,
-    Edge\Core\Cache\Validator\FileValidator;
+    Edge\Core\Cache\Validator;
 
 class Home extends BaseController{
 
@@ -11,14 +11,15 @@ class Home extends BaseController{
     }
 
     public function __filters(){
-        return array(
+        return array_merge(parent::__filters(), array(
             array(
                 'Edge\Core\Filters\OutputCache',
                 'ttl' => 10*60,
-                'varyBy' => 'url',
-                'cacheValidator' => new FileValidator("/var/www/frm/test.php")
+                'varyBy' => 'session',
+                'cacheValidator' => new Validator\QueryValidator("SELECT COUNT(id) FROM users"),
+                'applyTo' => array('index')
             )
-        );
+        ));
     }
 
     public function index(){
