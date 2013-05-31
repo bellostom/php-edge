@@ -136,7 +136,12 @@ class Router{
             $filterInstances = array();
             foreach($filters as $filter){
                 $class = array_shift($filter);
-                $instance = new $class($filter);
+                if(count($filter) > 0){
+                    $instance = new $class($filter);
+                }
+                else{
+                    $instance = new $class;
+                }
                 $filterInstances[] = $instance;
             }
             return $filterInstances;
@@ -160,9 +165,16 @@ class Router{
         }
     }
 
+    /**
+     * Execute the filters
+     * @param array $filters
+     * @param $method (preProcess | postProcess)
+     */
     private function runFilters(array $filters, $method){
         foreach($filters as $filter){
-            $filter->{$method}($this->response, $this->request);
+            if($filter->appliesTo($this->method)){
+                $filter->{$method}($this->response, $this->request);
+            }
         }
     }
 

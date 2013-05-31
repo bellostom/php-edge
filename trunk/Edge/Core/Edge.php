@@ -16,6 +16,12 @@ class Edge{
         if(is_string($config)){
             $config = include($config);
         }
+        if($config['env'] == 'development'){
+            ini_set('display_errors', 'On');
+            error_reporting(E_ALL);
+        }else{
+            ini_set('display_errors', 'Off');
+        }
         $this->container = new Pimple();
         $this->registerServices($config['services']);
         date_default_timezone_set($config['timezone']);

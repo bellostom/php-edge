@@ -26,7 +26,7 @@ return array(
 
         'logger' => array(
             'invokable' => 'Edge\Core\Logger\Logger',
-            'args' => array('/var/log/phorm.log', 'phpfrm', '%a, %d %b %Y %X'),
+            'args' => array('/var/log/phorm.log', \Edge\Core\Logger\Logger::DEBUG),
             'shared' => true
         ),
 
@@ -64,11 +64,7 @@ return array(
             'shared' => true
         ),
 
-        'user' => array(
-            'invokable' => function($c){
-                return new Edge\Models\User($c['db']);
-            }
-        ),
+        'loginUrl' => '/home/login',
 
         'notFound' => array("Home", "notFound"),
 
@@ -81,8 +77,9 @@ return array(
                 $settings = array(
                     'session.name' => 'edge',
                     'session.timeout' => 20,
+                    'session.httponly' => true,
                     'session.path' => '/tmp/session',
-                    'link' => $c['memoryCache']
+                    'link' => $c['cache']
                 );
                 return new Edge\Core\Session\Session($c['sessionStorage'], $settings);
             },
@@ -90,5 +87,6 @@ return array(
         )
     ),
     'routes' => include(__DIR__."/routes.php"),
-    'timezone' => 'Europe/Athens'
+    'timezone' => 'Europe/Athens',
+    'env' => 'development'
 );
