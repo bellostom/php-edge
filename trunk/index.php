@@ -11,9 +11,8 @@ $loader->register();
 ini_set('display_errors', 'On');
 error_reporting(E_ALL);
 
-use Edge\Core\Edge,
-    Edge\Core\Router;
+use Edge\Core\Edge;
 
 $webApp = new Edge(__DIR__."/Application/Config/config.php");
-$oRouter = new Router($webApp->getRoutes());
+$oRouter = new $webApp->router($webApp->getRoutes());
 $oRouter->invoke();

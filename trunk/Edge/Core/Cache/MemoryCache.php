@@ -40,8 +40,8 @@ class MemoryCache extends BaseCache {
 		return $this->link->add($key, $value, $flags, $ttl);
 	}*/
 
-	public function setValue($key, $value, $flags=0,$ttl=0) {
-		$res = $this->link->set($key, $value, $flags, $ttl);
+	public function setValue($key, $value, $ttl=0) {
+		$res = $this->link->set($key, $value, 0, $ttl);
 		if(!$res)
 			throw new AppException('Error adding to memcache key ' . $key);
 		return $res;

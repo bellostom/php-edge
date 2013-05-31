@@ -131,10 +131,17 @@ class Router{
      * @param \Edge\Controllers\BaseController $instance
      */
     protected static function getFilters(\Edge\Controllers\BaseController $instance){
-        $reflection = new \ReflectionClass($instance);
-        $method = $reflection->getMethod('filters');
-        $method->setAccessible(true);
-        return $method->invoke($instance);
+        $filters = $instance->__filters();
+        if(count($filters) > 0){
+            $filterInstances = array();
+            foreach($filters as $filter){
+                $class = array_shift($filter);
+                $instance = new $class($filter);
+                $filterInstances[] = $instance;
+            }
+            return $filterInstances;
+        }
+        return $filters;
     }
 
     /**
@@ -144,24 +151,19 @@ class Router{
      * @param \Edge\Controllers\BaseController $instance
      */
     protected static function setDependencies(\Edge\Controllers\BaseController $instance){
-        $reflection = new \ReflectionClass($instance);
-        $method = $reflection->getMethod('dependencies');
-        $method->setAccessible(true);
-        $deps = $method->invoke($instance);
+        $deps = $instance->__dependencies();
         if(count($deps) > 0){
             $webApp = Edge::app();
-            $prop = new \ReflectionProperty($instance, '_components');
-            $prop->setAccessible(true);
-            $val = array();
             foreach($deps as $service){
-                $val[$service] = $webApp->{$service};
+                $instance->__setDependency($service, $webApp->{$service});
             }
-            $prop->setValue($instance, $val);
         }
     }
 
-    private function runPreProcess(array $filters){
-        
+    private function runFilters(array $filters, $method){
+        foreach($filters as $filter){
+            $filter->{$method}($this->response, $this->request);
+        }
     }
 
     public function invoke(){
@@ -171,6 +173,7 @@ class Router{
         $instance->on_request();
         if(method_exists($instance, $this->method)){
             $filters = static::getFilters($instance);
+            $this->runFilters($filters, 'preProcess');
             try{
                 $processed = false;
                 $retries = 0;
@@ -189,7 +192,7 @@ class Router{
                                                       ->getTransformer()
                                                       ->encode(call_user_func_array(array($instance, $this->method),
                                                                                     $this->args));
-                        $instance->postProcess();
+                        $this->runFilters($filters, 'postProcess');
                         /*if($context->autoCommit){
                             $_db = Database\MysqlMaster::getInstance();
                             $_db->commit();
