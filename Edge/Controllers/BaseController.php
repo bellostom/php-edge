@@ -9,7 +9,7 @@ abstract class BaseController implements Interfaces\ACLControl{
 	public static $js = array();
 
     protected $response;
-    protected $_components = array();
+    private $_components = array();
 
     public function __construct(Core\Http\Response $response){
         $this->response = $response;
@@ -27,12 +27,16 @@ abstract class BaseController implements Interfaces\ACLControl{
 	public function on_request(){}
 	public function get_login_url(){}
 
-    protected function filters(){
+    public function __filters(){
         return array();
     }
 
-    protected function dependencies(){
+    public function __dependencies(){
         return array();
+    }
+
+    public function __setDependency($name, $service){
+        $this->_components[$name] = $service;
     }
 
 	/**

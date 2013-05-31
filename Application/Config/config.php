@@ -2,13 +2,15 @@
 return array(
     'services' => array(
 
-        'memoryCache' => array(
+        'cache' => array(
             'invokable' => 'Edge\Core\Cache\MemoryCache',
             'args' => array(
                 array('master:11311:1')
             ),
             'shared' => true
         ),
+
+        'router' => 'Edge\Core\Router',
 
         'request' => array(
             'invokable' => 'Edge\Core\Http\Request',

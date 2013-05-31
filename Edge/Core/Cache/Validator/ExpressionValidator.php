@@ -17,6 +17,20 @@ class ExpressionValidator extends CacheValidator{
         $this->expression = $expression;
     }
 
+    public function evaluateExpression($_expression_,$_data_=array())
+    {
+        if(is_string($_expression_))
+        {
+            extract($_data_);
+            return eval('return '.$_expression_.';');
+        }
+        else
+        {
+            $_data_[]=$this;
+            return call_user_func_array($_expression_, $_data_);
+        }
+    }
+
     protected function validate(){
         return eval($this->expression);
     }
