@@ -11,6 +11,7 @@ class Edge{
     private $container;
     private static $__instance;
     private $routes;
+    public $router;
 
     public function __construct($config){
         if(is_string($config)){

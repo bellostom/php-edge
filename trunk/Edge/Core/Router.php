@@ -2,7 +2,7 @@
 namespace Edge\Core;
 
 class Router{
-	protected $class;
+	protected $controller;
 	protected $method;
 	protected $args = array();
     protected $response;
@@ -13,6 +13,7 @@ class Router{
         $this->routes = $routes;
         $this->response = Edge::app()->response;
         $this->request = Edge::app()->request;
+        Edge::app()->router = $this;
 		try{
 			$this->setAttrs();
 		}catch(Exception $e){
@@ -27,9 +28,13 @@ class Router{
 		return $this->args;
 	}
 
-	public function getMethod(){
+	public function getAction(){
 		return $this->method;
 	}
+
+    public function getController(){
+        return $this->controller;
+    }
 
 	protected function handleServerError(){
         $edge = Edge::app();
@@ -112,7 +117,7 @@ class Router{
             exit;
         }
 
-		$this->class = ucfirst($route[0]);
+		$this->controller = ucfirst($route[0]);
         $this->method = $route[1];
         $this->args = $route[2];
 
@@ -173,65 +178,64 @@ class Router{
     private function runFilters(array $filters, $method){
         foreach($filters as $filter){
             if($filter->appliesTo($this->method)){
-                $filter->{$method}($this->response, $this->request);
+                $val = $filter->{$method}($this->response, $this->request);
+                if($val === false){
+                    return false;
+                }
             }
         }
+        return true;
     }
 
     public function invoke(){
-        $class = sprintf('Application\Controllers\%s', $this->class);
+        $class = sprintf('Application\Controllers\%s', $this->controller);
         $instance = new $class($this->response);
         static::setDependencies($instance);
-        $instance->on_request();
         if(method_exists($instance, $this->method)){
             $filters = static::getFilters($instance);
-            $this->runFilters($filters, 'preProcess');
-            try{
-                $processed = false;
-                $retries = 0;
-                $max_retries = 20;
+            $invokeRequest = $this->runFilters($filters, 'preProcess');
+            if($invokeRequest){
+                try{
+                    $processed = false;
+                    $retries = 0;
+                    $max_retries = 20;
 
-                while(!$processed && ($retries < $max_retries)) {
-                    try{
-                        $retries++;
-                        //$instance->preProcess();
-                        //$this->preProcess($instance);
-                        /*if(!$context->loadedFromCache){
-                            $context->response->body = $this->invokeRequest();
-                            $this->handleJsonResponse();
-                        }*/
-                        $this->response->body = $this->request
-                                                      ->getTransformer()
-                                                      ->encode(call_user_func_array(array($instance, $this->method),
-                                                                                    $this->args));
-                        $this->runFilters($filters, 'postProcess');
-                        /*if($context->autoCommit){
-                            $_db = Database\MysqlMaster::getInstance();
-                            $_db->commit();
-                        }*/
-                        $processed = true;
-                    }catch(Exceptions\DeadLockException $e) {
-                        Logger::log('RETRYING');
-                        usleep(100);
+                    while(!$processed && ($retries < $max_retries)) {
+                        try{
+                            $retries++;
+                            $this->response->body = $this->request
+                                                          ->getTransformer()
+                                                          ->encode(call_user_func_array(array($instance, $this->method),
+                                                                                        $this->args));
+                            /*if($context->autoCommit){
+                                $_db = Database\MysqlMaster::getInstance();
+                                $_db->commit();
+                            }*/
+                            $processed = true;
+                        }catch(Exceptions\DeadLockException $e) {
+                            Logger::log('RETRYING');
+                            usleep(100);
+                        }
+                    }
+                    if(!$processed) {
+                        Logger::log('DEADLOCK ERROR');
+                        throw new \Exception('Deadlock detected');
                     }
                 }
-                if(!$processed) {
-                    Logger::log('DEADLOCK ERROR');
-                    throw new \Exception('Deadlock detected');
+                catch(UnauthorizedException $e){
+                    $this->response->httpCode = 401;
+                }
+                catch(\ReflectionException $e){
+                    Logger::log($e->getMessage());
+                    $this->handle404Error();
+                }
+                catch(\Exception $e){
+                    Logger::log($e->getMessage());
+                    $this->handleServerError();
                 }
             }
-            catch(UnauthorizedException $e){
-                $this->response->httpCode = 401;
-            }
-            catch(\ReflectionException $e){
-                Logger::log($e->getMessage());
-                $this->handle404Error();
-            }
-            catch(\Exception $e){
-                Logger::log($e->getMessage());
-                $this->handleServerError();
-            }
         }
+        $this->runFilters($filters, 'postProcess');
         $this->response->write();
     }
 }

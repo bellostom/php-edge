@@ -16,38 +16,11 @@ use Edge\Core\Edge,
  */
 class OutputCache extends BaseFilter{
 
-    private $varyBy;
-    private $ttl;
-    private $cacheValidator;
+    use \Edge\Core\TraitCachable;
 
     public function __construct(array $attrs){
         parent::__construct(array_key_exists('applyTo', $attrs)?$attrs['applyTo']:array("*"));
-        $this->varyBy = $attrs['varyBy'];
-        $this->ttl = $attrs['ttl'];
-        $this->cacheValidator = array_key_exists('cacheValidator', $attrs)?$attrs['cacheValidator']:null;
-    }
-
-    /**
-     * Get a unique key to be used for the cached item
-     * @param $request
-     * @return null|string
-     */
-    private function getCacheKey($request){
-        static $key;
-        if($key === null){
-            switch($this->varyBy){
-                case 'url':
-                    $key = md5(serialize(array(
-                        $request->getRequestUrl(),
-                        $request->getParams()
-                    )));
-                break;
-                case 'session':
-                    $key = md5($request->getRequestUrl().Edge::app()->session->getSessionId());
-                    break;
-            }
-        }
-        return $key;
+        $this->init($attrs);
     }
 
     /**
@@ -57,11 +30,10 @@ class OutputCache extends BaseFilter{
      * @param Http\Request $request
      */
     public function preProcess(Http\Response $response, Http\Request $request){
-        $key = $this->getCacheKey($request);
-        $val = Edge::app()->cache->get($key);
+        $val = $this->get();
         if($val){
             $response->body = $val;
-            $response->write();
+            return false;
         }
     }
 
@@ -73,6 +45,6 @@ class OutputCache extends BaseFilter{
      */
     public function postProcess(Http\Response $response, Http\Request $request){
         $body = $response->body;
-        Edge::app()->cache->add($this->getCacheKey($request), $body, $this->ttl, $this->cacheValidator);
+        $this->set($body);
     }
 }
