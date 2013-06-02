@@ -74,7 +74,7 @@ abstract class BaseCache {
         $this->deleteValue($key);
     }
 
-    abstract protected function setValue($key, $value, $ttl);
-    abstract protected function getValue($key);
-    abstract protected function deleteValue($key);
+    abstract public function setValue($key, $value, $ttl);
+    abstract public function getValue($key);
+    abstract public function deleteValue($key);
 }

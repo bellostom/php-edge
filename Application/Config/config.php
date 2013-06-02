@@ -10,7 +10,7 @@ return array(
             'shared' => true
         ),
 
-        'router' => 'Edge\Core\Router',
+        'routerClass' => 'Edge\Core\Router',
 
         'request' => array(
             'invokable' => 'Edge\Core\Http\Request',
@@ -76,7 +76,7 @@ return array(
             'invokable' => function($c){
                 $settings = array(
                     'session.name' => 'edge',
-                    'session.timeout' => 20,
+                    'session.timeout' => 20*60,
                     'session.httponly' => true,
                     'session.path' => '/tmp/session',
                     'link' => $c['cache']

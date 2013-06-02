@@ -4,7 +4,7 @@ namespace Edge\Controllers;
 use Edge\Core\Interfaces;
 use Edge\Core;
 
-abstract class BaseController implements Interfaces\ACLControl{
+abstract class BaseController{
 	public static $css = array();
 	public static $js = array();
 
@@ -24,9 +24,6 @@ abstract class BaseController implements Interfaces\ACLControl{
         return $this->_components[$name];
     }
 
-	public function on_request(){}
-	public function get_login_url(){}
-
     public function __filters(){
         return array();
     }
@@ -38,50 +35,6 @@ abstract class BaseController implements Interfaces\ACLControl{
     public function __setDependency($name, $service){
         $this->_components[$name] = $service;
     }
-
-	/**
-	 * Interface implementations
-	 * Post process filter which replaces all
-	 * internationalization strings with
-	 * the appropriate literals
-	 * @see Edge/core/Multilingual::i18n()
-	 */
-	public function translate()	{
-		$settings = Core\Settings::getInstance();
-		$context = Core\Context::getInstance();
-		$body = $context->response->body;
-		$lng = (isset($context->session->lang))?$context->session->lang:$settings->default_lang;
-		$lang = Language::getLanguageById($lng);
-		$lang = (array) $lang->getStrings();
-		$translate = array();
-        foreach ($lang as $key => $value){
-		    $translate['@@' . $key . '@@'] = $value;
-        }
-        $context->response->body = strtr($body, $translate);
-	}
-
-	/**
-	 *
-	 * Authenticate user
-	 * @param $username
-	 * @param $password
-	 * @param $remember_me
-	 */
-	protected function authenticate($username, $password,
-								    $remember_me=false)	{
-		$settings = Settings::getInstance();
-		$user = call_user_func($settings->user_class.'::getUserByUsername', $username);
-		if(!is_null($user) && $user->authenticate($password)){
-			$context = Context\Context::getInstance();
-			$context->session->userID = (int) $user->id;
-			$context->session->regenerate();
-			$context->user = $user;
-			if($remember_me)
-				UserToken::setCookieToken($user, Utils::genRandom(10));
-			return true;
-		}
-		return false;
-	}
 
 	/**
 	 *

@@ -15,7 +15,7 @@ class Home extends BaseController{
             array(
                 'Edge\Core\Filters\OutputCache',
                 'ttl' => 10*60,
-                'varyBy' => 'session',
+                'varyBy' => 'url',
                 'cacheValidator' => new Validator\QueryValidator("SELECT COUNT(id) FROM users"),
                 'applyTo' => array('index')
             )
@@ -27,6 +27,13 @@ class Home extends BaseController{
     }
 
     public function test(){
+        $tpl = new \Edge\Core\Template('Application/Views/ui.test.tpl', array(
+                'ttl' => 10*60,
+                'varyBy' => 'url',
+                'cacheValidator' => new Validator\QueryValidator("SELECT COUNT(id) FROM users")
+            ));
+        $tpl->test = "thomas";
+        return $tpl->parse();
         return 'hello test';
     }
 
