@@ -4,12 +4,17 @@ require('Edge/Core/ClassLoader.php');
 $loader = new ClassLoader();
 $loader->registerNamespaces(array(
     'Edge' => __DIR__,
-    'Application' => __DIR__
+    'Application' => __DIR__,
+    'Monolog' => __DIR__."/Edge/Core/Logger"
 ));
 $loader->register();
 
 use Edge\Core\Edge;
 
 $webApp = new Edge(__DIR__."/Application/Config/config.php");
-$oRouter = new $webApp->routerClass($webApp->getRoutes());
+$r = \Edge\Models\User::find(1);
+var_dump($r);
+
+$router = $webApp->getConfig('routerClass');
+$oRouter = new $router($webApp->getRoutes());
 $oRouter->invoke();

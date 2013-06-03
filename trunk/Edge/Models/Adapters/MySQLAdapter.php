@@ -37,9 +37,9 @@ class MySQLAdapter implements AdapterInterface{
      * @param array $options
      * @param $class
      */
-    public function find(array $options, $class){
-        $criteria = (count($options) == 2)?$options[1]:array();
-        $fetchMode = array_key_exists('fetchMode', $criteria)?$criteria['fetchMode']:ActiveRecord::FETCH_INSTANCE;
+    public function find(array $options, $class, $db){
+        $criteria = $options[1];
+        $fetchMode = $criteria['fetchMode'];
         $returnSingle = in_array($fetchMode, array(ActiveRecord::FETCH_INSTANCE, ActiveRecord::FETCH_ASSOC_ARRAY));
 
         if(!array_key_exists('conditions', $criteria)){
@@ -70,10 +70,8 @@ class MySQLAdapter implements AdapterInterface{
         else if(is_array($options[0])){
             $criteria['conditions'] = array_merge($criteria['conditions'], $options[0]);
         }
-        //Core\Logger\Logger::log($criteria);
-        //error_log();
-        $sql = $this->createSelectQuery($criteria);
-        $db = DB::getInstance();
+
+        $sql = $this->createSelectQuery($criteria, $db);
         $rs = $db->db_query($sql);
         $nums = $db->db_num_rows($rs);
 
@@ -96,10 +94,10 @@ class MySQLAdapter implements AdapterInterface{
     /**
      * Build the sql query based on the provided options
      */
-    protected function createSelectQuery(array $options){
+    protected function createSelectQuery(array $options, $db){
         $sql = array();
         if(array_key_exists('conditions', $options) && count($options['conditions']) > 0){
-            $sql[] = "WHERE ". $this->joinConditions($options['conditions']);
+            $sql[] = "WHERE ". $this->joinConditions($options['conditions'], $db);
         }
         if(array_key_exists('order', $options)){
             $order_val = is_array($options['order'])?$options['order'][0]:$options['order'];
@@ -193,14 +191,17 @@ class MySQLAdapter implements AdapterInterface{
            )
      * ));
      */
-    public function joinConditions(array $conditions){
-        $db = MysqlMaster::getInstance();
+    public function joinConditions(array $conditions, $db){
         $data = array_map(function($k, $v) use ($db){
             if(is_array($v)){
-                $v = join(",", $v);
+                $vals = array();
+                foreach($v as $val){
+                    $vals[] = sprintf('"%s"', $db->db_escape_string($val));
+                }
+                $v = join(",", $vals);
                 return sprintf('%s IN (%s)', $k, $v);
             }
-            return sprintf('%s = "%s"', $k, $db->db_escape_string($v));
+            return sprintf('%s = \'%s\'', $k, $db->db_escape_string($v));
         }, array_keys($conditions), array_values($conditions));
         return join(' AND ', $data);
     }

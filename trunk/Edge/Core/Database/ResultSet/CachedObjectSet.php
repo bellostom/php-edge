@@ -7,5 +7,9 @@ class CachedObjectSet extends ResultSet {
         $data = $this->result[$offset];
         return new $this->className($data);
     }
+
+    protected function setRows(){
+        return count($this->result);
+    }
 }
 ?>

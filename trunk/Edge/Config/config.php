@@ -1,24 +1,61 @@
 <?php
-$settings = new stdClass();
+return array(
+    'services' => array(
 
-$settings->user_class = 'Edge\Models\User';
-$settings->db_username = '';
-$settings->db_passwd = '';
-$settings->db_database = '';
-$settings->use_cache = true;
-$settings->default_lang = 'uk';
+        'cache' => array(
+            'invokable' => 'Edge\Core\Cache\MemoryCache',
+            'args' => array(
+                array('master:11311:1')
+            ),
+            'shared' => true
+        ),
 
-$settings->logger = new stdClass();
-$settings->logger->file = '/var/log/phorm.log';
-$settings->logger->dateFormat = '%a, %d %b %Y %X';
-$settings->logger->identity = 'Phrom';
+        'request' => array(
+            'invokable' => 'Edge\Core\Http\Request',
+            'args' => array(),
+            'shared' => true
+        ),
 
-$settings->slave = '127.0.0.1:3306';
-$settings->master = '127.0.0.1:3306';
+        'response' => array(
+            'invokable' => 'Edge\Core\Http\Response',
+            'args' => array(),
+            'shared' => true
+        ),
 
-$settings->memcached_servers = array(
-    'master:11211:1'
+        'logger' => array(
+            'invokable' => function($c){
+                $dateFormat = "Y n j, g:i a";
+                $output = "%datetime% > %level_name% > %message% %context%\n";
+                $formatter = new Monolog\Formatter\LineFormatter($output, $dateFormat);
+                $stream = new Monolog\Handler\StreamHandler('app.log', Monolog\Logger::DEBUG);
+                $stream->setFormatter($formatter);
+                $log = new Monolog\EdgeLogger('Edge');
+                $log->pushHandler($stream);
+                return $log;
+            },
+            'shared' => true
+        ),
+
+        'sessionStorage' => 'Edge\Core\Session\SessionMemcacheStorage',
+
+        'session' => array(
+            'invokable' => function($c){
+                $settings = array(
+                    'session.name' => 'edge',
+                    'session.timeout' => 20*60,
+                    'session.httponly' => true,
+                    'session.path' => '/tmp/session',
+                    'link' => $c['cache']
+                );
+                return new Edge\Core\Session\Session($c['sessionStorage'], $settings);
+            },
+            'shared' => true
+        )
+    ),
+    'loginUrl' => '/home/login',
+    'notFound' => array("Home", "notFound"),
+    'serverError' => array("Home", "serverError"),
+    'routerClass' => 'Edge\Core\Router',
+    'timezone' => 'Europe/Athens',
+    'env' => 'production'
 );
-
-$settings->cache_dir = '/tmp';
-?>
