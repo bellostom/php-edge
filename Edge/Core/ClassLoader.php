@@ -217,7 +217,7 @@ class ClassLoader{
     }
 
     private function saveClassList(){
-        asort($this->classList, SORT_STRING);
+        ksort($this->classList);
         $handle = fopen(self::$SAVE_FILE, 'w');
         fwrite($handle, "<?php\r\n");
 
@@ -231,15 +231,24 @@ class ClassLoader{
     }
 
     private function __scanDirs(){
+        $__exclude = array_values($this->namespaces);
+        $exclude = array();
+        foreach($__exclude as $k=>$v){
+            $exclude[] = $v[0];
+        }
         foreach ($this->namespaces as $ns => $dirs) {
+            unset($exclude[$dirs]);
             foreach ($dirs as $dir) {
-                $rs = $this->scanDirectory($dir.DIRECTORY_SEPARATOR.$ns);
+                $rs = $this->scanDirectory($dir.DIRECTORY_SEPARATOR.$ns, $dir, $exclude);
                 $this->classList = array_merge($rs, $this->classList);
             }
         }
     }
 
-    private function scanDirectory ($directory){
+    private function scanDirectory($directory, $baseDir, $exclude){
+        if(in_array($directory, $exclude)){
+            return array();
+        }
         if (substr($directory, -1) == '/')
             $directory = substr($directory, 0, -1);
 
@@ -260,14 +269,13 @@ class ClassLoader{
 
             // recursion
             if (is_dir($path)){
-                $scanRes = array_merge($scanRes, $this->scanDirectory($path));
+                $scanRes = array_merge($scanRes, $this->scanDirectory($path, $baseDir, $exclude));
 
             } elseif (is_file($path)){
                 $className = explode('.', $file);
-                $ns = substr(str_replace($_SERVER['DOCUMENT_ROOT'], "", $directory), 1);
+                $ns = substr(str_replace($baseDir, "", $directory), 1);
                 $ns = str_replace(DIRECTORY_SEPARATOR, "\\", $ns). "\\". $className[0];
                 if (strcmp($className[1], 'php') == 0 ) {
-                    //$scanRes[$className[0]] = $path;
                     $scanRes[$ns] = $path;
                 }
             }

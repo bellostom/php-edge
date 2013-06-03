@@ -1,7 +1,8 @@
 <?php
 namespace Edge\Models;
-use Edge\Core\Exceptions;
-use Edge\Core\Interfaces\EventHandler;
+use Edge\Core\Exceptions,
+    Edge\Core\Interfaces\EventHandler,
+    Edge\Core\Interfaces\CachableRecord;
 
 /**
  * Base class for all models that require persistence and
@@ -11,7 +12,7 @@ use Edge\Core\Interfaces\EventHandler;
  * class that will be responsible for the interaction.
  * The default adapter class is the MySQLAdapter.
  */
-abstract class ActiveRecord implements EventHandler{
+abstract class ActiveRecord implements EventHandler, CachableRecord{
     /**
      * @var array Stores the class's attributes
      * These attributes are mapped to the DB record
@@ -176,6 +177,47 @@ abstract class ActiveRecord implements EventHandler{
     }
 
     /**
+     * Specifies whether the record's of this class
+     * will be cached
+     * @return bool|void
+     */
+    public static function cacheRecord(){
+        return true;
+    }
+
+    /**
+     * Get a unique cache key for the record
+     * @param array $args
+     * @return string
+     */
+    public static function getCacheKey(array $args){
+        $args[] = static::getTable();
+        return md5(serialize($args));
+    }
+
+    /**
+     * Get the record's cached version
+     * @param array $args
+     * @return mixed
+     */
+    protected static function getCachedRecord(array $args){
+        $cache = \Edge\Core\Edge::app()->cache;
+        return $cache->get(static::getCacheKey($args));
+    }
+
+    protected static function sendCachedRecord($data, $fetchMode){
+        switch($fetchMode){
+            case ActiveRecord::FETCH_ASSOC_ARRAY:
+                return $data;
+            case ActiveRecord::FETCH_INSTANCE:
+                $class = get_called_class();
+                return new $class($data);
+            case ActiveRecord::FETCH_RESULTSET:
+                return new \Edge\Core\Database\ResultSet\CachedObjectSet($data, get_called_class());
+        }
+    }
+
+    /**
      * Proxy select requests to the object's adapter class
      */
     public static function find(/*args*/){
@@ -183,8 +225,24 @@ abstract class ActiveRecord implements EventHandler{
         if(count($args) == 0){
             throw new \Exception("Insufficient arguments supplied");
         }
+        $criteria = array();
+        if(count($args) == 2){
+            $criteria = array_pop($args);
+        }
+        if(!array_key_exists('fetchMode', $criteria)){
+            $criteria['fetchMode'] = ActiveRecord::FETCH_INSTANCE;
+        }
+        $args[] = $criteria;
         $args = array($args);
         $args[] = get_called_class();
+        $args[] = \Edge\Core\Edge::app()->db;
+        $cacheRecord = (static::cacheRecord() || isset($criteria['cache']));
+        if($cacheRecord){
+            $value = static::getCachedRecord($args);
+            if($value){
+                return static::sendCachedRecord($value, $criteria['fetchMode']);
+            }
+        }
         return call_user_func_array(array(static::getAdapter(), 'find'), $args);
     }
 

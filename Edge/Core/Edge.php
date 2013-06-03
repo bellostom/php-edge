@@ -11,22 +11,27 @@ class Edge{
     private $container;
     private static $__instance;
     private $routes;
+    private $config = array();
     public $router;
 
     public function __construct($config){
+        $defaults = include(__DIR__.'/../Config/config.php');
         if(is_string($config)){
             $config = include($config);
         }
+        $config = array_replace_recursive($defaults, $config);
         if($config['env'] == 'development'){
             ini_set('display_errors', 'On');
             error_reporting(E_ALL);
         }else{
             ini_set('display_errors', 'Off');
         }
+        date_default_timezone_set($config['timezone']);
         $this->container = new Pimple();
         $this->registerServices($config['services']);
-        date_default_timezone_set($config['timezone']);
         $this->routes = $config['routes'];
+        unset($config['services'], $config['routes']);
+        $this->config = $config;
         self::$__instance = $this;
     }
 
@@ -59,6 +64,10 @@ class Edge{
                 $this->container[$name] = $value;
             }
         }
+    }
+
+    public function getConfig($name){
+        return $this->config[$name];
     }
 
     public function __get($service){

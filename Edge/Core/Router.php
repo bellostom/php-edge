@@ -17,7 +17,7 @@ class Router{
 		try{
 			$this->setAttrs();
 		}catch(Exception $e){
-			Logger::log($e->getMessage());
+            Edge::app()->logger->err($e->getMessage());
 			$response = Response::getInstance();
 			$response->httpCode = 500;
 			$response->write();
@@ -213,12 +213,12 @@ class Router{
                             }*/
                             $processed = true;
                         }catch(Exceptions\DeadLockException $e) {
-                            Logger::log('RETRYING');
+                            Edge::app()->logger->info('RETRYING');
                             usleep(100);
                         }
                     }
                     if(!$processed) {
-                        Logger::log('DEADLOCK ERROR');
+                        Edge::app()->logger->err('DEADLOCK ERROR');
                         throw new \Exception('Deadlock detected');
                     }
                 }
@@ -226,11 +226,11 @@ class Router{
                     $this->response->httpCode = 401;
                 }
                 catch(\ReflectionException $e){
-                    Logger::log($e->getMessage());
+                    Edge::app()->logger->err($e->getMessage());
                     $this->handle404Error();
                 }
                 catch(\Exception $e){
-                    Logger::log($e->getMessage());
+                    Edge::app()->logger->err($e->getMessage());
                     $this->handleServerError();
                 }
             }

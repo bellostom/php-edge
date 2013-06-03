@@ -1,6 +1,5 @@
 <?php
 namespace Edge\Models;
-use Edge\Core\Database;
 
 abstract class Identifiable extends ActiveRecord{
     protected static $_members = array(
@@ -15,4 +14,3 @@ abstract class Identifiable extends ActiveRecord{
         return parent::find($id);
 	}
 }
-?>
