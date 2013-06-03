@@ -53,6 +53,10 @@ class MysqlSlave {
         return $rs->fetch_array(MYSQLI_ASSOC);
     }
 
+    public function db_fetch_all($rs){
+        return $rs->fetch_all(MYSQLI_ASSOC);
+    }
+
     public function db_fetch_object($rs, $classname=null) {
         if(!is_null($classname)) {
             return $rs->fetch_object($classname);
