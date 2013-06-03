@@ -190,9 +190,16 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
      * @param array $args
      * @return string
      */
-    public static function getCacheKey(array $args){
-        $args[] = static::getTable();
-        return md5(serialize($args));
+    public static function getCacheKey(\Edge\Core\Cache\BaseCache $cache, array $args){
+        $table = static::getTable();
+        $versionTable = $cache->get("versionIndex");
+        if(!$versionTable){
+            $versionTable = array(
+                $table => 0
+            );
+        }
+        $versionTable[$table]++;
+        return sprintf("%s_%s_%s", $table, $versionTable[$table], md5(serialize($args)));
     }
 
     /**
@@ -202,10 +209,10 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
      */
     protected static function getCachedRecord(array $args){
         $cache = \Edge\Core\Edge::app()->cache;
-        return $cache->get(static::getCacheKey($args));
+        return $cache->get(static::getCacheKey($cache, $args));
     }
 
-    protected static function sendCachedRecord($data, $fetchMode){
+    protected static function transformCachedRecord($data, $fetchMode){
         switch($fetchMode){
             case ActiveRecord::FETCH_ASSOC_ARRAY:
                 return $data;
@@ -215,6 +222,25 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
             case ActiveRecord::FETCH_RESULTSET:
                 return new \Edge\Core\Database\ResultSet\CachedObjectSet($data, get_called_class());
         }
+    }
+
+    protected static function cacheData($key, $data, $ttl, $fetchMode){
+        $_data = null;
+        switch($fetchMode){
+            case ActiveRecord::FETCH_ASSOC_ARRAY:
+                $_data =  $data;
+                break;
+            case ActiveRecord::FETCH_INSTANCE:
+                $_data = $data->getAttributes();
+                break;
+            case ActiveRecord::FETCH_RESULTSET:
+                $_data = $data->toArray();
+                break;
+            case ActiveRecord::FETCH_NATIVE_RESULTSET:
+                $_data = \Edge\Core\Edge::app()->db->db_fetch_all($data);
+                break;
+        }
+        return \Edge\Core\Edge::app()->cache->add($key, $_data, $ttl);
     }
 
     /**
@@ -235,15 +261,26 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
         $args[] = $criteria;
         $args = array($args);
         $args[] = get_called_class();
-        $args[] = \Edge\Core\Edge::app()->db;
+
         $cacheRecord = (static::cacheRecord() || isset($criteria['cache']));
         if($cacheRecord){
             $value = static::getCachedRecord($args);
             if($value){
-                return static::sendCachedRecord($value, $criteria['fetchMode']);
+                return static::transformCachedRecord($value, $criteria['fetchMode']);
             }
         }
-        return call_user_func_array(array(static::getAdapter(), 'find'), $args);
+
+        $data = call_user_func_array(array(static::getAdapter(), 'find'), $args);
+        if($cacheRecord && $data){
+            $ttl = 0;
+            if(isset($criteria['cache']) && array_key_exists('ttl', $criteria['cache'])){
+                $ttl = $criteria['cache']['ttl'];
+            }
+            $cache = \Edge\Core\Edge::app()->cache;
+            $cacheKey = static::getCacheKey($cache, $args);
+            static::cacheData($cacheKey, $data, $ttl, $criteria['fetchMode']);
+        }
+        return $data;
     }
 
     /**

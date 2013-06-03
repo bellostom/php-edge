@@ -11,7 +11,7 @@ class User extends Identifiable {
 	const GUEST = 1;
 	const AUTH_USER =3;
 
-	public function __construct($db, array &$data=array()) {
+	public function __construct(array &$data=array()) {
 		parent::__construct($data);
 		if($this->salt == '')
 			$this->salt = Utils::genRandom();
