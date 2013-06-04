@@ -39,8 +39,8 @@ class MySQLAdapter implements AdapterInterface{
      */
     public function find(array $options, $class){
         $criteria = $options[1];
-        $fetchMode = $criteria['fetchMode'];
-        $returnSingle = in_array($fetchMode, array(ActiveRecord::FETCH_INSTANCE, ActiveRecord::FETCH_ASSOC_ARRAY));
+        //$fetchMode = $criteria['fetchMode'];
+        //$returnSingle = in_array($fetchMode, array(ActiveRecord::FETCH_INSTANCE, ActiveRecord::FETCH_ASSOC_ARRAY));
         $db = $this->getDbConnection();
 
         if(!array_key_exists('conditions', $criteria)){
@@ -74,9 +74,9 @@ class MySQLAdapter implements AdapterInterface{
 
         $sql = $this->createSelectQuery($criteria, $db);
         $rs = $db->db_query($sql);
-        $nums = $db->db_num_rows($rs);
+        return array($rs, $db->db_num_rows($rs));
 
-        if($nums == 0){
+        /*if($nums == 0){
             if($returnSingle){
                 return null;
             }
@@ -89,7 +89,7 @@ class MySQLAdapter implements AdapterInterface{
             }
             return new $class($row);
         }
-        return new MySQLResultSet($rs, $class);
+        return new MySQLResultSet($rs, $class);*/
     }
 
     public function getDbConnection(){
