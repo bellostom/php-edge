@@ -202,6 +202,20 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
         return sprintf("%s_%s_%s", $table, $versionTable[$table], md5(serialize($args)));
     }
 
+    public function getInstanceIndexKey(){
+
+    }
+    public function addKeyToIndex($cached_key){
+        $mem = MCache::getInstance();
+        $key = $this->getInstanceIndexKey();
+        $index = $mem->get($key);
+        if(!$index)
+            $index = array();
+        $index[] = $cached_key;
+        $index = array_unique($index);
+        $mem->add($key, $index);
+    }
+
     /**
      * Get the record's cached version
      * @param array $args
@@ -258,6 +272,8 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
         if(!array_key_exists('fetchMode', $criteria)){
             $criteria['fetchMode'] = ActiveRecord::FETCH_INSTANCE;
         }
+        $returnSingle = in_array($criteria['fetchMode'], array(ActiveRecord::FETCH_INSTANCE,
+                                                               ActiveRecord::FETCH_ASSOC_ARRAY));
         $args[] = $criteria;
         $args = array($args);
         $args[] = get_called_class();
@@ -270,8 +286,8 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
             }
         }
 
-        $data = call_user_func_array(array(static::getAdapter(), 'find'), $args);
-        if($cacheRecord && $data){
+        list($result, $records) = call_user_func_array(array(static::getAdapter(), 'find'), $args);
+        if($cacheRecord && $records){
             $ttl = 0;
             if(isset($criteria['cache']) && array_key_exists('ttl', $criteria['cache'])){
                 $ttl = $criteria['cache']['ttl'];
@@ -280,7 +296,7 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
             $cacheKey = static::getCacheKey($cache, $args);
             static::cacheData($cacheKey, $data, $ttl, $criteria['fetchMode']);
         }
-        return $data;
+        return $result;
     }
 
     /**
