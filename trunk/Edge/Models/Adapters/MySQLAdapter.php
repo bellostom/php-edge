@@ -6,11 +6,9 @@
  *
  */
 namespace Edge\Models\Adapters;
-use Edge\Core\Database\MysqlMaster;
-use Edge\Core\Database\DB;
-use Edge\Core\Database\ResultSet\MySQLResultSet;
-use Edge\Models\ActiveRecord;
-use Edge\Core;
+
+use Edge\Models\ActiveRecord,
+    Edge\Core\Edge;
 
 class MySQLAdapter implements AdapterInterface{
 
@@ -29,7 +27,7 @@ class MySQLAdapter implements AdapterInterface{
      * Record::find(array(
         "id" => array(2,4)
      * ))
-     * Record::find(array("id"=>array(1,2), "name" => "John"), array(
+     * Record::find(array("id"=>array("in" => array(1,2)), "age"=>array("gt"=>30), "name" => "John"), array(
         'order' => array("name desc"),
         'limit' => 10,
         'offset' => 0
@@ -39,8 +37,6 @@ class MySQLAdapter implements AdapterInterface{
      */
     public function find(array $options, $class){
         $criteria = $options[1];
-        //$fetchMode = $criteria['fetchMode'];
-        //$returnSingle = in_array($fetchMode, array(ActiveRecord::FETCH_INSTANCE, ActiveRecord::FETCH_ASSOC_ARRAY));
         $db = $this->getDbConnection();
 
         if(!array_key_exists('conditions', $criteria)){
@@ -49,30 +45,31 @@ class MySQLAdapter implements AdapterInterface{
         if(gettype($options[0]) == 'integer'){
             $options[0] = (string) $options[0];
         }
-        $criteria['from'] = $class::getTable();
-        if(gettype($options[0]) == 'string'){
-            if(in_array($options[0], array("first", "last", "all"))){
-                switch($options[0]){
-                    case "first":
-                        $criteria['limit'] = 1;
-                        $criteria['offset'] = 0;
-                        break;
-                    case "last":
-                        $criteria['limit'] = 1;
-                        $criteria['order'] = join(' DESC, ',$class::getPk()) . ' DESC';
-                        break;
-                }
-            }else{
-                //custom
-                $pks = array_combine($class::getPk(), array($options[0]));
-                $criteria['conditions'] = array_merge($pks, $criteria['conditions']);
+
+        //if(gettype($options[0]) == 'string'){
+        if(in_array($options[0], array("first", "last", "all"))){
+            switch($options[0]){
+                case "first":
+                    $criteria['limit'] = 1;
+                    $criteria['offset'] = 0;
+                    break;
+                case "last":
+                    $criteria['limit'] = 1;
+                    $criteria['order'] = join(' DESC, ',$class::getPk()) . ' DESC';
+                    break;
             }
+        }else{
+            //custom
+            $pks = array_combine($class::getPk(), array($options[0]));
+            $criteria['conditions'] = array_merge($pks, $criteria['conditions']);
         }
-        else if(is_array($options[0])){
+       // }
+        /*else if(is_array($options[0])){
             $criteria['conditions'] = array_merge($criteria['conditions'], $options[0]);
-        }
+        }*/
 
         $sql = $this->createSelectQuery($criteria, $db);
+        Edge::app()->logger->debug($sql);
         $rs = $db->db_query($sql);
         return array($rs, $db->db_num_rows($rs));
 
@@ -92,8 +89,13 @@ class MySQLAdapter implements AdapterInterface{
         return new MySQLResultSet($rs, $class);*/
     }
 
+    /**
+     * Convenient method so that the AR
+     * can access the db object
+     * @return mixed
+     */
     public function getDbConnection(){
-        return \Edge\Core\Edge::app()->db;
+        return Edge::app()->db;
     }
 
     /**
@@ -199,16 +201,42 @@ class MySQLAdapter implements AdapterInterface{
     public function joinConditions(array $conditions, $db){
         $data = array_map(function($k, $v) use ($db){
             if(is_array($v)){
-                $vals = array();
-                foreach($v as $val){
-                    $vals[] = sprintf('"%s"', $db->db_escape_string($val));
-                }
-                $v = join(",", $vals);
-                return sprintf('%s IN (%s)', $k, $v);
+                return $this->processAttrs($db, $k, $v);
             }
             return sprintf('%s = \'%s\'', $k, $db->db_escape_string($v));
         }, array_keys($conditions), array_values($conditions));
         return join(' AND ', $data);
+    }
+
+    private function processAttrs($db, $key, array $attrs){
+        $vals = $attrs;
+        $op = "";
+        $modifier = function($v){
+            return $v;
+        };
+
+        if(isset($attrs['in'])){
+            $vals = $attrs['in'];
+            $op = "IN";
+            $modifier = function($v){
+                return sprintf("(%s)", $v);
+            };
+        }
+        elseif(isset($attrs['between'])){
+            $vals = $attrs['between'];
+            $op = "BETWEEN";
+            $modifier = function($v){
+                $v = explode(",", $v);
+                return sprintf("%s", join(" AND ", $v));
+            };
+        }
+
+        $_vals = array();
+        foreach($vals as $val){
+            $_vals[] = sprintf('"%s"', $db->db_escape_string($val));
+        }
+        $v = join(",", $_vals);
+        return sprintf('%s %s %s', $key, $op, $modifier($v));
     }
 
     /**
