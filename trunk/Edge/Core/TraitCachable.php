@@ -1,26 +1,27 @@
 <?php
-/**
- * Created by JetBrains PhpStorm.
- * User: thomas
- * Date: 2/6/2013
- * Time: 9:36 μμ
- * To change this template use File | Settings | File Templates.
- */
-
 namespace Edge\Core;
 
 use Edge\Core\Http;
 
-
 trait TraitCachable {
+
     protected $varyBy;
     protected $ttl;
     protected $cacheValidator;
+    protected $key = false;
+    private static $defaults = array(
+        'varyBy' => 'url',
+        'ttl' => 0,
+        'cacheValidator' => null,
+        'key' => false
+    );
 
     public function init(array $attrs){
+        $attrs = array_merge(self::$defaults, $attrs);
         $this->varyBy = $attrs['varyBy'];
         $this->ttl = $attrs['ttl'];
-        $this->cacheValidator = array_key_exists('cacheValidator', $attrs)?$attrs['cacheValidator']:null;
+        $this->key = $attrs['key'];
+        $this->cacheValidator = $attrs['cacheValidator'];
     }
 
     /**
@@ -38,6 +39,9 @@ trait TraitCachable {
      * @return null|string
      */
     private function getCacheKey(){
+        if($this->key){
+            return $this->key;
+        }
         static $key;
         if($key === null){
             $request = Edge::app()->request;
@@ -56,6 +60,7 @@ trait TraitCachable {
                     $defaults[] = Edge::app()->session->getSessionId();
                     break;
             }
+            Edge::app()->logger->debug($defaults);
             $key = md5(serialize($defaults));
         }
         return $key;
