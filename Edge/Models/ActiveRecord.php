@@ -258,23 +258,55 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
     }
 
     /**
-     * Proxy select requests to the object's adapter class
-     */
+     Proxy select requests to the object's adapter class
+
+     Record::find(1)
+
+     Record::find("all", array(
+          'conditions' => array("name" => "English"),
+          'order' => array("name DESC"),
+          'limit' => 10,
+          'offset' => 0
+     ))
+
+     Record::find(array(
+        'conditions' => array("id" => 12)
+    ))
+
+    Record::find(array(
+        'conditions' => array("id" => array("in" => array(2,3))),
+        'order' => array("name DESC")
+    ))
+    Record::find("last")
+    Record::find("first")
+    Record::find(array(
+      "id" => array(2,4)
+    ))
+    */
     public static function find(/*args*/){
         $args = func_get_args();
         if(count($args) == 0){
             throw new \Exception("Insufficient arguments supplied");
         }
-        $criteria = array();
+        $options = array();
+        $options['from'] = static::getTable();
+
+        if(is_array($args[0])){
+            array_unshift($args, "all");
+        }
+
+        $fetchMode = ActiveRecord::FETCH_INSTANCE;
         if(count($args) == 2){
-            $criteria = array_pop($args);
+            $args[1]['from'] = static::getTable();
+            if(isset($args[1]['fetchMode'])){
+                $fetchMode = $args[1]['fetchMode'];
+                unset($args[1]['fetchMode']);
+            }
         }
-        if(!array_key_exists('fetchMode', $criteria)){
-            $criteria['fetchMode'] = ActiveRecord::FETCH_INSTANCE;
-        }
-        $returnSingle = in_array($criteria['fetchMode'], array(ActiveRecord::FETCH_INSTANCE,
-                                                               ActiveRecord::FETCH_ASSOC_ARRAY));
-        $args[] = $criteria;
+
+        $returnSingle = in_array($fetchMode, array(ActiveRecord::FETCH_INSTANCE,
+                                                   ActiveRecord::FETCH_ASSOC_ARRAY));
+
         $args = array($args);
         $args[] = get_called_class();
 
@@ -287,6 +319,7 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
         }
 
         list($result, $records) = call_user_func_array(array(static::getAdapter(), 'find'), $args);
+        return $result;
         if($cacheRecord && $records){
             $ttl = 0;
             if(isset($criteria['cache']) && array_key_exists('ttl', $criteria['cache'])){
