@@ -80,15 +80,17 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
     }
 
     /**
+     * Child classes should implement
      * @return string Return the table's name
      */
-    abstract public static function getTable();
+    public static function getTable(){}
 
     /**
+     * Child classes should implement
      * @return array Return an array with the table's
      * primary keys
      */
-    abstract public static function getPk();
+    public static function getPk(){}
 
     /**
      * Load the adapter class to interface with the selected
@@ -288,8 +290,6 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
         if(count($args) == 0){
             throw new \Exception("Insufficient arguments supplied");
         }
-        $options = array();
-        $options['from'] = static::getTable();
 
         if(is_array($args[0])){
             array_unshift($args, "all");
@@ -302,6 +302,11 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
                 $fetchMode = $args[1]['fetchMode'];
                 unset($args[1]['fetchMode']);
             }
+        }
+        else{
+            $args[] = array(
+                'from' => static::getTable()
+            );
         }
 
         $returnSingle = in_array($fetchMode, array(ActiveRecord::FETCH_INSTANCE,

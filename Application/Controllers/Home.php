@@ -27,11 +27,11 @@ class Home extends BaseController{
     }
 
     public function test(){
-        $tpl = new \Edge\Core\Template('Application/Views/ui.test.tpl', array(
+        $tpl = new \Edge\Core\Template('Application/Views/ui.test.tpl'/*, array(
                 'ttl' => 10*60,
                 'varyBy' => 'url',
                 'cacheValidator' => new Validator\QueryValidator("SELECT COUNT(id) FROM users")
-            ));
+            )*/);
         $tpl->test = "thomas";
         return $tpl->parse();
         return 'hello test';

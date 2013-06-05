@@ -11,9 +11,6 @@ $loader->register();
 use Edge\Core\Edge;
 
 $webApp = new Edge(__DIR__."/Application/Config/config.php");
-$r = \Edge\Models\User::find(1);
-var_dump($r);
-
 $router = $webApp->getConfig('routerClass');
 $oRouter = new $router($webApp->getRoutes());
 $oRouter->invoke();
