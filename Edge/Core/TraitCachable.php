@@ -3,6 +3,14 @@ namespace Edge\Core;
 
 use Edge\Core\Http;
 
+/**
+ * Class TraitCachable
+ * Trait that handles common operations for caching
+ * Used by
+ * Edge\Core\Filters\PageCache
+ * Edge\Core\Template\InternalCache
+ * @package Edge\Core
+ */
 trait TraitCachable {
 
     protected $varyBy;
@@ -16,7 +24,7 @@ trait TraitCachable {
         'key' => false
     );
 
-    public function init(array $attrs){
+    protected function init(array $attrs){
         $attrs = array_merge(self::$defaults, $attrs);
         $this->varyBy = $attrs['varyBy'];
         $this->ttl = $attrs['ttl'];
