@@ -1,12 +1,4 @@
 <?php
-/**
- * Created by JetBrains PhpStorm.
- * User: Thomas
- * Date: 3/6/2013
- * Time: 3:24 μμ
- * To change this template use File | Settings | File Templates.
- */
-
 namespace Monolog;
 
 class EdgeLogger extends Logger{
@@ -16,5 +8,16 @@ class EdgeLogger extends Logger{
             $message = var_export($message, true);
         }
         parent::addRecord($level, $message, $context);
+    }
+
+    public static function factory(array $attrs){
+        $dateFormat = $attrs['dateFormat'];
+        $output = "%datetime%: %level_name% - %message%\n";
+        $formatter = new Formatter\LineFormatter($output, $dateFormat);
+        $stream = new Handler\StreamHandler($attrs['file'], constant(__NAMESPACE__.'\Logger::'.$attrs['logLevel']));
+        $stream->setFormatter($formatter);
+        $log = new EdgeLogger('Edge');
+        $log->pushHandler($stream);
+        return $log;
     }
 }

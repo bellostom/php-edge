@@ -45,6 +45,14 @@ class Request {
         }
     }
 
+    public function setCookie($name, $value, $expires){
+        Edge::app()->cookie->set($name, $value, $expires);
+    }
+
+    public function getCookie($name){
+        return Edge::app()->cookie->get($name);
+    }
+
     public function getRequestUrl(){
         return $_SERVER['PATH_INFO'];
     }

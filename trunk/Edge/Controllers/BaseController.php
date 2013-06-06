@@ -8,22 +8,6 @@ abstract class BaseController{
 	public static $css = array();
 	public static $js = array();
 
-    protected $response;
-    private $_components = array();
-
-    public function __construct(Core\Http\Response $response){
-        $this->response = $response;
-    }
-
-    /**
-     * Return the requested service
-     * @param $name
-     * @return mixed
-     */
-    public function __get($name){
-        return $this->_components[$name];
-    }
-
     /**
      * Define filters to be run before and after the request
      * has been processed. Filters must extend
@@ -52,14 +36,6 @@ abstract class BaseController{
         return array(
             array('Edge\Core\Filters\DynamicOutput')
         );
-    }
-
-    public function __dependencies(){
-        return array();
-    }
-
-    public function __setDependency($name, $service){
-        $this->_components[$name] = $service;
     }
 
 	/**
