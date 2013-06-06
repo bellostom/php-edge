@@ -5,16 +5,11 @@ use Edge\Core\Edge,
     Edge\Core\Http;
 
 /**
- * Class OutputCache
+ * Class PageCache
  * Filter that handles page caching
- * It supports variation based on
- * url: the cache key is composed based on the request params
- *
- * ttl: the time until the cache expires
- * cacheValidator: optional instance of Edge\Core\Cache\Validator\CacheValidator
  * @package Edge\Core\Filters
  */
-class OutputCache extends BaseFilter{
+class PageCache extends BaseFilter{
 
     use \Edge\Core\TraitCachable;
 
@@ -35,6 +30,7 @@ class OutputCache extends BaseFilter{
             $response->body = $val;
             return false;
         }
+        return true;
     }
 
     /**
@@ -44,7 +40,7 @@ class OutputCache extends BaseFilter{
      * @param Http\Request $request
      */
     public function postProcess(Http\Response $response, Http\Request $request){
-        $body = $response->body;
-        $this->set($body);
+        $this->set($response->body);
+        return true;
     }
 }

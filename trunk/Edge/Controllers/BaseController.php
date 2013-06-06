@@ -1,8 +1,8 @@
 <?php
 namespace Edge\Controllers;
 
-use Edge\Core\Interfaces;
-use Edge\Core;
+use Edge\Core,
+    Edge\Core\Interfaces;
 
 abstract class BaseController{
 	public static $css = array();
@@ -24,8 +24,34 @@ abstract class BaseController{
         return $this->_components[$name];
     }
 
+    /**
+     * Define filters to be run before and after the request
+     * has been processed. Filters must extend
+     * Edge\Core\Filters\BaseFilter class
+     * and implement 2 methods
+     * preProcess($response, $request) and
+     * postProcess($response, $request)
+     *
+     * Here we define a Post Process filter that replaces
+     * content within caches, that has been declared as
+     * dynamic
+     *
+     * Example usage from a child class
+     * return array_merge(parent::__filters(), array(
+        array(
+            'Edge\Core\Filters\PageCache',
+            'ttl' => 10*60,
+            'varyBy' => 'url',
+            'cacheValidator' => new Validator\QueryValidator("SELECT COUNT(id) FROM users"),
+            'applyTo' => array('index')
+            )
+        ));
+     * @return array
+     */
     public function __filters(){
-        return array();
+        return array(
+            array('Edge\Core\Filters\DynamicOutput')
+        );
     }
 
     public function __dependencies(){

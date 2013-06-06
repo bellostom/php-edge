@@ -8,7 +8,8 @@ $loader->registerNamespaces(array(
     'Monolog' => __DIR__."/Edge/Core/Logger"
 ));
 $loader->register();
-use Edge\Core\Edge;
+use Edge\Core\Edge,
+    Edge\Models\User;
 
 $webApp = new Edge(__DIR__."/Application/Config/config.php");
 $router = $webApp->getConfig('routerClass');

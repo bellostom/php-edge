@@ -172,10 +172,22 @@ class Router{
 
     /**
      * Execute the filters
+     * Initially, we sort the filters based on their
+     * preProcessOrder or postProcessOrder value
+     * and then iterate each one and invoke the filter
+     * If any of the filters returns false, we stop
+     * the execution and return.
      * @param array $filters
      * @param $method (preProcess | postProcess)
      */
     private function runFilters(array $filters, $method){
+        $orderMethod = sprintf("get%sOrder", $method);
+        usort($filters, function($f1, $f2) use($orderMethod){
+            if($f1->{$orderMethod}() == $f2->{$orderMethod}()){
+                return 0;
+            }
+            return $f1->{$orderMethod}() < $f2->{$orderMethod}()?-1:1;
+        });
         foreach($filters as $filter){
             if($filter->appliesTo($this->method)){
                 $val = $filter->{$method}($this->response, $this->request);
