@@ -6,11 +6,7 @@ use Edge\Controllers\BaseController,
 
 class Home extends BaseController{
 
-    public function __dependencies(){
-        return array_merge(parent::__dependencies(), array('db'));
-    }
-
-    public function __filters(){
+    public function __filters1(){
         return array_merge(parent::__filters(), array(
             array(
                 'Edge\Core\Filters\PageCache',
@@ -23,6 +19,8 @@ class Home extends BaseController{
     }
 
     public function index(){
+        \Edge\Core\Edge::app()->request->setCookie("yo", "thomas", time()+20*60);
+        //print \Edge\Core\Edge::app()->request->getCookie("yo");
         $tpl = new \Edge\Core\Template('Application/Views/ui.test1.tpl');
         return $tpl->parse();
         return 'hello world';

@@ -39,19 +39,61 @@ class Router{
 	protected function handleServerError(){
         $edge = Edge::app();
 		$arg = strtolower($_SERVER['REQUEST_METHOD']);
-		$class = new $edge->serverError[0]();
+		$class = $edge->getConfig('serverError');
 		$this->response->httpCode = 500;
-		$this->response->body = call_user_func(array($class, $edge->serverError[1]), $arg);
+		$this->response->body = call_user_func(array(new $class[0], $class[1]), $arg);
+        $this->response->write();
 	}
 
 	protected function handle404Error(){
         $edge = Edge::app();
         $arg = strtolower($_SERVER['REQUEST_METHOD']);
-        $class = new $edge->notFound[0]();
+        $class = $edge->getConfig('notFound');
         $this->response->httpCode = 404;
-        $this->response->body = call_user_func(array($class, $edge->notFound[1]), $arg);
+        $this->response->body = call_user_func(array(new $class[0], $class[1]), $arg);
+        $this->response->write();
 	}
 
+    /**
+     * Try to map a URL to a Controller=>action array
+     * Routes are defined as
+     *
+     * 'GET' => array(
+            '/' => array("Home", "index"),
+            '/page/action/:name/:id' => array("Home", "index"),
+            '/user/view/:id' => array("User", "display")
+            '/user/view/1' => array("User", "action")
+        ),
+        'POST' => array(
+            '/rest/api/:id' => array('Home', 'post')
+        ),
+        '*' => array(
+            '/api/update/:id' => array("Home", "test")
+        )
+     *
+     * Try to find an exact match of the url
+     * within the array's keys. This is the most quick and efficient way
+     * to resolve routes so try to abide to this approach as much as possible.
+     *
+     * To define routes that match partially (ie /user/view/:id)
+     * just add some named parameter convention to the url. Note however,
+     * that although the notation is one of named parameters what will end
+     * up as argument in the action will be the actual value and not an array.
+     *
+     * In order for the function to match a partial route it does the following
+     * 1. counts the dashes in the url
+     * 2. initiates the loop and if the dashes in the current url
+     *    are not equal with the url's, it skips the rule
+     * 3. Then it tries to match the partial url by splitting the route url to ":"
+     * 4. It compares the url to the requested url, after it strips out the named params
+     * 5. If there is a match, we found the route and the action's arguments
+     *
+     *
+     *
+     * @param $url
+     * @param $routes
+     * @return array|bool
+     */
     private static function uriResolver($url, $routes){
         if(isset($routes[$url])){
             $ret = $routes[$url];
@@ -113,8 +155,8 @@ class Router{
 		}
         $route = $this->resolveRoute($url);
         if(!$route){
-            echo 'Not Found';
-            exit;
+            Edge::app()->logger->err("$url is not mapped to any route");
+            $this->handle404Error();
         }
 
 		$this->controller = ucfirst($route[0]);
@@ -201,8 +243,8 @@ class Router{
 
     public function invoke(){
         $class = sprintf('Application\Controllers\%s', $this->controller);
-        $instance = new $class($this->response);
-        static::setDependencies($instance);
+        $instance = new $class();
+        //static::setDependencies($instance);
         if(method_exists($instance, $this->method)){
             $filters = static::getFilters($instance);
             $invokeRequest = $this->runFilters($filters, 'preProcess');

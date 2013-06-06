@@ -16,6 +16,19 @@ return array(
             'shared' => true
         ),
 
+        'cookie' => array(
+            'invokable' => 'Edge\Core\Http\Cookie',
+            'args' => array(
+                array(
+                    'secure' => false,
+                    'encrypt' => true,
+                    'secret' => 'C7s9r7yYYyVCDZZstzyl',
+                    'httpOnly' => true
+                )
+            ),
+            'shared' => true
+        ),
+
         'response' => array(
             'invokable' => 'Edge\Core\Http\Response',
             'args' => array(),
@@ -24,14 +37,12 @@ return array(
 
         'logger' => array(
             'invokable' => function($c){
-                $dateFormat = "Y n j, g:i a";
-                $output = "%datetime% > %level_name% > %message% %context%\n";
-                $formatter = new Monolog\Formatter\LineFormatter($output, $dateFormat);
-                $stream = new Monolog\Handler\StreamHandler('app.log', Monolog\Logger::DEBUG);
-                $stream->setFormatter($formatter);
-                $log = new Monolog\EdgeLogger('Edge');
-                $log->pushHandler($stream);
-                return $log;
+                $attrs = array(
+                    "file" => "app.log",
+                    "dateFormat" => "j/n/Y g:i a",
+                    "logLevel" => 'DEBUG'
+                );
+                return Monolog\EdgeLogger::factory($attrs);
             },
             'shared' => true
         ),
@@ -53,8 +64,8 @@ return array(
         )
     ),
     'loginUrl' => '/home/login',
-    'notFound' => array("Home", "notFound"),
-    'serverError' => array("Home", "serverError"),
+    'notFound' => array("\Application\Controllers\Home", "notFound"),
+    'serverError' => array("\Application\Controllers\Home", "serverError"),
     'routerClass' => 'Edge\Core\Router',
     'timezone' => 'Europe/Athens',
     'env' => 'production'
