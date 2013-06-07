@@ -19,8 +19,9 @@ class Home extends BaseController{
     }
 
     public function index(){
-        \Edge\Core\Edge::app()->request->setCookie("yo", "thomas", time()+20*60);
-        //print \Edge\Core\Edge::app()->request->getCookie("yo");
+        //\Edge\Core\Edge::app()->request->setCookie("yo", json_encode(array(1,2)), time()+20*60);
+        print \Edge\Core\Edge::app()->request->getCookie("yo");
+        //\Edge\Core\Edge::app()->request->deleteCookie("yo");
         $tpl = new \Edge\Core\Template('Application/Views/ui.test1.tpl');
         return $tpl->parse();
         return 'hello world';

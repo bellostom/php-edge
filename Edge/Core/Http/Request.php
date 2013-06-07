@@ -53,6 +53,10 @@ class Request {
         return Edge::app()->cookie->get($name);
     }
 
+    public function deleteCookie($name){
+        return Edge::app()->cookie->delete($name);
+    }
+
     public function getRequestUrl(){
         return $_SERVER['PATH_INFO'];
     }

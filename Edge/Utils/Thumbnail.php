@@ -98,7 +98,7 @@ class Thumbnail
 		$createFunc =  $this->imageCreateFunc;
 	    $myImage = $createFunc($this->imgPath);
 	    if(!$myImage) {
-	    	throw new AppException('Invalid JPEG image');
+	    	throw new EdgeException('Invalid JPEG image');
 	    }
 	    $ratio_orig = $width_orig/$height_orig;
 

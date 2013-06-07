@@ -1,5 +1,5 @@
 <?php
 namespace Edge\Core\Exceptions;
 
-class EntryNotFound extends AppException {}
+class EntryNotFound extends EdgeException {}
 ?>
