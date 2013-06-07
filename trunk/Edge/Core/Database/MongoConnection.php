@@ -59,7 +59,7 @@ class MongoConnection extends \MongoClient {
             }else if ($err_no == 1062) {
                 throw new Core\Exceptions\DuplicateEntry($message);
             }else{
-                throw new Core\Exceptions\AppException($message);
+                throw new Core\Exceptions\EdgeException($message);
             }
         }
         return $res;

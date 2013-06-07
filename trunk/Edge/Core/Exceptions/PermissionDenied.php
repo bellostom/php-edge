@@ -1,5 +1,5 @@
 <?php
 namespace Edge\Core\Exceptions;
 
-class PermissionDenied extends AppException {}
+class PermissionDenied extends EdgeException {}
 ?>

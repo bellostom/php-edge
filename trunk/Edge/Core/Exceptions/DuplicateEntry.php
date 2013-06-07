@@ -1,5 +1,5 @@
 <?php
 namespace Edge\Core\Exceptions;
 
-class DuplicateEntry extends AppException {}
+class DuplicateEntry extends EdgeException {}
 ?>

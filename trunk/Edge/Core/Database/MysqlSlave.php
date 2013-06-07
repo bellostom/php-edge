@@ -26,7 +26,7 @@ class MysqlSlave {
         list($host, $port) = explode(':', $this->host);
         $this->link = new \mysqli($host, $this->user,	$this->pass, $this->db, $port);
         if($this->link->connect_errno){
-            throw new Core\Exceptions\AppException("Error connecting to the {$db} db. Error: ". $this->link->connect_error);
+            throw new Core\Exceptions\EdgeException("Error connecting to the {$db} db. Error: ". $this->link->connect_error);
         }
         $this->link->set_charset('utf8');
         if($this->timezone !== false){
@@ -78,7 +78,7 @@ class MysqlSlave {
             }else if ($err_no == 1062) {
                 throw new Core\Exceptions\DuplicateEntry($message);
             }else{
-                throw new Core\Exceptions\AppException($message);
+                throw new Core\Exceptions\EdgeException($message);
             }
         }
         return $res;

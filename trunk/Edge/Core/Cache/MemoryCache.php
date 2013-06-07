@@ -43,14 +43,14 @@ class MemoryCache extends BaseCache {
 	public function setValue($key, $value, $ttl=0) {
 		$res = $this->link->set($key, $value, 0, $ttl);
 		if(!$res)
-			throw new AppException('Error adding to memcache key ' . $key);
+			throw new EdgeException('Error adding to memcache key ' . $key);
 		return $res;
 	}
 
 	public function replace($key, $value, $flags=0, $ttl=0) {
 		$res = $this->link->replace($key, $value, $flags, $ttl);
 		if(!$res)
-			throw new AppException('Error replacing item to memcache');
+			throw new EdgeException('Error replacing item to memcache');
 		return $res;
  	}
 

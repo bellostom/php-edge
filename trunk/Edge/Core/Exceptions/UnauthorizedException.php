@@ -1,5 +1,5 @@
 <?php
 namespace Edge\Core\Exceptions;
 
-class UnauthorizedException extends AppException {}
+class UnauthorizedException extends EdgeException {}
 ?>

@@ -1,5 +1,5 @@
 <?php
 namespace Edge\Core\Exceptions;
 
-class CacheExists extends AppException {}
+class CacheExists extends EdgeException {}
 ?>

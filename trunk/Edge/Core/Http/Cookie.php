@@ -1,8 +1,15 @@
 <?php
 
 namespace Edge\Core\Http;
+use Edge\Core\Edge,
+    Edge\Core\Exceptions\EdgeException;
 
-
+/**
+ * Class Cookie
+ * Wrapper class for cookie management
+ * Supports cookie value hashing and validation
+ * @package Edge\Core\Http
+ */
 class Cookie {
 
     protected $encrypt = false;
@@ -29,23 +36,29 @@ class Cookie {
 
         $decoded = base64_decode($_COOKIE[$name]);
         if($decoded === false){
+            Edge::app()->logger->warn("Could not base64 decode cookie. Possible cookie tampering. Deleting it");
+            $this->delete($name);
             return false;
         }
         list($value, $expiration, $hmac) = explode( '_', $decoded);
         if ($expiration < time()){
-            //deleteCookie();
-            //error_log('Cookie expired');
+            Edge::app()->logger->warn("Cookie $name has expired. Deleting it");
+            $this->delete($name);
             return false;
         }
 
         $hash = hash_hmac( 'sha1', $value . $expiration, $this->secret );
 
         if ($hmac != $hash ){
-            //deleteCookie();
-            //error_log('Invalid signature');
+            Edge::app()->logger->crit("Cookie signature mismatch. Possible tampering. Deleting it");
+            $this->delete($name);
             return false;
         }
         return $value;
+    }
+
+    public function delete($name){
+        setcookie($name, "", time()-3600);
     }
 
     public function set($name, $value, $expires){
