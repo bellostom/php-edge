@@ -23,8 +23,10 @@ class DynamicOutput extends BaseFilter{
      * @param Http\Request $request
      */
     public function postProcess(Http\Response $response, Http\Request $request){
-        $response->body = preg_replace_callback("/{{(.+)}}/", function($matches){
-            return call_user_func($matches[1]);
-        }, $response->body);
+        if(is_string($response->body)){
+            $response->body = preg_replace_callback("/{{(.+)}}/", function($matches){
+                return call_user_func($matches[1]);
+            }, $response->body);
+        }
     }
 }

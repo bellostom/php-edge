@@ -1,8 +1,6 @@
 <?php
 namespace Edge\Core;
 
-use Edge\Core\Exceptions\NotFound;
-
 /**
  * Class InternalCache
  * Uses the TraitCachable trait to expose caching
@@ -62,7 +60,7 @@ class Template extends InternalCache{
 
 	public function parse(){
 	    if(!file_exists($this->tpl)){
-	    	throw new NotFound("Template $this->tpl does not exist");
+	    	throw new \Exception("Template $this->tpl does not exist");
 	    }
         if($this->isCachable){
             $val = $this->get();

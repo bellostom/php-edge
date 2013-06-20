@@ -11,13 +11,13 @@ class Session{
             session_regenerate_id(true);
             $_SESSION['initiated'] = true;
         }
-        if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > $settings['session.timeout'])) {
+        if (isset($_SESSION['acc']) && (time() - $_SESSION['acc'] > $settings['session.timeout'])) {
             session_unset();     // unset $_SESSION variable for the run-time
             session_destroy();   // destroy session data in storage
             $_SESSION = array();
             $_SESSION['initiated'] = true;
         }
-        $_SESSION['LAST_ACTIVITY'] = time();
+        $_SESSION['acc'] = time();
     }
 
     public function getSessionId(){

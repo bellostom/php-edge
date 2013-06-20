@@ -261,10 +261,6 @@ class Router{
                                                           ->getTransformer()
                                                           ->encode(call_user_func_array(array($instance, $this->method),
                                                                                         $this->args));
-                            /*if($context->autoCommit){
-                                $_db = Database\MysqlMaster::getInstance();
-                                $_db->commit();
-                            }*/
                             $processed = true;
                         }catch(Exceptions\DeadLockException $e) {
                             Edge::app()->logger->info('RETRYING');

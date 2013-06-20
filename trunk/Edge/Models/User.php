@@ -48,7 +48,9 @@ class User extends Identifiable {
 	 * @param string $name
 	 */
 	public static function getUserByUsername($name)	{
-        return parent::find(array("username" => $name));
+        return parent::find(array(
+            "conditions" => array("username" => $name)
+        ));
 	}
 
 	/**
@@ -57,9 +59,18 @@ class User extends Identifiable {
 	 * @param string $pass
 	 */
 	public function authenticate($pass){
-		$pass = sha1($this->salt.$pass);
-		return $this->pass == $pass;
+		return $this->pass == $this->encodePassword($pass);
 	}
+
+    /**
+     * Setter for the pass attribute
+     * Automatically invoked each time
+     * $this->pass = "someval" is called
+     * @param $val
+     */
+    protected function setPass($val){
+        $this->assignAttribute('pass', $this->encodePassword($val));
+    }
 
 	/**
 	 *
@@ -67,31 +78,8 @@ class User extends Identifiable {
 	 * Prepend a random string (unique per user)
 	 * to avoid rainbow attacks.
 	 */
-	private function encodePassword(){
-		$this->pass = sha1($this->salt.$this->pass);
-	}
-
-	/**
-	 * Interface implementation
-	 * Encode pass before saving
-	 */
-	public function on_create(){
-		$this->encodePassword();
-		parent::on_create();
-	}
-
-	/**
-	 * Interface implementation
-	 * Before updating user check if passwd
-	 * has changed
-	 */
-	public function on_update()	{
-		$user = $this->getUserById($this->id);
-		if(empty($this->pass))
-			$this->pass = $user->pass;
-		else if($user->pass != $this->pass)
-			$this->encodePassword();
-		parent::on_update();
+	private function encodePassword($pass){
+		return sha1($this->salt.$pass);
 	}
 }
 ?>

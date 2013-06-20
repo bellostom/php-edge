@@ -17,11 +17,13 @@ return array(
             )
         ),
 
+        'isTransactional' => false,
+
         'db' => array(
             'invokable' => function($c){
                 static $obj;
                 if(is_null($obj)){
-                    $c['isTransactional'] = false;
+                    //$c['isTransactional'] = false;
                     $obj = new Edge\Core\Database\MysqlSlave($c['mysqlCredentials']['slave']);
                 }
                 return ($c['isTransactional'])?$c['writedb']:$obj;

@@ -13,6 +13,8 @@ class PageCache extends BaseFilter{
 
     use \Edge\Core\TraitCachable;
 
+    private $isCached = false;
+
     public function __construct(array $attrs){
         parent::__construct(array_key_exists('applyTo', $attrs)?$attrs['applyTo']:array("*"));
         $this->init($attrs);
@@ -28,6 +30,8 @@ class PageCache extends BaseFilter{
         $val = $this->get();
         if($val){
             $response->body = $val;
+            $this->isCached = true;
+            Edge::app()->logger->debug("Loading from cache page ".$request->getRequestUrl());
             return false;
         }
         return true;
@@ -40,7 +44,9 @@ class PageCache extends BaseFilter{
      * @param Http\Request $request
      */
     public function postProcess(Http\Response $response, Http\Request $request){
-        $this->set($response->body);
+        if(!$this->isCached){
+            $this->set($response->body);
+        }
         return true;
     }
 }

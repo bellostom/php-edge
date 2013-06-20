@@ -1,7 +1,9 @@
 <?php
 namespace Edge\Models;
+
 use Edge\Core\Exceptions,
     Edge\Core\Interfaces\EventHandler,
+    Edge\Core\Database\ResultSet\CachedObjectSet,
     Edge\Core\Interfaces\CachableRecord;
 
 /**
@@ -175,11 +177,11 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
         else if(array_key_exists($attr, $this->attributes)){
             return $this->attributes[$attr];
         }
-        throw new Exceptions\UnknownPropery(get_called_class(), $attr);
+        throw new Exceptions\UnknownProperty(get_called_class(), $attr);
     }
 
     /**
-     * Specifies whether the record's of this class
+     * Specifies whether the records of this class
      * will be cached
      * @return bool|void
      */
@@ -192,30 +194,46 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
      * @param array $args
      * @return string
      */
-    public static function getCacheKey(\Edge\Core\Cache\BaseCache $cache, array $args){
-        $table = static::getTable();
-        $versionTable = $cache->get("versionIndex");
-        if(!$versionTable){
-            $versionTable = array(
-                $table => 0
-            );
-        }
-        $versionTable[$table]++;
-        return sprintf("%s_%s_%s", $table, $versionTable[$table], md5(serialize($args)));
+    public static function getCacheKey(array $args){
+        return md5(serialize($args));
     }
 
+    /**
+     * Return a per instance unique index key
+     * where we store each instance's key
+     * @return string
+     * @throws \Exception
+     */
     public function getInstanceIndexKey(){
-
+        $keys = static::getPk();
+        $v = array();
+        foreach($keys as $key){
+            if($this->$key == '')
+                throw new \Exception("The instance's PK's variables must be set
+										before calling getInstanceIndexKey");
+            $v[] = $this->$key;
+        }
+        return sprintf("%s:%s", static::getTable(),
+            implode(':', $v));
     }
+
+    /**
+     * Store the cached key in a per instance index
+     * so that we can easily invalidate the cached instances
+     * @param $cached_key
+     */
     public function addKeyToIndex($cached_key){
-        $mem = MCache::getInstance();
+        $mem = \Edge\Core\Edge::app()->cache;
         $key = $this->getInstanceIndexKey();
         $index = $mem->get($key);
-        if(!$index)
+        if(!$index){
             $index = array();
-        $index[] = $cached_key;
-        $index = array_unique($index);
-        $mem->add($key, $index);
+        }
+        if(!in_array($cached_key, $index)){
+            $index[] = $cached_key;
+            $index = array_unique($index);
+            $mem->add($key, $index);
+        }
     }
 
     /**
@@ -225,21 +243,18 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
      */
     protected static function getCachedRecord(array $args){
         $cache = \Edge\Core\Edge::app()->cache;
-        return $cache->get(static::getCacheKey($cache, $args));
+        return $cache->get(static::getCacheKey($args));
     }
 
-    protected static function transformCachedRecord($data, $fetchMode){
-        switch($fetchMode){
-            case ActiveRecord::FETCH_ASSOC_ARRAY:
-                return $data;
-            case ActiveRecord::FETCH_INSTANCE:
-                $class = get_called_class();
-                return new $class($data);
-            case ActiveRecord::FETCH_RESULTSET:
-                return new \Edge\Core\Database\ResultSet\CachedObjectSet($data, get_called_class());
-        }
-    }
-
+    /**
+     * Cache the result of the query
+     * @param $key
+     * @param $data
+     * @param $ttl
+     * @param $fetchMode
+     * @return CachedObjectSet|null
+     * @throws \Exception
+     */
     protected static function cacheData($key, $data, $ttl, $fetchMode){
         $_data = null;
         switch($fetchMode){
@@ -247,16 +262,25 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
                 $_data =  $data;
                 break;
             case ActiveRecord::FETCH_INSTANCE:
-                $_data = $data->getAttributes();
+                $class = get_called_class();
+                $attrs = \Edge\Core\Edge::app()->db->db_fetch_array($data);
+                $_data = new $class($attrs);
+                $_data->addKeyToIndex($key);
                 break;
             case ActiveRecord::FETCH_RESULTSET:
-                $_data = $data->toArray();
+                $rs = \Edge\Core\Edge::app()->db->db_fetch_all($data);
+                $_data = new CachedObjectSet($rs, get_called_class());
                 break;
             case ActiveRecord::FETCH_NATIVE_RESULTSET:
                 $_data = \Edge\Core\Edge::app()->db->db_fetch_all($data);
                 break;
         }
-        return \Edge\Core\Edge::app()->cache->add($key, $_data, $ttl);
+
+        $res = \Edge\Core\Edge::app()->cache->add($key, $_data, $ttl);
+        if(!$res){
+            throw new \Exception("Could not write data to cache");
+        }
+        return $_data;
     }
 
     /**
@@ -281,58 +305,58 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
     ))
     Record::find("last")
     Record::find("first")
-    Record::find(array(
-      "id" => array(2,4)
-    ))
     */
     public static function find(/*args*/){
         $args = func_get_args();
         if(count($args) == 0){
             throw new \Exception("Insufficient arguments supplied");
         }
+        $fetchMode = ActiveRecord::FETCH_INSTANCE;
+        $cacheAttrs = false;
 
         if(is_array($args[0])){
             array_unshift($args, "all");
         }
 
-        $fetchMode = ActiveRecord::FETCH_INSTANCE;
         if(count($args) == 2){
             $args[1]['from'] = static::getTable();
             if(isset($args[1]['fetchMode'])){
                 $fetchMode = $args[1]['fetchMode'];
                 unset($args[1]['fetchMode']);
             }
+            if(isset($args[1]['cache'])){
+                $cacheAttrs = $args[1]['cache'];
+                unset($args[1]['cache']);
+            }
         }
         else{
             $args[] = array(
                 'from' => static::getTable()
             );
-        }
 
-        $returnSingle = in_array($fetchMode, array(ActiveRecord::FETCH_INSTANCE,
-                                                   ActiveRecord::FETCH_ASSOC_ARRAY));
+        }
 
         $args = array($args);
         $args[] = get_called_class();
 
-        $cacheRecord = (static::cacheRecord() || isset($criteria['cache']));
+        $cacheRecord = ((static::cacheRecord() && $fetchMode == ActiveRecord::FETCH_INSTANCE)
+                            || $cacheAttrs);
         if($cacheRecord){
             $value = static::getCachedRecord($args);
             if($value){
-                return static::transformCachedRecord($value, $criteria['fetchMode']);
+                return $value;
             }
         }
 
         list($result, $records) = call_user_func_array(array(static::getAdapter(), 'find'), $args);
-        return $result;
+
         if($cacheRecord && $records){
             $ttl = 0;
-            if(isset($criteria['cache']) && array_key_exists('ttl', $criteria['cache'])){
-                $ttl = $criteria['cache']['ttl'];
+            if($cacheAttrs && array_key_exists('ttl', $cacheAttrs)){
+                $ttl = $cacheAttrs['ttl'];
             }
-            $cache = \Edge\Core\Edge::app()->cache;
-            $cacheKey = static::getCacheKey($cache, $args);
-            static::cacheData($cacheKey, $data, $ttl, $criteria['fetchMode']);
+            $cacheKey = static::getCacheKey($args);
+            return static::cacheData($cacheKey, $result, $ttl, $fetchMode);
         }
         return $result;
     }
@@ -379,15 +403,39 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
     }
 
     public function on_after_update(){
-
+        if(static::cacheRecord()){
+            $mem = \Edge\Core\Edge::app()->cache;
+            $index = $this->getInstanceIndexKey();
+            $list = $mem->get($index);
+            if($list && count($list) > 0){
+                foreach($list as $item){
+                    $mem->add($item, $this);
+                }
+            }
+        }
     }
 
     public function on_delete(){
 
     }
 
+    /**
+     * Delete any cached versions of the instance
+     */
     public function on_after_delete(){
-
+        if(static::cacheRecord()){
+            $mem = \Edge\Core\Edge::app()->cache;
+            $logger = \Edge\Core\Edge::app()->logger;
+            $index = $this->getInstanceIndexKey();
+            $list = $mem->get($index);
+            if($list && count($list) > 0){
+                foreach($list as $item){
+                    $mem->delete($item);
+                    $logger->info('deleting from cache item '.$item);
+                }
+                $mem->delete($index);
+                $logger->info('deleting from cache index '.$index);
+            }
+        }
     }
 }
-?>

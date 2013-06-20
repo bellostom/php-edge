@@ -62,7 +62,7 @@ trait TraitCachable {
             );
             switch($this->varyBy){
                 case 'url':
-                    $defaults[] = $request->getParams();
+                    $defaults[] = $request->getRequestUrl();
                     break;
                 case 'session':
                     $defaults[] = Edge::app()->session->getSessionId();
@@ -79,8 +79,7 @@ trait TraitCachable {
      * @return mixed
      */
     protected function get(){
-        $key = $this->getCacheKey();
-        return Edge::app()->cache->get($key);
+        return Edge::app()->cache->get($this->getCacheKey());
     }
 
     /**

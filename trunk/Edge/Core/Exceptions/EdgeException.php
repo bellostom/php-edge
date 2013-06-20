@@ -2,7 +2,7 @@
 namespace Edge\Core\Exceptions;
 use Edge\Core\Edge;
 
-class AppException extends \Exception{
+class EdgeException extends \Exception{
 
 	public function __construct($message, $logError=true, $logBackTrace=true) {
         parent::__construct($message);
