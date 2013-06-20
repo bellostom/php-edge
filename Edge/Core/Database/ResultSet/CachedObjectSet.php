@@ -9,7 +9,7 @@ class CachedObjectSet extends ResultSet {
     }
 
     protected function setRows(){
-        return count($this->result);
+        $this->totalRows = count($this->result);
     }
 }
 ?>

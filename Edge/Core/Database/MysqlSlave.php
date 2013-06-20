@@ -54,6 +54,13 @@ class MysqlSlave {
     }
 
     public function db_fetch_all($rs){
+        if(!method_exists($rs, 'fetch_all')){
+            $data = array();
+            while($r = $this->db_fetch_array($rs)){
+                $data[] = $r;
+            }
+            return $data;
+        }
         return $rs->fetch_all(MYSQLI_ASSOC);
     }
 

@@ -2,15 +2,13 @@
 namespace Edge\Core\Cache;
 use Edge\Core;
 
-class MemoryCache extends BaseCache {
+class RedisCache extends BaseCache {
 	private $link;
 
 	public function __construct(array $settings) {
-		$this->link = new \Memcache();
-		foreach($settings as $server){
-			list($server, $port, $weight) = explode(':', $server);
-			$this->link->addServer($server, (int) $port, 0, (int) $weight);
-		}
+		$this->link = new \Redis();
+        list($host, $port) = explode(":", $settings[0]);
+        $this->link->connect($host, (int) $port);
 	}
 
     /**
@@ -20,6 +18,9 @@ class MemoryCache extends BaseCache {
      * @return mixed
      */
     protected static function serialize($data){
+        if(!is_numeric($data)){
+            return serialize($data);
+        }
         return $data;
     }
 
@@ -29,6 +30,9 @@ class MemoryCache extends BaseCache {
      * @return mixed
      */
     protected static function unserialize($data){
+        if(!is_numeric($data)){
+            return unserialize($data);
+        }
         return $data;
     }
 
@@ -40,7 +44,7 @@ class MemoryCache extends BaseCache {
      * @return void
      */
     public function increment($key, $value = 1){
-        return $this->link->increment($key, $value);
+        return $this->link->incrby($key, $value);
     }
 
     /**
@@ -51,7 +55,7 @@ class MemoryCache extends BaseCache {
      * @return void
      */
     public function decrement($key, $value = 1){
-        return $this->link->decrement($key, $value);
+        return $this->link->decrby($key, $value);
     }
 
 	public function getValue($key) {
@@ -59,11 +63,15 @@ class MemoryCache extends BaseCache {
 	}
 
 	public function setValue($key, $value, $ttl=0) {
-		return $this->link->set($key, $value, 0, $ttl);
+		$res = $this->link->set($key, $value);
+        if($ttl){
+            $this->link->expire($key, $ttl);
+        }
+		return $res;
 	}
 
 	public function deleteValue($key) {
-		return $this->link->delete($key, 0);
+		return $this->link->del($key);
 	}
 
 	public function __destruct() {

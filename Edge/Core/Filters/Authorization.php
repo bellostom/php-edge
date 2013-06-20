@@ -16,6 +16,4 @@ class Authorization extends BaseFilter{
             $response->redirect(Edge::app()->loginUrl);
         }
     }
-
-    public function postProcess(Http\Response $response, Http\Request $request){}
 }

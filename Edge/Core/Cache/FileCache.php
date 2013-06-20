@@ -63,4 +63,3 @@ class FileCache extends BaseCache{
 		return false;
 	}
 }
-?>

@@ -12,7 +12,7 @@ namespace Edge\Core\Interfaces;
 
 interface CachableRecord {
     public static function cacheRecord();
-    public static function getCacheKey(\Edge\Core\Cache\BaseCache $cache, array $args);
+    public static function getCacheKey(array $args);
     public function getInstanceIndexKey();
     public function addKeyToIndex($cached_key);
 }

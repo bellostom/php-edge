@@ -63,30 +63,11 @@ class MySQLAdapter implements AdapterInterface{
             $pks = array_combine($class::getPk(), array($options[0]));
             $criteria['conditions'] = array_merge($pks, $criteria['conditions']);
         }
-       // }
-        /*else if(is_array($options[0])){
-            $criteria['conditions'] = array_merge($criteria['conditions'], $options[0]);
-        }*/
 
         $sql = $this->createSelectQuery($criteria, $db);
         Edge::app()->logger->debug($sql);
         $rs = $db->db_query($sql);
         return array($rs, $db->db_num_rows($rs));
-
-        /*if($nums == 0){
-            if($returnSingle){
-                return null;
-            }
-            return array();
-        }
-        if($returnSingle){
-            $row = $db->db_fetch_array($rs);
-            if($fetchMode == ActiveRecord::FETCH_ASSOC_ARRAY){
-                return $row;
-            }
-            return new $class($row);
-        }
-        return new MySQLResultSet($rs, $class);*/
     }
 
     /**
@@ -124,13 +105,10 @@ class MySQLAdapter implements AdapterInterface{
      * @param \Edge\Models\ActiveRecord $entry
      */
     public function save(ActiveRecord $entry){
-        $db = MysqlMaster::getInstance();
+        $db = Edge::app()->writedb;
         $data = array_map(function($v) use ($db){
             return sprintf('"%s"', $db->db_escape_string($v));
         }, $entry->getAttributes());
-        //if(Core\Context::$autoCommit){
-        //    $db->start_transaction();
-        //}
         $db->db_query($this->getInsertQuery($data, $entry));
         $this->setAutoIncrement($entry);
     }
@@ -145,7 +123,7 @@ class MySQLAdapter implements AdapterInterface{
         $table = $entry->getTable();
         $pks = $entry->getPk();
         if(count($pks) > 0){
-            $db = MysqlMaster::getInstance();
+            $db = Edge::app()->db;
             $metadata = $db->db_metadata($table);
             foreach($pks as $attr){
                 if(isset($metadata[$attr]) && $metadata[$attr][1] & \MYSQLI_AUTO_INCREMENT_FLAG){
@@ -165,6 +143,7 @@ class MySQLAdapter implements AdapterInterface{
         $q = "INSERT INTO ".$entry::getTable()." (";
         $q .= join(",", array_keys($data)).") VALUES(";
         $q .= join(",", array_values($data)).")";
+        Edge::app()->logger->debug($q);
         return $q;
     }
 
@@ -245,7 +224,7 @@ class MySQLAdapter implements AdapterInterface{
      * @param array $criteria
      */
     public function delete(ActiveRecord $entry, array $criteria=array()){
-        $db = MysqlMaster::getInstance();
+        $db = Edge::app()->writedb;
         $where = array();
         if(count($criteria) > 0){
             if(array_key_exists('conditions', $criteria)){
@@ -256,7 +235,8 @@ class MySQLAdapter implements AdapterInterface{
             $where = $this->getPkValues($entry);
         }
 
-        $sql = sprintf("DELETE FROM %s WHERE %s", $entry::getTable(), $this->joinConditions($where));
+        $sql = sprintf("DELETE FROM %s WHERE %s", $entry::getTable(), $this->joinConditions($where, $db));
+        Edge::app()->logger->debug($sql);
         $db->db_query($sql);
     }
 
@@ -267,18 +247,14 @@ class MySQLAdapter implements AdapterInterface{
     public function update(ActiveRecord $entry){
         $pks = $this->getPkValues($entry);
         $data = array_diff_assoc($entry->getAttributes(), $pks);
-        $db = MysqlMaster::getInstance();
+        $db = Edge::app()->writedb;
         $k = array_keys($data);
         $v = array_values($data);
         $c = join(", ", array_map(function($k, $v) use ($db){
             return sprintf('%s="%s"', $k, $db->db_escape_string($v));
         }, $k, $v));
-        $q = sprintf("UPDATE %s SET %s WHERE %s", $entry::getTable(), $c, $this->joinConditions($pks));
-
-        //if(Context::$autoCommit){
-        //    $db->start_transaction();
-        //}
-        error_log($q);
+        $q = sprintf("UPDATE %s SET %s WHERE %s", $entry::getTable(), $c, $this->joinConditions($pks, $db));
+        Edge::app()->logger->debug($q);
         $db->db_query($q);
     }
 }
