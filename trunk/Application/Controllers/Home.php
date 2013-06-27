@@ -26,6 +26,14 @@ class Home extends BaseController{
     }
 
     public function index(){
+        $r = \Edge\Models\User::select()
+                                ->where(array("id"=>1))
+                                ->order(array("username"=>"asc"))
+                                ->fetchMode(1)
+                                ->run();
+
+        var_dump($r);
+        exit;
         $tpl = static::loadView('Application/Views/ui.test1.tpl');
         $tpl->test = 'thomas';
         return $tpl->parse();
@@ -36,8 +44,15 @@ class Home extends BaseController{
     }
 
     public function city($cityID){
-        //$city = \Application\Models\City::getItemById($cityID);
-        //print $city->region->name;
+        $user = \Edge\Models\User::getUserByUsername("guest");
+
+        var_dump($user->hasPrivilege('create user'));
+        var_dump($user->roles);
+
+        exit;
+        $city = \Application\Models\City::getItemById($cityID);
+        print $city->region->name;
+        exit;
         $country = \Application\Models\Country::getItemById($cityID);
         foreach($country->cities as $city){
             echo $city->name;

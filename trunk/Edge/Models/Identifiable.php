@@ -12,10 +12,15 @@ abstract class Identifiable extends ActiveRecord{
     }
 
 	public static function getItemByName($value, $fetchMode=Identifiable::FETCH_INSTANCE) {
-        return parent::find(array("name" => $value), array("fetchMode" => $fetchMode));
+        return parent::select()
+                        ->where(array("name" => $value))
+                        ->fetchMode($fetchMode)
+                        ->run();
 	}
 
 	public static function getItemById($id)	{
-        return parent::find($id);
+        return parent::select()
+                        ->where(array("id" => $id))
+                        ->run();
 	}
 }

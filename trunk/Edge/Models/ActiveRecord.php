@@ -4,7 +4,6 @@ namespace Edge\Models;
 use Edge\Core\Exceptions,
     Edge\Core\Edge,
     Edge\Core\Interfaces\EventHandler,
-    Edge\Core\Database\ResultSet\CachedObjectSet,
     Edge\Core\Interfaces\CachableRecord;
 use Edge\Core\ManyToMany;
 
@@ -26,7 +25,7 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
      * @var string The adapter class which interacts
      * with the persistence layer
      */
-    protected static $adapterClass = 'MySQL';
+    protected static $adapterClass = 'Edge\Models\Adapters\MySQLAdapter';
     /**
      * @var array We only require 1 instance of each
      * adapter. Once instantiated for the 1st time,
@@ -108,7 +107,7 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
      * @return mixed
      */
     protected static function getAdapter(){
-        $className = sprintf("Edge\Models\Adapters\%sAdapter", static::$adapterClass);
+        $className = static::$adapterClass;
         if (!isset(static::$adapterInstances[$className])){
             static::$adapterInstances[$className] = new $className();
         }
@@ -178,7 +177,7 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
      * exists.
      * @param $attr
      * @return mixed
-     * @throws \Edge\Core\Exceptions\UnknownPropery
+     * @throws \Edge\Core\Exceptions\UnknownProperty
      */
     public function __get($attr){
         if(method_exists($this, $attr)){
@@ -201,15 +200,6 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
      */
     public static function cacheRecord(){
         return true;
-    }
-
-    /**
-     * Get a unique cache key for the record
-     * @param array $args
-     * @return string
-     */
-    public static function getCacheKey(array $args){
-        return md5(serialize($args));
     }
 
     /**
@@ -251,54 +241,6 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
     }
 
     /**
-     * Get the record's cached version
-     * @param array $args
-     * @return mixed
-     */
-    protected static function getCachedRecord(array $args){
-        $cache = Edge::app()->cache;
-        return $cache->get(static::getCacheKey($args));
-    }
-
-    /**
-     * Cache the result of the query
-     * @param $key
-     * @param $data
-     * @param $ttl
-     * @param $fetchMode
-     * @return CachedObjectSet|null
-     * @throws \Exception
-     */
-    protected static function cacheData($key, $data, $ttl, $fetchMode){
-        $_data = null;
-        $adapter = static::getAdapter();
-        switch($fetchMode){
-            case ActiveRecord::FETCH_ASSOC_ARRAY:
-                $_data =  $data;
-                break;
-            case ActiveRecord::FETCH_INSTANCE:
-                $class = get_called_class();
-                $attrs = $adapter->fetchArray($data);
-                $_data = new $class($attrs);
-                $_data->addKeyToIndex($key);
-                break;
-            case ActiveRecord::FETCH_RESULTSET:
-                $rs = $adapter->fetchAll($data);
-                $_data = new CachedObjectSet($rs, get_called_class());
-                break;
-            case ActiveRecord::FETCH_NATIVE_RESULTSET:
-                $_data = $adapter->fetchAll($data);
-                break;
-        }
-
-        $res = Edge::app()->cache->add($key, $_data, $ttl);
-        if(!$res){
-            throw new \Exception("Could not write data to cache");
-        }
-        return $_data;
-    }
-
-    /**
      * One to one relationship
      * Load the referenced model instance.
      * If not fk value specified, the default is to
@@ -317,9 +259,9 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
             if(!isset($keys['value'])){
                 $keys['value'] = $this->id;
             }
-            $instance = $model::find(array(
-                'conditions' => array($keys['fk'] => $keys['value'])
-            ));
+            $instance = $model::select()
+                                ->where(array($keys['fk'] => $keys['value']))
+                                ->run();
         }
         return $instance;
     }
@@ -365,144 +307,37 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
             if(!isset($keys['value'])){
                 $keys['value'] = $this->id;
             }
-            $instance = $model::find("all", array(
-                'conditions' => array($keys['fk'] => $keys['value']),
-                'fetchMode' => ActiveRecord::FETCH_RESULTSET
-            ));
+            $instance = $model::select()
+                              ->where(array($keys['fk'] => $keys['value']))
+                              ->fetchMode(ActiveRecord::FETCH_RESULTSET)
+                              ->run();
         }
         return $instance;
     }
 
-    /**
-     Proxy select requests to the object's adapter class
-
-     Record::find(1)
-
-     Record::find("all", array(
-          'conditions' => array("name" => "English"),
-          'order' => array("name DESC"),
-          'limit' => 10,
-          'offset' => 0
-     ))
-
-     Record::find(array(
-        'conditions' => array("id" => 12)
-    ))
-
-    Record::find(array(
-        'conditions' => array("id" => array("in" => array(2,3))),
-        'order' => array("name DESC")
-    ))
-    Record::find("last")
-    Record::find("first")
-    */
-    public static function find(/*args*/){
-        $args = func_get_args();
-        if(count($args) == 0){
-            throw new \Exception("Insufficient arguments supplied");
-        }
-        $fetchMode = ActiveRecord::FETCH_INSTANCE;
-        $cacheAttrs = false;
-
-        if(is_array($args[0])){
-            array_unshift($args, "all");
-        }
-
-        if(count($args) == 2){
-            $args[1]['from'] = static::getTable();
-            if(isset($args[1]['fetchMode'])){
-                $fetchMode = $args[1]['fetchMode'];
-                unset($args[1]['fetchMode']);
-            }
-            if(isset($args[1]['cache'])){
-                $cacheAttrs = $args[1]['cache'];
-                unset($args[1]['cache']);
-            }
-        }
-        else{
-            $args[] = array(
-                'from' => static::getTable()
-            );
-
-        }
-
-        $args = array($args);
-        $args[] = get_called_class();
-        return static::execute($args, $fetchMode, $cacheAttrs, 'find');
+    public static function first(){
+        $adapter = static::selectCommon();
+        $adapter->limit(1);
+        return $adapter;
     }
 
-    /**
-     * Common logic for find and findByQuery
-     * @param array $args
-     * @param $fetchMode
-     * @param $cacheAttrs
-     * @param $proxyMethod (find | executeSql)
-     * @return CachedObjectSet|mixed|null
-     */
-    private static function execute(array $args, $fetchMode, $cacheAttrs, $proxyMethod){
-        $cacheRecord = ((static::cacheRecord() && $fetchMode == ActiveRecord::FETCH_INSTANCE)
-                            || $cacheAttrs);
-        if($cacheRecord){
-            $value = static::getCachedRecord($args);
-            if($value){
-                return $value;
-            }
-        }
+    public static function select($args=array("*")){
+        $adapter = static::selectCommon();
+        $adapter->select($args);
+        return $adapter;
+    }
 
-        list($result, $records) = call_user_func_array(array(static::getAdapter(), $proxyMethod), $args);
+    public static function selectQuery($query){
+        $adapter = static::selectCommon();
+        $adapter->query = $query;
+        return $adapter;
+    }
 
-        if($cacheRecord && $records){
-            $ttl = 0;
-            if($cacheAttrs && array_key_exists('ttl', $cacheAttrs)){
-                $ttl = $cacheAttrs['ttl'];
-            }
-            $cacheKey = static::getCacheKey($args);
-            return static::cacheData($cacheKey, $result, $ttl, $fetchMode);
-        }
-
-        //no caching specified
-        if($records == 0){
-            if(in_array($fetchMode, array(ActiveRecord::FETCH_RESULTSET, ActiveRecord::FETCH_NATIVE_RESULTSET))){
-                return array();
-            }
-            return null;
-        }
-
+    protected static function selectCommon(){
         $adapter = static::getAdapter();
-        switch($fetchMode){
-            case ActiveRecord::FETCH_ASSOC_ARRAY:
-            case ActiveRecord::FETCH_NATIVE_RESULTSET:
-                return $result;
-
-            case ActiveRecord::FETCH_INSTANCE:
-                $class = get_called_class();
-                $attrs = $adapter->fetchArray($result);
-                return new $class($attrs);
-
-            case ActiveRecord::FETCH_RESULTSET:
-                return $adapter->getResultSet($result, get_called_class());
-        }
-    }
-
-    /**
-     * @param $query
-     * @param array $attrs
-     * @return CachedObjectSet|mixed|null
-     */
-    public static function findByQuery($query, array $attrs=array()){
-        $fetchMode = ActiveRecord::FETCH_INSTANCE;
-        $cacheAttrs = false;
-
-        if(isset($attrs['cache'])){
-            $cacheAttrs = $attrs['cache'];
-        }
-
-        if(isset($attrs['fetchMode'])){
-            $fetchMode = $attrs['fetchMode'];
-        }
-
-        $args = array($query);
-        return static::execute($args, $fetchMode, $cacheAttrs, 'executeSql');
+        $adapter->table = static::getTable();
+        $adapter->model = get_called_class();
+        return $adapter;
     }
 
     /**
@@ -519,9 +354,9 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
      * @param array $criteria
      *
      */
-    public function delete(array $criteria=array()){
+    public function delete(){
         $this->on_delete();
-        static::getAdapter()->delete($this, $criteria);
+        static::getAdapter()->delete($this);
         $this->on_after_delete();
     }
 
