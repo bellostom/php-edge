@@ -2,9 +2,11 @@
 namespace Edge\Models;
 
 use Edge\Core\Exceptions,
+    Edge\Core\Edge,
     Edge\Core\Interfaces\EventHandler,
     Edge\Core\Database\ResultSet\CachedObjectSet,
     Edge\Core\Interfaces\CachableRecord;
+use Edge\Core\ManyToMany;
 
 /**
  * Base class for all models that require persistence and
@@ -94,6 +96,12 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
      */
     public static function getPk(){}
 
+    public static function sprintf($subject, array $values){
+        $keys = array_keys($values);
+        $vals = array_values($values);
+        return str_replace($keys, $vals, $subject);
+    }
+
     /**
      * Load the adapter class to interface with the selected
      * persistance layer
@@ -141,6 +149,9 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
         if(array_key_exists($attr, $this->attributes)){
             $this->attributes[$attr] = $val;
         }
+        else{
+            throw new \Edge\Core\Exceptions\UnknownProperty($attr, get_called_class());
+        }
     }
 
     /**
@@ -170,6 +181,9 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
      * @throws \Edge\Core\Exceptions\UnknownPropery
      */
     public function __get($attr){
+        if(method_exists($this, $attr)){
+            return $this->$attr();
+        }
         $getter = sprintf("get%s", ucfirst($attr));
         if(method_exists($this, $getter)){
             return $this->$getter();
@@ -223,7 +237,7 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
      * @param $cached_key
      */
     public function addKeyToIndex($cached_key){
-        $mem = \Edge\Core\Edge::app()->cache;
+        $mem = Edge::app()->cache;
         $key = $this->getInstanceIndexKey();
         $index = $mem->get($key);
         if(!$index){
@@ -242,7 +256,7 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
      * @return mixed
      */
     protected static function getCachedRecord(array $args){
-        $cache = \Edge\Core\Edge::app()->cache;
+        $cache = Edge::app()->cache;
         return $cache->get(static::getCacheKey($args));
     }
 
@@ -257,30 +271,106 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
      */
     protected static function cacheData($key, $data, $ttl, $fetchMode){
         $_data = null;
+        $adapter = static::getAdapter();
         switch($fetchMode){
             case ActiveRecord::FETCH_ASSOC_ARRAY:
                 $_data =  $data;
                 break;
             case ActiveRecord::FETCH_INSTANCE:
                 $class = get_called_class();
-                $attrs = \Edge\Core\Edge::app()->db->db_fetch_array($data);
+                $attrs = $adapter->fetchArray($data);
                 $_data = new $class($attrs);
                 $_data->addKeyToIndex($key);
                 break;
             case ActiveRecord::FETCH_RESULTSET:
-                $rs = \Edge\Core\Edge::app()->db->db_fetch_all($data);
+                $rs = $adapter->fetchAll($data);
                 $_data = new CachedObjectSet($rs, get_called_class());
                 break;
             case ActiveRecord::FETCH_NATIVE_RESULTSET:
-                $_data = \Edge\Core\Edge::app()->db->db_fetch_all($data);
+                $_data = $adapter->fetchAll($data);
                 break;
         }
 
-        $res = \Edge\Core\Edge::app()->cache->add($key, $_data, $ttl);
+        $res = Edge::app()->cache->add($key, $_data, $ttl);
         if(!$res){
             throw new \Exception("Could not write data to cache");
         }
         return $_data;
+    }
+
+    /**
+     * One to one relationship
+     * Load the referenced model instance.
+     * If not fk value specified, the default is to
+     * construct it by taking the table name and concatenate it
+     * with an '_' (city_id)
+     * @param $model
+     * @param array $keys optional (array("fk" => "city_id", "value" => 1))
+     * @return mixed
+     */
+    protected function hasOne($model, $keys=array()){
+        static $instance;
+        if(is_null($instance)){
+            if(!isset($keys['fk'])){
+                $keys['fk'] = sprintf("%s_id", static::getTable());
+            }
+            if(!isset($keys['value'])){
+                $keys['value'] = $this->id;
+            }
+            $instance = $model::find(array(
+                'conditions' => array($keys['fk'] => $keys['value'])
+            ));
+        }
+        return $instance;
+    }
+
+    /**
+     * $this->manyToMany('Application\Models\City', array(
+        'linkTable' => 'country2city',
+        'fk1' => 'country_id',
+        'fk2' => 'city_id',
+        'value' => $this->id
+      ));
+     * @param $model
+     * @param array $attrs
+     * @return ResultSet
+     */
+    protected function manyToMany($model, $attrs=array()){
+        static $instance;
+        if(is_null($instance)){
+            if(!isset($attrs['value'])){
+                $attrs['value'] = $this->id;
+            }
+            $instance = static::getAdapter()->manyToMany($model, $attrs);
+        }
+        return $instance;
+    }
+
+    /**
+     * One to many relationship
+     * Load the referenced model instances.
+     * If not fk value specified, the default is to
+     * construct it by taking the table name and concatenate it
+     * with an '_' (city_id)
+     * @param $model
+     * @param array $keys optional (array("fk" => "city_id", "value" => 1))
+     * @return mixed
+     */
+    protected function hasMany($model, $keys=array()){
+        static $instance;
+        if(is_null($instance)){
+            if(!isset($keys['fk'])){
+                $keys['fk'] = sprintf("%s_id", static::getTable());
+            }
+            if(!isset($keys['value'])){
+                $keys['value'] = $this->id;
+            }
+            $instance = $model::find("all", array(
+                'conditions' => array($keys['fk'] => $keys['value']),
+                'fetchMode' => ActiveRecord::FETCH_RESULTSET
+            ));
+        }
+        return $instance;
     }
 
     /**
@@ -338,7 +428,18 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
 
         $args = array($args);
         $args[] = get_called_class();
+        return static::execute($args, $fetchMode, $cacheAttrs, 'find');
+    }
 
+    /**
+     * Common logic for find and findByQuery
+     * @param array $args
+     * @param $fetchMode
+     * @param $cacheAttrs
+     * @param $proxyMethod (find | executeSql)
+     * @return CachedObjectSet|mixed|null
+     */
+    private static function execute(array $args, $fetchMode, $cacheAttrs, $proxyMethod){
         $cacheRecord = ((static::cacheRecord() && $fetchMode == ActiveRecord::FETCH_INSTANCE)
                             || $cacheAttrs);
         if($cacheRecord){
@@ -348,7 +449,7 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
             }
         }
 
-        list($result, $records) = call_user_func_array(array(static::getAdapter(), 'find'), $args);
+        list($result, $records) = call_user_func_array(array(static::getAdapter(), $proxyMethod), $args);
 
         if($cacheRecord && $records){
             $ttl = 0;
@@ -358,7 +459,50 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
             $cacheKey = static::getCacheKey($args);
             return static::cacheData($cacheKey, $result, $ttl, $fetchMode);
         }
-        return $result;
+
+        //no caching specified
+        if($records == 0){
+            if(in_array($fetchMode, array(ActiveRecord::FETCH_RESULTSET, ActiveRecord::FETCH_NATIVE_RESULTSET))){
+                return array();
+            }
+            return null;
+        }
+
+        $adapter = static::getAdapter();
+        switch($fetchMode){
+            case ActiveRecord::FETCH_ASSOC_ARRAY:
+            case ActiveRecord::FETCH_NATIVE_RESULTSET:
+                return $result;
+
+            case ActiveRecord::FETCH_INSTANCE:
+                $class = get_called_class();
+                $attrs = $adapter->fetchArray($result);
+                return new $class($attrs);
+
+            case ActiveRecord::FETCH_RESULTSET:
+                return $adapter->getResultSet($result, get_called_class());
+        }
+    }
+
+    /**
+     * @param $query
+     * @param array $attrs
+     * @return CachedObjectSet|mixed|null
+     */
+    public static function findByQuery($query, array $attrs=array()){
+        $fetchMode = ActiveRecord::FETCH_INSTANCE;
+        $cacheAttrs = false;
+
+        if(isset($attrs['cache'])){
+            $cacheAttrs = $attrs['cache'];
+        }
+
+        if(isset($attrs['fetchMode'])){
+            $fetchMode = $attrs['fetchMode'];
+        }
+
+        $args = array($query);
+        return static::execute($args, $fetchMode, $cacheAttrs, 'executeSql');
     }
 
     /**
@@ -404,7 +548,7 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
 
     public function on_after_update(){
         if(static::cacheRecord()){
-            $mem = \Edge\Core\Edge::app()->cache;
+            $mem = Edge::app()->cache;
             $index = $this->getInstanceIndexKey();
             $list = $mem->get($index);
             if($list && count($list) > 0){
@@ -424,8 +568,8 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
      */
     public function on_after_delete(){
         if(static::cacheRecord()){
-            $mem = \Edge\Core\Edge::app()->cache;
-            $logger = \Edge\Core\Edge::app()->logger;
+            $mem = Edge::app()->cache;
+            $logger = Edge::app()->logger;
             $index = $this->getInstanceIndexKey();
             $list = $mem->get($index);
             if($list && count($list) > 0){

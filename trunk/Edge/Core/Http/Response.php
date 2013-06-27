@@ -4,7 +4,7 @@ namespace Edge\Core\Http;
 use Edge\Core\Edge;
 
 class Response{
-	public $contentType = 'text/html';
+	public $contentType = false;
 	public $charset = 'UTF-8';
 	public $body;
 	public $httpCode = 200;
@@ -32,11 +32,16 @@ class Response{
 		$this->addHeader("Expires", gmdate('D, d M Y H:i:s', $time) . ' GMT');
 	}
 
-	public function setEtag($etag, $modified) {
+    public function lastModified($modified){
+        $this->addHeader('Pragma', '');
+        $this->addHeader('Cache-Control', '');
+        $this->addHeader("Last-Modified", gmdate("D, d M Y H:i:s", $modified)." GMT");
+    }
+
+	public function setEtag($etag) {
 		$this->addHeader('Pragma', '');
 		$this->addHeader('Cache-Control', '');
 		$this->addHeader('ETag', '"'.$etag.'"');
-		$this->addHeader("Last-Modified", gmdate("D, d M Y H:i:s", $modified)." GMT");
 	}
 
 	public function write()	{
@@ -44,7 +49,7 @@ class Response{
 		header("Cache-Control: no-cache,no-store");
 		header("Expires:");
 		header('HTTP/1.0 '. Response::$httpCodes[$this->httpCode]);
-        $contentType = Edge::app()->request->getContentType();
+        $contentType = ($this->contentType)?$this->contentType:Edge::app()->request->getContentType();
 		$contentType = sprintf("%s; charset=%s", $contentType, $this->charset);
 		header('Content-Type: '.$contentType, true);
 		foreach($this->headers as $key=>$val) {

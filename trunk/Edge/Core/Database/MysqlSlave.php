@@ -34,8 +34,8 @@ class MysqlSlave {
         }
     }
 
-    public function db_metadata($table) {
-        $result = $this->db_query("SELECT * FROM $table limit 1");
+    public function dbMetadata($table) {
+        $result = $this->dbQuery("SELECT * FROM $table limit 1");
         $finfo = $result->fetch_fields();
         $store = array();
         foreach($finfo as $column) {
@@ -46,17 +46,17 @@ class MysqlSlave {
 
     public function now() {
         $q = "SELECT NOW() as n";
-        return $this->db_fetch_one($q);
+        return $this->dbFetchOne($q);
     }
 
-    public function db_fetch_array($rs) {
+    public function dbFetchArray($rs) {
         return $rs->fetch_array(MYSQLI_ASSOC);
     }
 
-    public function db_fetch_all($rs){
+    public function dbFetchAll($rs){
         if(!method_exists($rs, 'fetch_all')){
             $data = array();
-            while($r = $this->db_fetch_array($rs)){
+            while($r = $this->dbFetchArray($rs)){
                 $data[] = $r;
             }
             return $data;
@@ -64,15 +64,15 @@ class MysqlSlave {
         return $rs->fetch_all(MYSQLI_ASSOC);
     }
 
-    public function db_fetch_object($rs, $classname=null) {
+    public function dbFetchObject($rs, $classname=null) {
         if(!is_null($classname)) {
             return $rs->fetch_object($classname);
         }
         return $rs->fetch_object();
     }
 
-    public function db_query($q) {
-        if(!$this->is_alive()) {
+    public function dbQuery($q) {
+        if(!$this->isAlive()) {
             $this->connect();
         }
         $res = $this->link->query($q);
@@ -91,49 +91,49 @@ class MysqlSlave {
         return $res;
     }
 
-    public function db_seek($rs, $index) {
+    public function dbSeek($rs, $index) {
         $rs->data_seek($index);
     }
 
-    public function db_insert_id() {
+    public function dbInsertId() {
         return $this->link->insert_id;
     }
 
-    public function db_found_rows() {
-        return $this->db_fetch_one("SELECT FOUND_ROWS() as t");
+    public function dbFoundRows() {
+        return $this->dbFetchOne("SELECT FOUND_ROWS() as t");
     }
 
-    public function db_fetch_one($q) {
-        $result = $this->db_query($q);
+    public function dbFetchOne($q) {
+        $result = $this->dbQuery($q);
         $result->data_seek(0);
         $row = $result->fetch_array(MYSQLI_NUM);
         $result->close();
         return $row[0];
     }
 
-    public function db_fetch_one_assoc($q) {
-        $result = $this->db_query($q);
+    public function dbFetchOneAssoc($q) {
+        $result = $this->dbQuery($q);
         $result->data_seek(0);
         $result->close();
         return $result->fetch_assoc();
     }
 
-    public function db_escape_string($str) {
-        if(!$this->is_alive()) {
+    public function dbEscapeString($str) {
+        if(!$this->isAlive()) {
             $this->connect();
         }
         return $this->link->real_escape_string($str);
     }
 
-    public function db_num_rows($rs) {
+    public function dbNumRows($rs) {
         return $rs->num_rows;
     }
 
-    public function db_errno() {
+    public function dbErrno() {
         return $this->link->errno;
     }
 
-    public function db_error() {
+    public function dbError() {
         return $this->link->error;
     }
 
@@ -143,7 +143,7 @@ class MysqlSlave {
         }
     }
 
-    protected function is_alive() {
+    protected function isAlive() {
         return !is_null($this->link) && $this->link->ping();
     }
 }

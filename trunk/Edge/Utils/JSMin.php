@@ -288,5 +288,5 @@ class JSMin {
 }
 
 // -- Exceptions ---------------------------------------------------------------
-class JSMinException extends Exception {}
+class JSMinException extends \Exception {}
 ?>

@@ -2,11 +2,30 @@
 namespace Edge\Controllers;
 
 use Edge\Core,
+    Edge\Core\Layout,
     Edge\Core\Interfaces;
 
 abstract class BaseController{
-	public static $css = array();
-	public static $js = array();
+
+	protected static $css = array();
+	protected static $js = array();
+    protected static $layout = null;
+
+    /**
+     * Render the layout file
+     * @param Core\Template $tpl
+     * @param array $attrs
+     * @return mixed|string
+     */
+    protected static function render(Core\Template $tpl, $attrs=array()){
+        if(!static::$layout){
+            throw new Core\Exceptions\EdgeException("Layout template must be defined by class ". get_called_class());
+        }
+        $layout = new Layout(static::$layout, static::$js, static::$css);
+        $layout->title = "Edge PHP framework";
+        $layout->body = $tpl->parse();
+        return $layout->parse();
+    }
 
     /**
      * Define filters to be run before and after the request
@@ -21,21 +40,30 @@ abstract class BaseController{
      * dynamic
      *
      * Example usage from a child class
-     * return array_merge(parent::__filters(), array(
+     * return array_merge(parent::filters(), array(
         array(
             'Edge\Core\Filters\PageCache',
             'ttl' => 10*60,
             'varyBy' => 'url',
             'cacheValidator' => new Validator\QueryValidator("SELECT COUNT(id) FROM users"),
             'applyTo' => array('index')
-            )
+         ),
+         array('Edge\Core\Filters\DynamicOutput')
         ));
      * @return array
      */
-    public function __filters(){
-        return array(
-            array('Edge\Core\Filters\DynamicOutput')
-        );
+    public function filters(){
+        return array();
+    }
+
+    /**
+     * Load the specified template file
+     * @param $file
+     * @param array $cacheAttrs
+     * @return Core\Template
+     */
+    protected static function loadView($file, $cacheAttrs=array()){
+        return new Core\Template($file, $cacheAttrs);
     }
 
 	/**
@@ -67,72 +95,9 @@ abstract class BaseController{
 	 * the session
 	 */
 	public function logout() {
-		$context = Core\Context::getInstance();
-		$context->session->destroy();
+        $app = Core\Edge::app();
+		$app->session->destroy();
+        $app->user(\Edge\Models\User::getUserById(\Edge\Models\User::GUEST));
 		return true;
-	}
-
-	/**
-	 *
-	 * Construct the link for the css
-	 * or javascript files. Iterate
-	 * through the files, store their modification
-	 * time and get the max
-	 * @param string $section
-	 * @param string $type
-	 */
-	protected static function getLink($type) {
-		$mod = array();
-		$arr = static::$$type;
-		$arr = array_unique($arr);
-		foreach($arr as $style)
-			$mod[] = filemtime($style);
-		rsort($mod);
-		$module = strtolower(get_called_class());
-		return "/$module/asset/".$mod[0].".".$type;
-	}
-
-	/**
-	 *
-	 * Combining all javascript and css files into
-	 * one, minify them, cache them locally
-	 * and output an expiration header of 1 year.
-	 * This way the browser caches the file and
-	 * never makes another call to the server, unless
-	 * the filename changes
-	 * @param string $file
-	 */
-	public function asset($file) {
-		$class = strtolower(get_called_class());
-		list($revision, $type) = explode('.', $file);
-		$revision = (int)$revision;
-		$file = sprintf("%s.%s", $class, $type);
-		$cache = new Core\Cache($file);
-		$arr = static::$$type;
-		$arr = array_unique($arr);
-		if($cache->isValid($revision)){
-			$content = $cache->load();
-		}else{
-			$content = '';
-			foreach($arr as $style){
-				$content .= file_get_contents($style)."\n";
-			}
-			if($type == 'js') {
-				$content = JSMin::minify($content);
-			}else{
-				$content = cssmin::minify($content);
-			}
-			$cache->cache($content);
-		}
-		$context = Context\Context::getInstance();
-		Context::$isStaticContent = true;
-		if($type == 'js') {
-			$context->response->contentType = 'text/javascript';
-		}else{
-			$context->response->contentType = 'text/css';
-		}
-		$context->response->expires(time() + 365 * 24 * 3600);
-		$context->response->setEtag(md5_file($cache->cache_file), filemtime($cache->cache_file));
-		return $content;
 	}
 }

@@ -14,8 +14,6 @@ use Edge\Core\Edge,
  */
 class DynamicOutput extends BaseFilter{
 
-    protected $postProcessOrder = 20;
-
     /**
      * After the request has been processed, get the response
      * body and replace any dynamic placeholders defined

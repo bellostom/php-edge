@@ -12,8 +12,7 @@ class Session{
             $_SESSION['initiated'] = true;
         }
         if (isset($_SESSION['acc']) && (time() - $_SESSION['acc'] > $settings['session.timeout'])) {
-            session_unset();     // unset $_SESSION variable for the run-time
-            session_destroy();   // destroy session data in storage
+            $this->destroy();
             $_SESSION = array();
             $_SESSION['initiated'] = true;
         }
@@ -22,6 +21,11 @@ class Session{
 
     public function getSessionId(){
         return session_id();
+    }
+
+    public function destroy(){
+        session_unset();
+        session_destroy();
     }
 
     public function __get($key) {

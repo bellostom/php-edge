@@ -171,14 +171,8 @@ class Router{
         }
 	}
 
-    /**
-     * Inject the dependencies specified by the Controller class
-     * Invoke the dependencies method and assign the requested
-     * services.
-     * @param \Edge\Controllers\BaseController $instance
-     */
     protected static function getFilters(\Edge\Controllers\BaseController $instance){
-        $filters = $instance->__filters();
+        $filters = $instance->filters();
         if(count($filters) > 0){
             $filterInstances = array();
             foreach($filters as $filter){
@@ -197,39 +191,14 @@ class Router{
     }
 
     /**
-     * Inject the dependencies specified by the Controller class
-     * Invoke the dependencies method and assign the requested
-     * services.
-     * @param \Edge\Controllers\BaseController $instance
-     */
-    protected static function setDependencies(\Edge\Controllers\BaseController $instance){
-        $deps = $instance->__dependencies();
-        if(count($deps) > 0){
-            $webApp = Edge::app();
-            foreach($deps as $service){
-                $instance->__setDependency($service, $webApp->{$service});
-            }
-        }
-    }
-
-    /**
      * Execute the filters
-     * Initially, we sort the filters based on their
-     * preProcessOrder or postProcessOrder value
-     * and then iterate each one and invoke the filter
+     * Iterate each one and invoke the filter
      * If any of the filters returns false, we stop
      * the execution and return.
      * @param array $filters
      * @param $method (preProcess | postProcess)
      */
     private function runFilters(array $filters, $method){
-        $orderMethod = sprintf("get%sOrder", $method);
-        usort($filters, function($f1, $f2) use($orderMethod){
-            if($f1->{$orderMethod}() == $f2->{$orderMethod}()){
-                return 0;
-            }
-            return $f1->{$orderMethod}() < $f2->{$orderMethod}()?-1:1;
-        });
         foreach($filters as $filter){
             if($filter->appliesTo($this->method)){
                 $val = $filter->{$method}($this->response, $this->request);
@@ -242,9 +211,14 @@ class Router{
     }
 
     public function invoke(){
-        $class = sprintf('Application\Controllers\%s', $this->controller);
+        if(strstr($this->controller, "\\")){
+            $class = $this->controller;
+        }
+        else{
+            $class = sprintf('Application\Controllers\%s', $this->controller);
+        }
+
         $instance = new $class();
-        //static::setDependencies($instance);
         if(method_exists($instance, $this->method)){
             $filters = static::getFilters($instance);
             $invokeRequest = $this->runFilters($filters, 'preProcess');
@@ -263,7 +237,7 @@ class Router{
                                                                                         $this->args));
                             $processed = true;
                         }catch(Exceptions\DeadLockException $e) {
-                            Edge::app()->logger->info('RETRYING');
+                            Edge::app()->logger->info('RETRYING TRANSACTION');
                             usleep(100);
                         }
                     }
@@ -284,6 +258,9 @@ class Router{
                     $this->handleServerError();
                 }
             }
+        }
+        else{
+            $this->handle404Error();
         }
         $this->runFilters($filters, 'postProcess');
         $this->response->write();

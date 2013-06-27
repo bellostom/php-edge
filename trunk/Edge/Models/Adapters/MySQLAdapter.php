@@ -8,6 +8,7 @@
 namespace Edge\Models\Adapters;
 
 use Edge\Models\ActiveRecord,
+    Edge\Core\Database\ResultSet\MySQLResultSet,
     Edge\Core\Edge;
 
 class MySQLAdapter implements AdapterInterface{
@@ -27,11 +28,15 @@ class MySQLAdapter implements AdapterInterface{
      * Record::find(array(
         "id" => array(2,4)
      * ))
-     * Record::find(array("id"=>array("in" => array(1,2)), "age"=>array("gt"=>30), "name" => "John"), array(
-        'order' => array("name desc"),
-        'limit' => 10,
-        'offset' => 0
-    ));
+     * \Edge\Models\User::find(array(
+            "conditions" => array(
+                "id"=> array("in" => array(1,2)),
+                "name" => "John"
+            ),
+            'order' => array("name desc"),
+            'limit' => 10,
+            'offset' => 0
+        ));
      * @param array $options
      * @param $class
      */
@@ -46,7 +51,6 @@ class MySQLAdapter implements AdapterInterface{
             $options[0] = (string) $options[0];
         }
 
-        //if(gettype($options[0]) == 'string'){
         if(in_array($options[0], array("first", "last", "all"))){
             switch($options[0]){
                 case "first":
@@ -55,7 +59,6 @@ class MySQLAdapter implements AdapterInterface{
                     break;
                 case "last":
                     $criteria['limit'] = 1;
-                    $criteria['order'] = join(' DESC, ',$class::getPk()) . ' DESC';
                     break;
             }
         }else{
@@ -65,9 +68,14 @@ class MySQLAdapter implements AdapterInterface{
         }
 
         $sql = $this->createSelectQuery($criteria, $db);
+        return $this->executeSql($sql);
+    }
+
+    public function executeSql($sql){
+        $db = $this->getDbConnection();
         Edge::app()->logger->debug($sql);
-        $rs = $db->db_query($sql);
-        return array($rs, $db->db_num_rows($rs));
+        $rs = $db->dbQuery($sql);
+        return array($rs, $db->dbNumRows($rs));
     }
 
     /**
@@ -77,6 +85,58 @@ class MySQLAdapter implements AdapterInterface{
      */
     public function getDbConnection(){
         return Edge::app()->db;
+    }
+
+    /**
+     * Return an iterator for the myssqli_result object
+     * @param $rs mysqli_result object
+     * @return \Edge\Core\Database\ResultSet\MySQLResultSet
+     */
+    public function getResultSet($rs, $class){
+        return new \Edge\Core\Database\ResultSet\MySQLResultSet($rs, $class);
+    }
+
+    /**
+     * Return an assoc array from the resultset
+     * @param $rs mysqli_result object
+     * @return array
+     */
+    public function fetchArray($rs){
+        return Edge::app()->db->dbFetchArray($rs);
+    }
+
+    public function fetchAll($rs){
+        return Edge::app()->db->dbFetchAll($rs);
+    }
+
+    /**
+     * Constructs a query to load data from
+     * a linked table for a many to many relationship
+     *
+     *
+        SELECT city.* FROM city
+        INNER JOIN country2city u
+        ON city.id = u.city_id
+        AND u.country_id = '1'
+     *
+     * @param $model
+     * @param array $attrs
+     */
+    public function manyToMany($model, array $attrs){
+        $refTable = $model::getTable();
+        $values = array(
+            ':table' => $refTable,
+            ':linkTable' => $attrs['linkTable'],
+            ':fk2' => $attrs['fk2'],
+            ':fk1' => $attrs['fk1'],
+            ':value' => $attrs['value']
+        );
+        $q = $model::sprintf("SELECT :table.* FROM :table
+                              INNER JOIN :linkTable u
+                              ON :table.id = u.:fk2
+                              AND u.:fk1 = ':value'", $values);
+        Edge::app()->logger->debug("Dumping many to many query: \n".$q);
+        return new MySQLResultSet(Edge::app()->db->dbQuery($q), $model);
     }
 
     /**
@@ -107,9 +167,9 @@ class MySQLAdapter implements AdapterInterface{
     public function save(ActiveRecord $entry){
         $db = Edge::app()->writedb;
         $data = array_map(function($v) use ($db){
-            return sprintf('"%s"', $db->db_escape_string($v));
+            return sprintf('"%s"', $db->dbEscapeString($v));
         }, $entry->getAttributes());
-        $db->db_query($this->getInsertQuery($data, $entry));
+        $db->dbQuery($this->getInsertQuery($data, $entry));
         $this->setAutoIncrement($entry);
     }
 
@@ -124,10 +184,10 @@ class MySQLAdapter implements AdapterInterface{
         $pks = $entry->getPk();
         if(count($pks) > 0){
             $db = Edge::app()->db;
-            $metadata = $db->db_metadata($table);
+            $metadata = $db->dbMetadata($table);
             foreach($pks as $attr){
                 if(isset($metadata[$attr]) && $metadata[$attr][1] & \MYSQLI_AUTO_INCREMENT_FLAG){
-                    $entry->$attr = $db->db_insert_id();
+                    $entry->$attr = $db->dbInsertId();
                 }
             }
         }
@@ -182,7 +242,7 @@ class MySQLAdapter implements AdapterInterface{
             if(is_array($v)){
                 return $this->processAttrs($db, $k, $v);
             }
-            return sprintf('%s = \'%s\'', $k, $db->db_escape_string($v));
+            return sprintf('%s = \'%s\'', $k, $db->dbEscapeString($v));
         }, array_keys($conditions), array_values($conditions));
         return join(' AND ', $data);
     }
@@ -212,7 +272,7 @@ class MySQLAdapter implements AdapterInterface{
 
         $_vals = array();
         foreach($vals as $val){
-            $_vals[] = sprintf('"%s"', $db->db_escape_string($val));
+            $_vals[] = sprintf('"%s"', $db->dbEscapeString($val));
         }
         $v = join(",", $_vals);
         return sprintf('%s %s %s', $key, $op, $modifier($v));
@@ -237,7 +297,7 @@ class MySQLAdapter implements AdapterInterface{
 
         $sql = sprintf("DELETE FROM %s WHERE %s", $entry::getTable(), $this->joinConditions($where, $db));
         Edge::app()->logger->debug($sql);
-        $db->db_query($sql);
+        $db->dbQuery($sql);
     }
 
     /**
@@ -251,10 +311,10 @@ class MySQLAdapter implements AdapterInterface{
         $k = array_keys($data);
         $v = array_values($data);
         $c = join(", ", array_map(function($k, $v) use ($db){
-            return sprintf('%s="%s"', $k, $db->db_escape_string($v));
+            return sprintf('%s="%s"', $k, $db->dbEscapeString($v));
         }, $k, $v));
         $q = sprintf("UPDATE %s SET %s WHERE %s", $entry::getTable(), $c, $this->joinConditions($pks, $db));
         Edge::app()->logger->debug($q);
-        $db->db_query($q);
+        $db->dbQuery($q);
     }
 }

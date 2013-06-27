@@ -1,8 +1,6 @@
 <?php
 namespace Edge\Utils;
 
-use Edge\Core\Context;
-
 class Utils{
 	public static function genRandom($length=10){
 		$characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
