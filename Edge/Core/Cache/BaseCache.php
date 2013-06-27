@@ -55,12 +55,10 @@ abstract class BaseCache {
             $value = static::unserialize($value);
             if($value[1] instanceof CacheValidator){
                 if($value[1]->isCacheStale()){
-                    echo 'invalid'."<br/>";
                     $this->delete($key);
                     return false;
                 }
             }
-            echo 'valid'."<br/>";
             return $value[0];
         }
         return false;

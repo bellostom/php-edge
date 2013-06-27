@@ -14,8 +14,6 @@ use Edge\Core\Edge,
 abstract class BaseFilter implements \Edge\Core\Interfaces\Filter{
 
     private $applyTo;
-    protected $preProcessOrder = 10;
-    protected $postProcessOrder = 10;
 
     /**
      * Pass an array with actions that filters should process
@@ -32,14 +30,6 @@ abstract class BaseFilter implements \Edge\Core\Interfaces\Filter{
 
     public function postProcess(Http\Response $response, Http\Request $request){
         return true;
-    }
-
-    public function getpreProcessOrder(){
-        return $this->preProcessOrder;
-    }
-
-    public function getpostProcessOrder(){
-        return $this->postProcessOrder;
     }
 
     /**

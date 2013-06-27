@@ -46,7 +46,7 @@ trait TraitCachable {
      * @param $request
      * @return null|string
      */
-    private function getCacheKey(){
+    protected function getCacheKey(){
         if($this->key){
             return $this->key;
         }

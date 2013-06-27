@@ -34,18 +34,18 @@ class MongoConnection extends \MongoClient {
         return $cursor;
     }
 
-    public function db_fetch_all(){
+    public function dbFetchAll(){
         return $rs->fetch_all(MYSQLI_ASSOC);
     }
 
-    public function db_fetch_object($rs, $classname=null) {
+    public function dbFetchObject($rs, $classname=null) {
         if(!is_null($classname)) {
             return $rs->fetch_object($classname);
         }
         return $rs->fetch_object();
     }
 
-    public function db_query($q) {
+    public function dbQuery($q) {
         if(!$this->is_alive()) {
             $this->connect();
         }
@@ -65,49 +65,49 @@ class MongoConnection extends \MongoClient {
         return $res;
     }
 
-    public function db_seek($rs, $index) {
+    public function dbSeek($rs, $index) {
         $rs->data_seek($index);
     }
 
-    public function db_insert_id() {
+    public function dbInsertId() {
         return $this->link->insert_id;
     }
 
     public function db_found_rows() {
-        return $this->db_fetch_one("SELECT FOUND_ROWS() as t");
+        return $this->dbFetchOne("SELECT FOUND_ROWS() as t");
     }
 
-    public function db_fetch_one($q) {
-        $result = $this->db_query($q);
+    public function dbFetchOne($q) {
+        $result = $this->dbQuery($q);
         $result->data_seek(0);
         $row = $result->fetch_array(MYSQLI_NUM);
         $result->close();
         return $row[0];
     }
 
-    public function db_fetch_one_assoc($q) {
-        $result = $this->db_query($q);
+    public function dbFetchOne_assoc($q) {
+        $result = $this->dbQuery($q);
         $result->data_seek(0);
         $result->close();
         return $result->fetch_assoc();
     }
 
-    public function db_escape_string($str) {
+    public function dbEscapeString($str) {
         if(!$this->is_alive()) {
             $this->connect();
         }
         return $this->link->real_escape_string($str);
     }
 
-    public function db_num_rows($rs) {
+    public function dbNumRows($rs) {
         return $rs->num_rows;
     }
 
-    public function db_errno() {
+    public function dbErrno() {
         return $this->link->errno;
     }
 
-    public function db_error() {
+    public function dbError() {
         return $this->link->error;
     }
 

@@ -67,6 +67,7 @@ return array(
     'notFound' => array("\Application\Controllers\Home", "notFound"),
     'serverError' => array("\Application\Controllers\Home", "serverError"),
     'routerClass' => 'Edge\Core\Router',
+    'userClass' => 'Edge\Models\User',
     'timezone' => 'Europe/Athens',
     'env' => 'production'
 );

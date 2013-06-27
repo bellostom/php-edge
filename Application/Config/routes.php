@@ -5,7 +5,8 @@ return array(
         '/' => array("Home", "index"),
         '/page/action/:name/:id' => array("Home", "index"),
         '/new/test/:id' => array("Home", "test"),
-        '/new/test/thomas' => array("Home", "test")
+        '/view/city/:id' => array("Home", "city"),
+        '/home/session' => array("Home", "test")
 
     ),
     'POST' => array(

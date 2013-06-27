@@ -32,9 +32,9 @@ class InternalCache{
  */
 class Template extends InternalCache{
 
-	private $tpl;
-	private $attrs = array();
-    private $isCachable = false;
+	protected $tpl;
+    protected $attrs = array();
+    protected $isCachable = false;
     private $fragmentCache;
 
 	public function __construct($tpl, array $cacheAttrs=array()){

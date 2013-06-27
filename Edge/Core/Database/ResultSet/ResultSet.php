@@ -112,4 +112,3 @@ abstract class ResultSet implements \Iterator, \Countable, \ArrayAccess {
         throw new \Exception("This collection is read only.");
     }
 }
-?>

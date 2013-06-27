@@ -73,8 +73,8 @@ class MongoAdapter implements AdapterInterface{
         }
 
         $sql = $this->createSelectQuery($criteria, $db);
-        $rs = $db->db_query($sql);
-        return array($rs, $db->db_num_rows($rs));
+        $rs = $db->dbQuery($sql);
+        return array($rs, $db->dbNumRows($rs));
 
         /*if($nums == 0){
             if($returnSingle){
@@ -83,7 +83,7 @@ class MongoAdapter implements AdapterInterface{
             return array();
         }
         if($returnSingle){
-            $row = $db->db_fetch_array($rs);
+            $row = $db->dbFetchArray($rs);
             if($fetchMode == ActiveRecord::FETCH_ASSOC_ARRAY){
                 return $row;
             }
@@ -124,12 +124,12 @@ class MongoAdapter implements AdapterInterface{
     public function save(ActiveRecord $entry){
         $db = MysqlMaster::getInstance();
         $data = array_map(function($v) use ($db){
-            return sprintf('"%s"', $db->db_escape_string($v));
+            return sprintf('"%s"', $db->dbEscapeString($v));
         }, $entry->getAttributes());
         //if(Core\Context::$autoCommit){
         //    $db->start_transaction();
         //}
-        $db->db_query($this->getInsertQuery($data, $entry));
+        $db->dbQuery($this->getInsertQuery($data, $entry));
         $this->setAutoIncrement($entry);
     }
 
@@ -201,12 +201,12 @@ class MongoAdapter implements AdapterInterface{
             if(is_array($v)){
                 $vals = array();
                 foreach($v as $val){
-                    $vals[] = sprintf('"%s"', $db->db_escape_string($val));
+                    $vals[] = sprintf('"%s"', $db->dbEscapeString($val));
                 }
                 $v = join(",", $vals);
                 return sprintf('%s IN (%s)', $k, $v);
             }
-            return sprintf('%s = \'%s\'', $k, $db->db_escape_string($v));
+            return sprintf('%s = \'%s\'', $k, $db->dbEscapeString($v));
         }, array_keys($conditions), array_values($conditions));
         return join(' AND ', $data);
     }
@@ -229,7 +229,7 @@ class MongoAdapter implements AdapterInterface{
         }
 
         $sql = sprintf("DELETE FROM %s WHERE %s", $entry::getTable(), $this->joinConditions($where));
-        $db->db_query($sql);
+        $db->dbQuery($sql);
     }
 
     /**
@@ -243,7 +243,7 @@ class MongoAdapter implements AdapterInterface{
         $k = array_keys($data);
         $v = array_values($data);
         $c = join(", ", array_map(function($k, $v) use ($db){
-            return sprintf('%s="%s"', $k, $db->db_escape_string($v));
+            return sprintf('%s="%s"', $k, $db->dbEscapeString($v));
         }, $k, $v));
         $q = sprintf("UPDATE %s SET %s WHERE %s", $entry::getTable(), $c, $this->joinConditions($pks));
 
@@ -251,6 +251,6 @@ class MongoAdapter implements AdapterInterface{
         //    $db->start_transaction();
         //}
         error_log($q);
-        $db->db_query($q);
+        $db->dbQuery($q);
     }
 }

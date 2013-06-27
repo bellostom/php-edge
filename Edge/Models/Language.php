@@ -44,4 +44,3 @@ class Language extends Identifiable {
         return 'language';
     }
 }
-?>

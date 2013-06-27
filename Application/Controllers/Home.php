@@ -2,36 +2,53 @@
 namespace Application\Controllers;
 
 use Edge\Controllers\BaseController,
-    Edge\Core\Cache\Validator;
+    Edge\Core\Cache\Validator,
+    Edge\Core\Edge;
 
 class Home extends BaseController{
 
-    public function __filters(){
-        return array_merge(parent::__filters(), array(
+    protected static $layout = 'Application/Views/Layouts/ui.layout.tpl';
+    protected static $js = array(
+        'Application/Views/facebook.js'
+    );
+
+    public function filters(){
+        return array_merge(parent::filters(), array(
             array(
                 'Edge\Core\Filters\PageCache',
                 'ttl' => 10*60,
                 'varyBy' => 'url',
-                'cacheValidator' => new Validator\QueryValidator("SELECT COUNT(id) FROM users"),
+                //'cacheValidator' => new Validator\QueryValidator("SELECT COUNT(id) FROM users"),
                 'applyTo' => array('index', 'post')
-            )
+            ),
+            array('Edge\Core\Filters\DynamicOutput')
         ));
     }
 
     public function index(){
-        //print \Edge\Core\Edge::app()->session->getSessionId();
-        //return \Edge\Models\User::find(1);
-        //\Edge\Core\Edge::app()->request->setCookie("yo", json_encode(array(1,2)), time()+20*60);
-        print \Edge\Core\Edge::app()->request->getCookie("yo");
-        //\Edge\Core\Edge::app()->request->deleteCookie("yo");
-        $tpl = new \Edge\Core\Template('Application/Views/ui.test1.tpl');
+        $tpl = static::loadView('Application/Views/ui.test1.tpl');
         $tpl->test = 'thomas';
         return $tpl->parse();
-        return 'hello world';
     }
 
     public static function fetchUser(){
         return time();
+    }
+
+    public function city($cityID){
+        //$city = \Application\Models\City::getItemById($cityID);
+        //print $city->region->name;
+        $country = \Application\Models\Country::getItemById($cityID);
+        foreach($country->cities as $city){
+            echo $city->name;
+        }
+        exit;
+        $city->region = "thomas";
+        print $city->region->name;
+        exit;
+        foreach($city->region as $region){
+            print $region->name;
+        }
     }
 
     public function test(){

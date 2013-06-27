@@ -41,7 +41,6 @@ class SessionFileStorage extends BaseSessionStorage{
         if (file_exists($file)) {
             unlink($file);
         }
-
         return true;
     }
 

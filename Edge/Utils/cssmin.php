@@ -146,7 +146,6 @@ class cssmin
 function cssmin_array_clean(array $array)
 	{
 	$r = array();
-	$c = count($v);
 	if (cssmin_array_is_assoc($array))
 		{
 		foreach ($array as $key => $value)

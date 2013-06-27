@@ -1,6 +1,7 @@
 <?php
 namespace Edge\Core;
-use Edge\Core\Pimple;
+use Edge\Core\Pimple,
+    Edge\Models\User;
 
 /**
  * Class responsible for loading configurations options and
@@ -16,6 +17,7 @@ class Edge{
 
     public function __construct($config){
         $defaults = include(__DIR__.'/../Config/config.php');
+        $defaultRoutes = include(__DIR__.'/../Config/routes.php');
         if(is_string($config)){
             $config = include($config);
         }
@@ -29,10 +31,35 @@ class Edge{
         date_default_timezone_set($config['timezone']);
         $this->container = new Pimple();
         $this->registerServices($config['services']);
-        $this->routes = $config['routes'];
+        $this->routes = array_merge_recursive($defaultRoutes, $config['routes']);
         unset($config['services'], $config['routes']);
         $this->config = $config;
         self::$__instance = $this;
+    }
+
+    /**
+     * Get or set the current user
+     * If no userID variable exists in the session
+     * load the Guest user
+     * This method caches the object once it loads the first time
+     * @param User $user
+     * @return User
+     */
+    public function user(User $user=null){
+        static $instance;
+        if($user){
+            $this->session->userID = $user->id;
+            $instance = $user;
+        }
+        elseif(is_null($instance)){
+            $userID = $this->session->userID;
+            $class = $this->getConfig('userClass');
+            if(!isset($userID)){
+                $userID = $class::GUEST;
+            }
+            $instance = $class::getUserById($userID);
+        }
+        return $instance;
     }
 
     /**

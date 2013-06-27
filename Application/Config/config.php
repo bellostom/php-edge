@@ -17,13 +17,20 @@ return array(
             )
         ),
 
+        'cache1' => array(
+            'invokable' => 'Edge\Core\Cache\RedisCache',
+            'args' => array(
+                array('localhost:6379')
+            ),
+            'shared' => true
+        ),
+
         'isTransactional' => false,
 
         'db' => array(
             'invokable' => function($c){
                 static $obj;
                 if(is_null($obj)){
-                    //$c['isTransactional'] = false;
                     $obj = new Edge\Core\Database\MysqlSlave($c['mysqlCredentials']['slave']);
                 }
                 return ($c['isTransactional'])?$c['writedb']:$obj;
