@@ -4,9 +4,12 @@ use Edge\Utils\Utils;
 
 
 class User extends Identifiable {
+
     protected static $_members = array(
         'username', 'pass', 'salt', 'surname'
     );
+
+    protected $_roles = array();
 
 	const GUEST = 1;
 	const AUTH_USER =3;
@@ -23,6 +26,41 @@ class User extends Identifiable {
 
     public static function getTable(){
         return 'users';
+    }
+
+    /**
+     * Load the roles that are assigned to the user
+     * @return ResultSet
+     */
+    protected function roles(){
+        return $this->manyToMany('Edge\Models\Role', array(
+            'linkTable' => 'user_role',
+            'fk1' => 'user_id',
+            'fk2' => 'role_id',
+            'value' => $this->id
+        ));
+    }
+
+    /**
+     * Check whether the user can execute the selected
+     * action
+     * @param string $perm
+     * @return bool
+     */
+    public function hasPrivilege($perm) {
+        foreach ($this->roles as $role) {
+            if ($role->hasPerm($perm)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function addRole(Role $role){
+        $userRole = new UserRole();
+        $userRole->user_id = $this->id;
+        $userRole->role_id = $role->id;
+        $userRole->save();
     }
 
 	public function isAdmin(){
@@ -48,9 +86,9 @@ class User extends Identifiable {
 	 * @param string $name
 	 */
 	public static function getUserByUsername($name)	{
-        return parent::find(array(
-            "conditions" => array("username" => $name)
-        ));
+        return parent::select()
+                        ->where(array("username" => $name))
+                        ->run();
 	}
 
 	/**
