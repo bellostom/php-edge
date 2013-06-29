@@ -89,6 +89,16 @@ abstract class BaseController{
 		return 'Server Error';
 	}
 
+    public function authorize($username, $password){
+        $userClass = Core\Edge::app()->getConfig('userClass');
+        $user = $userClass::getUserByUsername($username);
+        if($user && $user->authenticate($password)){
+            Core\Edge::app()->user($user);
+            return true;
+        }
+        return false;
+    }
+
 	/**
 	 *
 	 * Logout the user and destroy
