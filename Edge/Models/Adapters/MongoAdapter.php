@@ -9,7 +9,7 @@ namespace Edge\Models\Adapters;
 use Edge\Core\Database\MysqlMaster;
 use Edge\Core\Database\DB;
 use Edge\Core\Database\ResultSet\MySQLResultSet;
-use Edge\Models\ActiveRecord;
+use Edge\Models\Record;
 use Edge\Core;
 
 class MongoAdapter implements AdapterInterface{
@@ -40,7 +40,7 @@ class MongoAdapter implements AdapterInterface{
     public function find(array $options, $class){
         $criteria = $options[1];
         //$fetchMode = $criteria['fetchMode'];
-        //$returnSingle = in_array($fetchMode, array(ActiveRecord::FETCH_INSTANCE, ActiveRecord::FETCH_ASSOC_ARRAY));
+        //$returnSingle = in_array($fetchMode, array(Record::FETCH_INSTANCE, Record::FETCH_ASSOC_ARRAY));
         $db = $this->getDbConnection();
 
         if(!array_key_exists('conditions', $criteria)){
@@ -84,7 +84,7 @@ class MongoAdapter implements AdapterInterface{
         }
         if($returnSingle){
             $row = $db->dbFetchArray($rs);
-            if($fetchMode == ActiveRecord::FETCH_ASSOC_ARRAY){
+            if($fetchMode == Record::FETCH_ASSOC_ARRAY){
                 return $row;
             }
             return new $class($row);
@@ -119,9 +119,9 @@ class MongoAdapter implements AdapterInterface{
 
     /**
      * Save the object to the database
-     * @param \Edge\Models\ActiveRecord $entry
+     * @param \Edge\Models\Record $entry
      */
-    public function save(ActiveRecord $entry){
+    public function save(Record $entry){
         $db = MysqlMaster::getInstance();
         $data = array_map(function($v) use ($db){
             return sprintf('"%s"', $db->dbEscapeString($v));
@@ -137,9 +137,9 @@ class MongoAdapter implements AdapterInterface{
      * After the object has been created check for
      * auto increment fields and set the value
      * assigned by MySQL
-     * @param \Edge\Models\ActiveRecord $entry
+     * @param \Edge\Models\Record $entry
      */
-    private function setAutoIncrement(ActiveRecord $entry){
+    private function setAutoIncrement(Record $entry){
         $table = $entry->getTable();
         $pks = $entry->getPk();
         if(count($pks) > 0){
@@ -156,10 +156,10 @@ class MongoAdapter implements AdapterInterface{
     /**
      * Construct the INSERT sql query
      * @param $data
-     * @param \Edge\Models\ActiveRecord $entry
+     * @param \Edge\Models\Record $entry
      * @return string
      */
-    private function getInsertQuery($data, ActiveRecord $entry) {
+    private function getInsertQuery($data, Record $entry) {
         $q = "INSERT INTO ".$entry::getTable()." (";
         $q .= join(",", array_keys($data)).") VALUES(";
         $q .= join(",", array_values($data)).")";
@@ -169,11 +169,11 @@ class MongoAdapter implements AdapterInterface{
     /**
      * Return an associative array with primary keys
      * and their values
-     * @param \Edge\Models\ActiveRecord $entry
+     * @param \Edge\Models\Record $entry
      * @return array
      * @throws \Exception
      */
-    private function getPkValues(ActiveRecord $entry){
+    private function getPkValues(Record $entry){
         $attrs = array();
         $pk = $entry::getPk();
         foreach($pk as $key){
@@ -213,10 +213,10 @@ class MongoAdapter implements AdapterInterface{
 
     /**
      * Delete object from the database
-     * @param \Edge\Models\ActiveRecord $entry
+     * @param \Edge\Models\Record $entry
      * @param array $criteria
      */
-    public function delete(ActiveRecord $entry, array $criteria=array()){
+    public function delete(Record $entry, array $criteria=array()){
         $db = MysqlMaster::getInstance();
         $where = array();
         if(count($criteria) > 0){
@@ -234,9 +234,9 @@ class MongoAdapter implements AdapterInterface{
 
     /**
      * Construct the UPDATE sql query and update the object
-     * @param \Edge\Models\ActiveRecord $entry
+     * @param \Edge\Models\Record $entry
      */
-    public function update(ActiveRecord $entry){
+    public function update(Record $entry){
         $pks = $this->getPkValues($entry);
         $data = array_diff_assoc($entry->getAttributes(), $pks);
         $db = MysqlMaster::getInstance();

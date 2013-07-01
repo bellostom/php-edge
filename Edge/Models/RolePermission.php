@@ -1,7 +1,7 @@
 <?php
 namespace Edge\Models;
 
-class RolePermission extends ActiveRecord{
+class RolePermission extends Record{
 
     public static function getTable(){
         return 'role_perm';

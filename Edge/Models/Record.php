@@ -5,7 +5,6 @@ use Edge\Core\Exceptions,
     Edge\Core\Edge,
     Edge\Core\Interfaces\EventHandler,
     Edge\Core\Interfaces\CachableRecord;
-use Edge\Core\ManyToMany;
 
 /**
  * Base class for all models that require persistence and
@@ -15,7 +14,7 @@ use Edge\Core\ManyToMany;
  * class that will be responsible for the interaction.
  * The default adapter class is the MySQLAdapter.
  */
-abstract class ActiveRecord implements EventHandler, CachableRecord{
+abstract class Record implements EventHandler, CachableRecord{
     /**
      * @var array Stores the class's attributes
      * These attributes are mapped to the DB record
@@ -30,12 +29,12 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
      * @var array We only require 1 instance of each
      * adapter. Once instantiated for the 1st time,
      * we store it here, so that it can be reused
-     * by other ActiveRecords also
+     * by other Records also
      */
     protected static $adapterInstances = array();
 
     /**
-     * @var array Each class extending ActiveRecord
+     * @var array Each class extending Record
      * should define an array with the names of
      * its attributes
      */
@@ -47,7 +46,7 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
     CONST FETCH_RESULTSET = 1;
 
     /**
-     * Return a single ActiveRecord instance
+     * Return a single Record instance
      */
     CONST FETCH_INSTANCE = 2;
 
@@ -64,7 +63,7 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
 
     /**
      * @param array $attrs
-     * Initialize an ActiveRecord instance. Either supply an associative
+     * Initialize an Record instance. Either supply an associative
      * array or the object will be initialized with default values.
      */
     public function __construct(array $attrs=array()){
@@ -309,7 +308,7 @@ abstract class ActiveRecord implements EventHandler, CachableRecord{
             }
             $instance = $model::select()
                               ->where(array($keys['fk'] => $keys['value']))
-                              ->fetchMode(ActiveRecord::FETCH_RESULTSET)
+                              ->fetchMode(Record::FETCH_RESULTSET)
                               ->run();
         }
         return $instance;
