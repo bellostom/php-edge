@@ -128,7 +128,7 @@ class Router{
      * @return array|bool
      */
     protected function resolveRoute($uri){
-        $httpMethod = Edge::app()->request->getMethod();;
+        $httpMethod = Edge::app()->request->getHttpMethod();
         $route = false;
         if(array_key_exists($httpMethod, $this->routes)){
             $routes = $this->routes[$httpMethod];

@@ -55,7 +55,7 @@ trait TraitCachable {
             $request = Edge::app()->request;
             $router = Edge::app()->router;
             $defaults = array(
-                $request->getMethod(),
+                $request->getHttpMethod(),
                 $router->getController(),
                 $router->getAction(),
                 $this->getExtraParams()
