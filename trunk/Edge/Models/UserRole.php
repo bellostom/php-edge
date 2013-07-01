@@ -1,7 +1,7 @@
 <?php
 namespace Edge\Models;
 
-class UserRole extends ActiveRecord{
+class UserRole extends Record{
 
     public static function getTable(){
         return 'user_role';

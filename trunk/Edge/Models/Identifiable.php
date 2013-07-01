@@ -1,7 +1,7 @@
 <?php
 namespace Edge\Models;
 
-abstract class Identifiable extends ActiveRecord{
+abstract class Identifiable extends Record{
 
     protected static $_members = array(
         'id', 'name'

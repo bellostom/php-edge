@@ -1,7 +1,7 @@
 <?php
 namespace Edge\Models\Adapters;
 
-use Edge\Models\ActiveRecord,
+use Edge\Models\Record,
     Edge\Core\Database\ResultSet\MySQLResultSet,
     Edge\Core\Edge;
 
@@ -77,9 +77,9 @@ class MySQLAdapter extends BaseAdapter{
 
     /**
      * Save the object to the database
-     * @param \Edge\Models\ActiveRecord $entry
+     * @param \Edge\Models\Record $entry
      */
-    public function save(ActiveRecord $entry){
+    public function save(Record $entry){
         $db = Edge::app()->writedb;
         $data = array_map(function($v) use ($db){
             return sprintf('"%s"', $db->dbEscapeString($v));
@@ -92,9 +92,9 @@ class MySQLAdapter extends BaseAdapter{
      * After the object has been created check for
      * auto increment fields and set the value
      * assigned by MySQL
-     * @param \Edge\Models\ActiveRecord $entry
+     * @param \Edge\Models\Record $entry
      */
-    private function setAutoIncrement(ActiveRecord $entry){
+    private function setAutoIncrement(Record $entry){
         $table = $entry->getTable();
         $pks = $entry->getPk();
         if(count($pks) > 0){
@@ -111,10 +111,10 @@ class MySQLAdapter extends BaseAdapter{
     /**
      * Construct the INSERT sql query
      * @param $data
-     * @param \Edge\Models\ActiveRecord $entry
+     * @param \Edge\Models\Record $entry
      * @return string
      */
-    private function getInsertQuery($data, ActiveRecord $entry) {
+    private function getInsertQuery($data, Record $entry) {
         $q = "INSERT INTO ".$entry::getTable()." (";
         $q .= join(",", array_keys($data)).") VALUES(";
         $q .= join(",", array_values($data)).")";
@@ -159,11 +159,11 @@ class MySQLAdapter extends BaseAdapter{
     /**
      * Return an associative array with primary keys
      * and their values
-     * @param \Edge\Models\ActiveRecord $entry
+     * @param \Edge\Models\Record $entry
      * @return array
      * @throws \Exception
      */
-    private function getPkValues(ActiveRecord $entry){
+    private function getPkValues(Record $entry){
         $attrs = array();
         $pk = $entry::getPk();
         foreach($pk as $key){
@@ -202,10 +202,10 @@ class MySQLAdapter extends BaseAdapter{
 
     /**
      * Delete object from the database
-     * @param \Edge\Models\ActiveRecord $entry
+     * @param \Edge\Models\Record $entry
      * @param array $criteria
      */
-    public function delete(ActiveRecord $entry){
+    public function delete(Record $entry){
         $db = Edge::app()->writedb;
         $where = $this->getPkValues($entry);
         $sql = sprintf("DELETE FROM %s WHERE %s", $entry::getTable(), $this->joinConditions($where, $db));
@@ -215,9 +215,9 @@ class MySQLAdapter extends BaseAdapter{
 
     /**
      * Construct the UPDATE sql query and update the object
-     * @param \Edge\Models\ActiveRecord $entry
+     * @param \Edge\Models\Record $entry
      */
-    public function update(ActiveRecord $entry){
+    public function update(Record $entry){
         $pks = $this->getPkValues($entry);
         $data = array_diff_assoc($entry->getAttributes(), $pks);
         $db = Edge::app()->writedb;

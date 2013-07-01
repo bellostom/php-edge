@@ -1,12 +1,12 @@
 <?php
 namespace Edge\Models\Adapters;
-use Edge\Models\ActiveRecord;
+use Edge\Models\Record;
 
 interface AdapterInterface{
     public function find(array $options, $class);
-    public function save(ActiveRecord $entry);
-    public function delete(ActiveRecord $entry, array $criteria=array());
-    public function update(ActiveRecord $entry);
+    public function save(Record $entry);
+    public function delete(Record $entry, array $criteria=array());
+    public function update(Record $entry);
     public function getDbConnection();
     public function getResultSet($rs, $class);
     public function fetchAll($rs);

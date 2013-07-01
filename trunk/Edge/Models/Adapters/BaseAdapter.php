@@ -3,7 +3,7 @@ namespace Edge\Models\Adapters;
 
 use Edge\Core\Edge,
     Edge\Core\Database\ResultSet\CachedObjectSet,
-    Edge\Models\ActiveRecord;
+    Edge\Models\Record;
 
 abstract class BaseAdapter{
 
@@ -19,7 +19,7 @@ abstract class BaseAdapter{
     protected $order = array();
     protected $limit;
     protected $offset;
-    protected $fetchMode = ActiveRecord::FETCH_INSTANCE;
+    protected $fetchMode = Record::FETCH_INSTANCE;
     protected $cacheAttrs = array();
 
     public function reset(){
@@ -34,16 +34,16 @@ abstract class BaseAdapter{
         $this->order = array();
         $this->limit = null;
         $this->offset = null;
-        $this->fetchMode = ActiveRecord::FETCH_INSTANCE;
+        $this->fetchMode = Record::FETCH_INSTANCE;
         $this->cacheAttrs = array();
         $this->query = null;
     }
 
     abstract protected function getQuery();
     abstract public function executeQuery($query);
-    abstract public function save(ActiveRecord $entry);
-    abstract public function delete(ActiveRecord $entry);
-    abstract public function update(ActiveRecord $entry);
+    abstract public function save(Record $entry);
+    abstract public function delete(Record $entry);
+    abstract public function update(Record $entry);
     abstract public function getDbConnection();
     abstract public function getResultSet($rs, $class);
     abstract public function fetchAll($rs);
@@ -67,20 +67,20 @@ abstract class BaseAdapter{
     protected function cacheData($key, $data, $ttl){
         $_data = null;
         switch($this->fetchMode){
-            case ActiveRecord::FETCH_ASSOC_ARRAY:
+            case Record::FETCH_ASSOC_ARRAY:
                 $_data =  $data;
                 break;
-            case ActiveRecord::FETCH_INSTANCE:
+            case Record::FETCH_INSTANCE:
                 $class = $this->model;
                 $attrs = $this->fetchArray($data);
                 $_data = new $class($attrs);
                 $_data->addKeyToIndex($key);
                 break;
-            case ActiveRecord::FETCH_RESULTSET:
+            case Record::FETCH_RESULTSET:
                 $rs = $this->fetchAll($data);
                 $_data = new CachedObjectSet($rs, $this->model);
                 break;
-            case ActiveRecord::FETCH_NATIVE_RESULTSET:
+            case Record::FETCH_NATIVE_RESULTSET:
                 $_data = $this->fetchAll($data);
                 break;
         }
@@ -95,7 +95,7 @@ abstract class BaseAdapter{
     protected function execute(){
         $model = $this->model;
         $cacheAttrs = $this->cacheAttrs;
-        $cacheRecord = (($model::cacheRecord() && $this->fetchMode == ActiveRecord::FETCH_INSTANCE)
+        $cacheRecord = (($model::cacheRecord() && $this->fetchMode == Record::FETCH_INSTANCE)
                         || $cacheAttrs);
         if($cacheRecord){
             $value = $this->getCachedRecord();
@@ -117,24 +117,24 @@ abstract class BaseAdapter{
 
         //no caching specified
         if($records == 0){
-            if(in_array($this->fetchMode, array(ActiveRecord::FETCH_RESULTSET,
-                                                ActiveRecord::FETCH_NATIVE_RESULTSET))){
+            if(in_array($this->fetchMode, array(Record::FETCH_RESULTSET,
+                                                Record::FETCH_NATIVE_RESULTSET))){
                 return array();
             }
             return null;
         }
 
         switch($this->fetchMode){
-            case ActiveRecord::FETCH_ASSOC_ARRAY:
-            case ActiveRecord::FETCH_NATIVE_RESULTSET:
+            case Record::FETCH_ASSOC_ARRAY:
+            case Record::FETCH_NATIVE_RESULTSET:
                 return $result;
 
-            case ActiveRecord::FETCH_INSTANCE:
+            case Record::FETCH_INSTANCE:
                 $class = $this->model;
                 $attrs = $this->fetchArray($result);
                 return new $class($attrs);
 
-            case ActiveRecord::FETCH_RESULTSET:
+            case Record::FETCH_RESULTSET:
                 return $this->getResultSet($result, $this->model);
         }
     }
@@ -149,7 +149,7 @@ abstract class BaseAdapter{
                         ->order(array("username"=>"asc"))
                         ->limit(0)
                         ->offset(10)
-                        ->fetchMode(ActiveRecord::FETCH_RESULTSET)
+                        ->fetchMode(Record::FETCH_RESULTSET)
                         ->cache(array('ttl' => 10*60))
                         ->run();
      *
