@@ -93,7 +93,7 @@ class Request {
         return $body;
     }
 
-    public function getMethod(){
+    public function getHttpMethod(){
         return $this->httpMethod;
     }
 }
