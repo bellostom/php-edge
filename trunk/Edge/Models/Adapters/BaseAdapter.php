@@ -148,7 +148,7 @@ abstract class BaseAdapter{
      * Valid examples
      *
      * Select the first 10 users ordering them by username ascending
-     * and caching them for 10 seconds
+     * and caching them for 10 minutes
      * \Edge\Models\User::select()
                         ->order(array("username"=>"asc"))
                         ->limit(0)
