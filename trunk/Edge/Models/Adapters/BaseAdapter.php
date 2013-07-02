@@ -92,6 +92,10 @@ abstract class BaseAdapter{
         return $_data;
     }
 
+    /**
+     * Execute the query and handle caching
+     * @return array|CachedObjectSet|mixed|null
+     */
     protected function execute(){
         $model = $this->model;
         $cacheAttrs = $this->cacheAttrs;
