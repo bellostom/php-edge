@@ -45,6 +45,7 @@ class PageCache extends BaseFilter{
      */
     public function postProcess(Http\Response $response, Http\Request $request){
         if(!$this->isCached){
+            Edge::app()->logger->debug("Creating page cache for ". $request->getRequestUrl());
             $this->set($response->body);
         }
         return true;
