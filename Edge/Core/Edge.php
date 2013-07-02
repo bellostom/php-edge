@@ -16,6 +16,9 @@ class Edge{
     public $router;
 
     public function __construct($config){
+        if(!is_null(static::$__instance)){
+            throw new \Edge\Core\Exceptions\EdgeException("Only one instance of the Web App can exist");
+        }
         $defaults = include(__DIR__.'/../Config/config.php');
         $defaultRoutes = include(__DIR__.'/../Config/routes.php');
         if(is_string($config)){
@@ -93,18 +96,36 @@ class Edge{
         }
     }
 
+    /**
+     * Return a configuration variable
+     * @param $name
+     * @return mixed
+     */
     public function getConfig($name){
         return $this->config[$name];
     }
 
+    /**
+     * Return a registered service or variable
+     * @param $service
+     * @return mixed
+     */
     public function __get($service){
         return $this->container[$service];
     }
 
+    /**
+     * Return the routes
+     * @return array
+     */
     public function getRoutes(){
         return $this->routes;
     }
 
+    /**
+     * Return the web app singleton
+     * @return Edge
+     */
     public static function app(){
         return self::$__instance;
     }
