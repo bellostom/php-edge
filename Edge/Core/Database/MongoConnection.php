@@ -1,12 +1,17 @@
 <?php
-//namespace Edge\Core\Database;
+namespace Edge\Core\Database;
 
-//use Edge\Core;
+use Edge\Core\Edge;
 
+/**
+ * Class MongoConnection
+ * Responsible for interacting with the mongo
+ * database. Basic CRUD methods implemented
+ * @package Edge\Core\Database
+ */
 class MongoConnection extends \MongoClient {
 
-    protected $collection;
-    protected $db;
+    private $db;
 
     public function __construct(array $settings){
         $host = isset($settings['host'])?$settings['host']:'localhost';
@@ -18,101 +23,70 @@ class MongoConnection extends \MongoClient {
             $options['password'] = $settings['pass'];
         }
         parent::__construct("mongodb://" + $host, $options);
-        $this->db = $this->selectDB($settings['db']);
+        $this->db = $settings['db'];
     }
 
-    public function setCollection($name){
-        $this->collection = new \MongoCollection($this->db, $name);
-        return $this->collection;
+    /**
+     * Return a Collection object
+     * @param $collection
+     * @return \MongoCollection
+     */
+    protected function getCollection($collection){
+        return $this->{$this->db}->$collection;
     }
 
-    public function find($collection, array $options=array(), $sort=array()) {
-        $cursor = $this->setCollection($collection)->find($options);
-        if($sort){
-            $cursor->sort($sort);
+    /**
+     * Execute a select query on the selected collection
+     * @param $collection
+     * @param array $options
+     * @return \MongoCursor
+     */
+    public function find($collection, array $options, $fields=array(),
+                         $order=array(), $limit=null, $offset=0){
+        $rs = $this->getCollection($collection)->find($options, $fields);
+        if($order){
+            $rs->sort($order);
         }
-        return $cursor;
-    }
-
-    public function dbFetchAll(){
-        return $rs->fetch_all(MYSQLI_ASSOC);
-    }
-
-    public function dbFetchObject($rs, $classname=null) {
-        if(!is_null($classname)) {
-            return $rs->fetch_object($classname);
+        if($limit !== null){
+            $rs->limit($limit);
         }
-        return $rs->fetch_object();
-    }
-
-    public function dbQuery($q) {
-        if(!$this->is_alive()) {
-            $this->connect();
+        if($offset){
+            $rs->skip($offset);
         }
-        $res = $this->link->query($q);
-        if(!$res) {
-            $err_no = $this->link->errno;
-            $message = sprintf("Error executing query %s. Error was %s. Error Code %s ",
-                $q, $this->link->error, $err_no);
-            if($err_no == 1213) {
-                throw new Core\Exceptions\DeadLockException($message);
-            }else if ($err_no == 1062) {
-                throw new Core\Exceptions\DuplicateEntry($message);
-            }else{
-                throw new Core\Exceptions\EdgeException($message);
-            }
-        }
-        return $res;
+        return $rs;
     }
 
-    public function dbSeek($rs, $index) {
-        $rs->data_seek($index);
+    /**
+     * Insert a document into the selected collection
+     * @param $collection
+     * @param array $data
+     * @param array $options
+     * @return array|bool
+     */
+    public function insert($collection, array $data, array $options=array()){
+        return $this->getCollection($collection)->insert($data, $options);
     }
 
-    public function dbInsertId() {
-        return $this->link->insert_id;
+    /**
+     * Delete a document from the selected collection
+     * @param $collection
+     * @param \MongoId $id
+     * @param array $options
+     * @return mixed
+     */
+    public function delete($collection, \MongoId $id, $options=array()){
+        return $this->getCollection($collection)->remove(array("_id" => $id), $options);
     }
 
-    public function db_found_rows() {
-        return $this->dbFetchOne("SELECT FOUND_ROWS() as t");
-    }
-
-    public function dbFetchOne($q) {
-        $result = $this->dbQuery($q);
-        $result->data_seek(0);
-        $row = $result->fetch_array(MYSQLI_NUM);
-        $result->close();
-        return $row[0];
-    }
-
-    public function dbFetchOne_assoc($q) {
-        $result = $this->dbQuery($q);
-        $result->data_seek(0);
-        $result->close();
-        return $result->fetch_assoc();
-    }
-
-    public function dbEscapeString($str) {
-        if(!$this->is_alive()) {
-            $this->connect();
-        }
-        return $this->link->real_escape_string($str);
-    }
-
-    public function dbNumRows($rs) {
-        return $rs->num_rows;
-    }
-
-    public function dbErrno() {
-        return $this->link->errno;
-    }
-
-    public function dbError() {
-        return $this->link->error;
-    }
-
-    protected function is_alive() {
-        return !is_null($this->link) && $this->link->ping();
+    /**
+     * Update a record
+     * @param $collection
+     * @param array $where update params
+     * @param array $data
+     * @param array $options
+     * @return bool
+     */
+    public function update($collection, array $where, array $data, $options=array()){
+        return $this->getCollection($collection)->update($where, $data, $options);
     }
 }
-?>

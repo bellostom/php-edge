@@ -3,7 +3,7 @@ namespace Edge\Core\Database\ResultSet;
 
 use Edge\Core\Edge;
 
-class MySQLResultSet extends ResultSet {
+class MySQLResultSet extends ResultSet{
 
 	protected function setRows(){
 		$db = Edge::app()->db;
@@ -17,4 +17,3 @@ class MySQLResultSet extends ResultSet {
 		return new $this->className($row);
 	}
 }
-?>

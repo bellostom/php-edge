@@ -17,10 +17,21 @@ return array(
             )
         ),
 
-        'cache1' => array(
+        'cache' => array(
             'invokable' => 'Edge\Core\Cache\RedisCache',
             'args' => array(
                 array('localhost:6379')
+            ),
+            'shared' => true
+        ),
+
+        'mongo' => array(
+            'invokable' => 'Edge\Core\Database\MongoConnection',
+            'args' => array(
+                array(
+                    'host' => 'localhost',
+                    'db' => 'people'
+                )
             ),
             'shared' => true
         ),
