@@ -8,3 +8,5 @@ It makes use of ORM, namespaces, traits, dependency injection container, closure
 
 Edge utilizes the latest trends in Web Application development.
 You will need PHP version 5.4 and higher in order to run it.
+
+[Installation]
