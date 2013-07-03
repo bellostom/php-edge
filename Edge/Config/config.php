@@ -1,7 +1,11 @@
 <?php
 return array(
     'services' => array(
-
+        /**
+         * Memcached for caching
+         * We can pass as many servers as we want
+         * The order is host:port:weight
+         */
         'cache' => array(
             'invokable' => 'Edge\Core\Cache\MemoryCache',
             'args' => array(
@@ -10,12 +14,18 @@ return array(
             'shared' => true
         ),
 
+        /**
+         * Class handling the process of incoming Requests
+         */
         'request' => array(
             'invokable' => 'Edge\Core\Http\Request',
             'args' => array(),
             'shared' => true
         ),
 
+        /**
+         * Class responsible for reading and writing cookies
+         */
         'cookie' => array(
             'invokable' => 'Edge\Core\Http\Cookie',
             'args' => array(
@@ -29,12 +39,18 @@ return array(
             'shared' => true
         ),
 
+        /**
+         * Class responsible for sending output to the browser
+         */
         'response' => array(
             'invokable' => 'Edge\Core\Http\Response',
             'args' => array(),
             'shared' => true
         ),
 
+        /**
+         * Logging class
+         */
         'logger' => array(
             'invokable' => function($c){
                 $attrs = array(
@@ -47,25 +63,32 @@ return array(
             'shared' => true
         ),
 
+        /**
+         * Define where the sessions are going to be savedd
+         */
         'sessionStorage' => 'Edge\Core\Session\SessionMemcacheStorage',
 
+        /**
+         * Session class
+         * Configuration options and initialization
+         */
         'session' => array(
             'invokable' => function($c){
                 $settings = array(
                     'session.name' => 'edge',
                     'session.timeout' => 20*60,
                     'session.httponly' => true,
-                    'session.path' => '/tmp/session',
-                    'link' => $c['cache']
+                    'session.path' => $c['cache']
                 );
                 return new Edge\Core\Session\Session($c['sessionStorage'], $settings);
             },
             'shared' => true
         )
     ),
+    /**
+     * The below are configuration options
+     */
     'loginUrl' => '/home/login',
-    'notFound' => array("\Application\Controllers\Home", "notFound"),
-    'serverError' => array("\Application\Controllers\Home", "serverError"),
     'routerClass' => 'Edge\Core\Router',
     'userClass' => 'Edge\Models\User',
     'timezone' => 'Europe/Athens',
