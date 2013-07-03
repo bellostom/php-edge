@@ -10,8 +10,11 @@ class MySQLAdapter extends BaseAdapter{
     public function executeQuery($sql){
         $db = $this->getDbConnection();
         Edge::app()->logger->debug($sql);
-        $rs = $db->dbQuery($sql);
-        return array($rs, $db->dbNumRows($rs));
+        return $db->dbQuery($sql);
+    }
+
+    protected function countResults($rs){
+        return $this->getDbConnection()->dbNumRows($rs);
     }
 
     /**
@@ -24,11 +27,11 @@ class MySQLAdapter extends BaseAdapter{
     }
 
     /**
-     * Return an iterator for the myssqli_result object
+     * Return an iterator for the mysqli_result object
      * @param $rs mysqli_result object
      * @return \Edge\Core\Database\ResultSet\MySQLResultSet
      */
-    public function getResultSet($rs, $class){
+    protected function getResultSet($rs, $class){
         return new \Edge\Core\Database\ResultSet\MySQLResultSet($rs, $class);
     }
 
@@ -37,11 +40,11 @@ class MySQLAdapter extends BaseAdapter{
      * @param $rs mysqli_result object
      * @return array
      */
-    public function fetchArray($rs){
+    protected function fetchArray($rs){
         return Edge::app()->db->dbFetchArray($rs);
     }
 
-    public function fetchAll($rs){
+    protected function fetchAll($rs){
         return Edge::app()->db->dbFetchAll($rs);
     }
 
@@ -122,6 +125,10 @@ class MySQLAdapter extends BaseAdapter{
         return $q;
     }
 
+    /**
+     * Construct the SELECT query
+     * @return string
+     */
     protected function getQuery(){
         $db = $this->getDbConnection();
         $sql = array();

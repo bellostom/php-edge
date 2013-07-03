@@ -29,7 +29,7 @@ class Home extends BaseController{
         $r = \Edge\Models\User::select()
                                 ->where(array("id"=>1))
                                 ->order(array("username"=>"asc"))
-                                ->fetchMode(1)
+                                ->fetchMode(2)
                                 ->run();
 
         var_dump($r);

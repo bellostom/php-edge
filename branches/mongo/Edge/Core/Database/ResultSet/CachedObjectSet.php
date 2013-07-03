@@ -12,4 +12,3 @@ class CachedObjectSet extends ResultSet {
         $this->totalRows = count($this->result);
     }
 }
-?>
