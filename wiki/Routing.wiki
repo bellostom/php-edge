@@ -35,7 +35,7 @@ As you can see we return an associative array, where there is another nested arr
 
 In this way, we restrict the URLs so that they are accessible only with the specified HTTP method.
 
-Another thing to note here, is the existence of the notation
+Another thing to note here, is the existence of the below notation
 {{{
 /page/action/:name/:id
 }}}
