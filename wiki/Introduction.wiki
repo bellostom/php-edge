@@ -1,3 +1,4 @@
+#summary Read this first
 = Welcome to Edge=
 
 Edge is a lightweight, high performance MVC framework which aims to help PHP developers build robust web applications fast and securely.
