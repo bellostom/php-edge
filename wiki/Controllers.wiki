@@ -1,0 +1,6 @@
+#summary Details about Controllers
+
+All Controllers within an *Edge* application should derive (directly or indirectly) from the BaseController class located at
+{{{
+Edge\Controllers\BaseController.php
+}}}
