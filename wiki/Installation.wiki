@@ -1,13 +1,37 @@
-#summary One-sentence summary of this page.
+#summary How to install Edge on your system
 
 = Introduction =
 
-Add your content here.
+In order to install *Edge* on your system you will need
+  * *PHP 5.4*
+  * *A web server (ie Apache)*
+
+Going into details on how you can install the above is out of the scope of this document, but a lot of information exists all over the web.
+
+Checkout edge using a svn client
+
+{{{
+cd /var/www/
+svn checkout http://php-edge.googlecode.com/svn/trunk/ php-edge
+}}}
+
+Now, let's create a virtual host within Apache, so that we can access *Edge* through the browser.
+Paste the below directives to the apache config file
+{{{
+NameVirtualHost *:80
+
+<VirtualHost *:80>
+   DocumentRoot /var/www/php-edge
+   ServerName devel.edge.net
+   <Directory /var/www/php-edge>
+        AllowOverride All
+   </Directory>
+</VirtualHost>
+}}}
+
+Restart apache in order for the changes to be applied.
+
+Additionally, you need to add the domain we specified in the config section, to your hosts file.
 
 
-= Details =
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
