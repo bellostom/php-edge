@@ -33,5 +33,8 @@ Restart apache in order for the changes to be applied.
 
 Additionally, you need to add the domain we specified in the config section, to your hosts file.
 
+You can now access *Edge* by visiting
 
-
+{{{
+http://devel.edge.net
+}}}
