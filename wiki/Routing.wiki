@@ -1,0 +1,70 @@
+#summary Routing details
+
+*Edge* provides developers with the ability to map URLs to Controllers and Actions.
+
+The way this is accomplished, is by defining the routes as an associative array.
+
+This file resides under
+
+{{{
+Application/Config/routes.php
+}}}
+
+and has the below structure
+
+{{{
+<?php
+return array(
+    'GET' => array(
+        '/' => array("Home", "index"),
+        '/page/action/:name/:id' => array("Home", "index"),
+        '/new/test/:id' => array("Home", "test"),
+        '/view/city/:id' => array("Home", "city")
+
+    ),
+    'POST' => array(
+        '/rest/api/:id' => array('Home', 'post')
+    ),
+    '*' => array(
+        '/api/update/:id' => array("Home", "test")
+    )
+);
+}}}
+
+As you can see we return an associative array, where there is another nested array, that maps URLs to controller => action, per HTTP method.
+
+In this way, we restrict the URLs so that they are accessible only with the specified HTTP method.
+
+Another thing to note here, is the existence of the notation
+{{{
+/page/action/:name/:id
+}}}
+
+This notation is useful when you need to route URLs with variable parameters, to the same action.
+
+In the above case, the all the below URLs would be routed to Home => index and anything starting with *:* would become an argument to index
+
+{{{
+/page/action/user/1
+/page/action/name/2
+/page/action/1/1
+}}}
+
+So the method signature for index would be
+
+{{{
+public function index($id, $name){}
+}}}
+
+Note, that *Edge* does not make any checks on the type of the variables, while resolving a URL to a route. There are no regular expressions run during the resolution phase.
+
+To better understand the steps *Edge* takes in order to resolve a URL, let's consider that a user made a GET request to /view/city/Athens.
+*Edge* does the following:
+
+  # Based on the requested HTTP method (GET, POST etc) loads the appropriate route array
+  # Checks is the URL can be matched exactly within the associative array (btw this is the fastest way to resolve routes)
+  # If there is no match, it counts the number of dashes in the URL and starts looping the array. 
+  # It compares the number of dashes to the ones of the current key. If they match, it checks to see if the part of the URL excluding the parameters, match with the one of the current key.
+  # If it does, we found the route and the params
+  # If nothing of the above matches, it checks if there is a route defined within the asterisk array, by executing the previous steps
+  # In case nothing is found there also, a 404 error is returned. 
