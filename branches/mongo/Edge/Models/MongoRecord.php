@@ -1,12 +1,20 @@
 <?php
 namespace Edge\Models;
 
+/**
+ * Class MongoRecord
+ * @package Edge\Models
+ */
 abstract class MongoRecord extends Record{
 
     protected static $_members = array('_id');
 
     protected static $adapterClass = 'Edge\Models\Adapters\MongoAdapter';
 
+    /**
+     * Return an array with the primary keys
+     * @return array
+     */
     public static function getPk(){
         return array('_id');
     }
