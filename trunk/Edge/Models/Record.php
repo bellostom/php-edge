@@ -266,6 +266,36 @@ abstract class Record implements EventHandler, CachableRecord{
     }
 
     /**
+     * Returns an instance of the model, to which
+     * the current entry belongs to.
+     * ie An Article is set to belong to a Source
+     * This is denoted by the existence of a source_id FK
+     * entry to the article table.
+     * By defining a method source() in the Article model
+     * and accessing it by $article->source we get a reference
+     * to the Source model
+     * @param $model
+     * @param array $keys optional (array("fk" => "source_id", "value" => 1))
+     * @return mixed
+     */
+    protected function belongsTo($model, $keys=array()){
+        static $instance;
+        if(is_null($instance)){
+            if(!isset($keys['fk'])){
+                $keys['fk'] = 'id';
+            }
+            if(!isset($keys['value'])){
+                $id = sprintf("%s_id", $model::getTable());
+                $keys['value'] = $this->$id;
+            }
+            $instance = $model::select()
+                ->where(array($keys['fk'] => $keys['value']))
+                ->run();
+        }
+        return $instance;
+    }
+
+    /**
      * $this->manyToMany('Application\Models\City', array(
         'linkTable' => 'country2city',
         'fk1' => 'country_id',
@@ -304,10 +334,11 @@ abstract class Record implements EventHandler, CachableRecord{
                 $keys['fk'] = sprintf("%s_id", static::getTable());
             }
             if(!isset($keys['value'])){
-                $keys['value'] = $this->id;
+                $keys['value'] = array($this->id);
             }
             $instance = $model::select()
-                              ->where(array($keys['fk'] => $keys['value']))
+                              ->where($keys['fk'])
+                              ->in($keys['value'])
                               ->fetchMode(Record::FETCH_RESULTSET)
                               ->run();
         }
@@ -326,6 +357,11 @@ abstract class Record implements EventHandler, CachableRecord{
         return $adapter;
     }
 
+    /**
+     * Execute a
+     * @param $query
+     * @return mixed
+     */
     public static function selectQuery($query){
         $adapter = static::selectCommon();
         $adapter->query = $query;

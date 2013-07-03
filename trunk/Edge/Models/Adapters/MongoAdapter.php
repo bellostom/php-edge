@@ -1,256 +1,156 @@
 <?php
-/**
- * Created by JetBrains PhpStorm.
- * User: Thomas
- * Date: 18/4/2013
- *
- */
 namespace Edge\Models\Adapters;
-use Edge\Core\Database\MysqlMaster;
-use Edge\Core\Database\DB;
-use Edge\Core\Database\ResultSet\MySQLResultSet;
-use Edge\Models\Record;
-use Edge\Core;
 
-class MongoAdapter implements AdapterInterface{
+use Edge\Core\Edge,
+    Edge\Core\Exceptions\EdgeException,
+    Edge\Models\Record;
 
-    /**
-     * Normalize select attributes in order to build the
-     * SELECT query. Valid examples are
-     * Record::find(1)
-     * Record::find("all", array(
-        'conditions' => array("name" => "English"),
-     *  'order' => array("name DESC"),
-     *  'limit' => 10,
-     *  'offset' => 0
-     * ))
-     * Record::find("last")
-     * Record::find("first")
-     * Record::find(array(
-        "id" => array(2,4)
-     * ))
-     * Record::find(array("id"=>array(1,2), "name" => "John"), array(
-        'order' => array("name desc"),
-        'limit' => 10,
-        'offset' => 0
-    ));
-     * @param array $options
-     * @param $class
+class MongoAdapter extends BaseAdapter{
+
+    /** Override base method to define
+     * the $in keyword required by Mongo
+     * in order to execute the query
+     * @param array $args
+     * @return $this
      */
-    public function find(array $options, $class){
-        $criteria = $options[1];
-        //$fetchMode = $criteria['fetchMode'];
-        //$returnSingle = in_array($fetchMode, array(Record::FETCH_INSTANCE, Record::FETCH_ASSOC_ARRAY));
-        $db = $this->getDbConnection();
-
-        if(!array_key_exists('conditions', $criteria)){
-            $criteria['conditions'] = array();
-        }
-        if(gettype($options[0]) == 'integer'){
-            $options[0] = (string) $options[0];
-        }
-        $criteria['from'] = $class::getTable();
-        if(gettype($options[0]) == 'string'){
-            if(in_array($options[0], array("first", "last", "all"))){
-                switch($options[0]){
-                    case "first":
-                        $criteria['limit'] = 1;
-                        $criteria['offset'] = 0;
-                        break;
-                    case "last":
-                        $criteria['limit'] = 1;
-                        $criteria['order'] = join(' DESC, ',$class::getPk()) . ' DESC';
-                        break;
-                }
-            }else{
-                //custom
-                $pks = array_combine($class::getPk(), array($options[0]));
-                $criteria['conditions'] = array_merge($pks, $criteria['conditions']);
-            }
-        }
-        else if(is_array($options[0])){
-            $criteria['conditions'] = array_merge($criteria['conditions'], $options[0]);
-        }
-
-        $sql = $this->createSelectQuery($criteria, $db);
-        $rs = $db->dbQuery($sql);
-        return array($rs, $db->dbNumRows($rs));
-
-        /*if($nums == 0){
-            if($returnSingle){
-                return null;
-            }
-            return array();
-        }
-        if($returnSingle){
-            $row = $db->dbFetchArray($rs);
-            if($fetchMode == Record::FETCH_ASSOC_ARRAY){
-                return $row;
-            }
-            return new $class($row);
-        }
-        return new MySQLResultSet($rs, $class);*/
-    }
-
-    public function getDbConnection(){
-        return \Edge\Core\Edge::app()->db;
+    public function in(array $args){
+        $lastVar = $this->lastVar;
+        $key = $this->lastWhere;
+        $this->{$lastVar}[$key] = array('$in' => $args);
+        return $this;
     }
 
     /**
-     * Build the sql query based on the provided options
-     */
-    protected function createSelectQuery(array $options, $db){
-        $sql = array();
-        if(array_key_exists('conditions', $options) && count($options['conditions']) > 0){
-            $sql[] = "WHERE ". $this->joinConditions($options['conditions'], $db);
-        }
-        if(array_key_exists('order', $options)){
-            $order_val = is_array($options['order'])?$options['order'][0]:$options['order'];
-            $sql[] = "ORDER BY ". $order_val;
-        }
-        if(array_key_exists('limit', $options)){
-            if(array_key_exists('offset', $options)){
-                $options['limit'] = join(",", array($options['offset'], $options['limit']));
-            }
-            $sql[] = "LIMIT ". $options['limit'];
-        }
-        return sprintf("SELECT * FROM %s %s", $options['from'], join(" ", $sql));
-    }
-
-    /**
-     * Save the object to the database
-     * @param \Edge\Models\Record $entry
-     */
-    public function save(Record $entry){
-        $db = MysqlMaster::getInstance();
-        $data = array_map(function($v) use ($db){
-            return sprintf('"%s"', $db->dbEscapeString($v));
-        }, $entry->getAttributes());
-        //if(Core\Context::$autoCommit){
-        //    $db->start_transaction();
-        //}
-        $db->dbQuery($this->getInsertQuery($data, $entry));
-        $this->setAutoIncrement($entry);
-    }
-
-    /**
-     * After the object has been created check for
-     * auto increment fields and set the value
-     * assigned by MySQL
-     * @param \Edge\Models\Record $entry
-     */
-    private function setAutoIncrement(Record $entry){
-        $table = $entry->getTable();
-        $pks = $entry->getPk();
-        if(count($pks) > 0){
-            $db = MysqlMaster::getInstance();
-            $metadata = $db->db_metadata($table);
-            foreach($pks as $attr){
-                if(isset($metadata[$attr]) && $metadata[$attr][1] & \MYSQLI_AUTO_INCREMENT_FLAG){
-                    $entry->$attr = $db->db_insert_id();
-                }
-            }
-        }
-    }
-
-    /**
-     * Construct the INSERT sql query
-     * @param $data
-     * @param \Edge\Models\Record $entry
-     * @return string
-     */
-    private function getInsertQuery($data, Record $entry) {
-        $q = "INSERT INTO ".$entry::getTable()." (";
-        $q .= join(",", array_keys($data)).") VALUES(";
-        $q .= join(",", array_values($data)).")";
-        return $q;
-    }
-
-    /**
-     * Return an associative array with primary keys
-     * and their values
-     * @param \Edge\Models\Record $entry
+     * Build the array the find options
      * @return array
-     * @throws \Exception
+     * @throws \Edge\Core\Exceptions\EdgeException
      */
-    private function getPkValues(Record $entry){
-        $attrs = array();
-        $pk = $entry::getPk();
-        foreach($pk as $key){
-            $val = $entry->$key;
-            if(empty($val)){
-                throw new \Exception("Primary key must have a value");
-            }
-            $attrs[$key] = $val;
-        }
-        return $attrs;
-    }
-
-    /**
-     * Join the conditions array to be used as a WHERE
-     * clause in a SQL query
-     * $object->delete(array(
-            'conditions' => array(
-               'id' => array(10,20),
-               'lang' => 'uk'
-           )
-     * ));
-     */
-    public function joinConditions(array $conditions, $db){
-        $data = array_map(function($k, $v) use ($db){
-            if(is_array($v)){
-                $vals = array();
-                foreach($v as $val){
-                    $vals[] = sprintf('"%s"', $db->dbEscapeString($val));
-                }
-                $v = join(",", $vals);
-                return sprintf('%s IN (%s)', $k, $v);
-            }
-            return sprintf('%s = \'%s\'', $k, $db->dbEscapeString($v));
-        }, array_keys($conditions), array_values($conditions));
-        return join(' AND ', $data);
-    }
-
-    /**
-     * Delete object from the database
-     * @param \Edge\Models\Record $entry
-     * @param array $criteria
-     */
-    public function delete(Record $entry, array $criteria=array()){
-        $db = MysqlMaster::getInstance();
-        $where = array();
-        if(count($criteria) > 0){
-            if(array_key_exists('conditions', $criteria)){
-                $where = $criteria['conditions'];
-            }
+    protected function getQuery(){
+        $options = array();
+        $fields = $this->selectFields;
+        if($fields[0] == '*'){
+            $this->selectFields = array();
         }
         else{
-            $where = $this->getPkValues($entry);
+            $this->selectFields = array_combine($fields, array_fill(0, count($fields), 1));
         }
-
-        $sql = sprintf("DELETE FROM %s WHERE %s", $entry::getTable(), $this->joinConditions($where));
-        $db->dbQuery($sql);
+        if(count($this->where) > 0){
+            $options = $this->where;
+            if(count($this->and) > 0){
+                $options = array_merge($options, $this->and);
+            }
+            if($this->or){
+                if($this->and){
+                    throw new EdgeException("Cannot mix or and and clauses with Mongo");
+                }
+                $options = array('$or' => array($options, $this->or));
+            }
+        }
+        return $options;
     }
 
     /**
-     * Construct the UPDATE sql query and update the object
-     * @param \Edge\Models\Record $entry
+     * Execute the find query
+     * @param $options
+     * @return mixed
+     */
+    public function executeQuery($options){
+        $db = $this->getDbConnection();
+        $fields = $this->selectFields;
+        return $db->find($this->table, $options, $fields, $this->order,
+                         $this->limit, $this->offset);
+    }
+
+    /**
+     * Persist data to the collection
+     * @param Record $entry
+     */
+    public function save(Record $entry){
+        $data = $entry->getAttributes();
+        unset($data['_id']);
+        $this->getDbConnection()->insert($entry::getTable(), $data);
+        $entry->_id = $data['_id'];
+    }
+
+    /**
+     * Delete record
+     * @param Record $entry
+     */
+    public function delete(Record $entry){
+        $this->getDbConnection()->delete($entry::getTable(), $entry->_id);
+    }
+
+    /**
+     * Update record
+     * @param Record $entry
      */
     public function update(Record $entry){
-        $pks = $this->getPkValues($entry);
-        $data = array_diff_assoc($entry->getAttributes(), $pks);
-        $db = MysqlMaster::getInstance();
-        $k = array_keys($data);
-        $v = array_values($data);
-        $c = join(", ", array_map(function($k, $v) use ($db){
-            return sprintf('%s="%s"', $k, $db->dbEscapeString($v));
-        }, $k, $v));
-        $q = sprintf("UPDATE %s SET %s WHERE %s", $entry::getTable(), $c, $this->joinConditions($pks));
+        $where = array("_id" => $entry->_id);
+        $data = $entry->getAttributes();
+        $this->getDbConnection()->update($entry::getTable(), $where, $data);
+    }
 
-        //if(Context::$autoCommit){
-        //    $db->start_transaction();
-        //}
-        error_log($q);
-        $db->dbQuery($q);
+    /**
+     * Return the Mongo db connection
+     * @return mixed
+     */
+    public function getDbConnection(){
+        return Edge::app()->mongo;
+    }
+
+    /**
+     * Return a Mongo ResultSet
+     * @param $rs
+     * @param $class
+     * @return \Edge\Core\Database\ResultSet\MongoResultSet
+     */
+    protected function getResultSet($rs, $class){
+        return new \Edge\Core\Database\ResultSet\MongoResultSet($rs, $class);
+    }
+
+    /**
+     * Iterate Mongo cursor and return an array
+     * with the records
+     * @param $rs
+     * @return array
+     */
+    protected function fetchAll($rs){
+        $data = array();
+        foreach($rs as $row){
+            $data[] =  $row;
+        }
+        return $data;
+    }
+
+    /**
+     * Return an assoc array for the first record
+     * @param $rs
+     * @return mixed
+     */
+    protected function fetchArray($rs){
+        foreach($rs as $row){
+            return $row;
+        }
+    }
+
+    /**
+     * We implement many to many relationships without the
+     * need of a lookup table. This means that the below
+     * method should never be invoked for Mongo models
+     * @param $model
+     * @param array $attrs
+     * @throws \Edge\Core\Exceptions\EdgeException
+     */
+    public function manyToMany($model, array $attrs){
+        throw new EdgeException("Mongo implements this relationship differently.");
+    }
+
+    /**
+     * Count the Mongo cursor object
+     * @param $rs
+     * @return mixed
+     */
+    protected function countResults($rs){
+        return $rs->count();
     }
 }

@@ -40,14 +40,15 @@ abstract class BaseAdapter{
     }
 
     abstract protected function getQuery();
+    abstract protected function getResultSet($rs, $class);
+    abstract protected function countResults($rs);
+    abstract protected function fetchAll($rs);
+    abstract protected function fetchArray($rs);
     abstract public function executeQuery($query);
     abstract public function save(Record $entry);
     abstract public function delete(Record $entry);
     abstract public function update(Record $entry);
     abstract public function getDbConnection();
-    abstract public function getResultSet($rs, $class);
-    abstract public function fetchAll($rs);
-    abstract public function fetchArray($rs);
     abstract public function manyToMany($model, array $attrs);
 
     /**
@@ -60,8 +61,18 @@ abstract class BaseAdapter{
         return $cache->get($this->getCacheKey());
     }
 
+    /**
+     * Construct a cache key based on the selections
+     * defined for the query
+     * @return string
+     */
     protected function getCacheKey(){
-        return md5($this->query);
+        $data = array($this->table, $this->where,
+                      $this->or, $this->and,
+                      $this->order, $this->limit,
+                      $this->offset, $this->fetchMode,
+                      $this->cacheAttrs);
+        return md5(serialize($data));
     }
 
     protected function cacheData($key, $data, $ttl){
@@ -108,7 +119,8 @@ abstract class BaseAdapter{
             }
         }
 
-        list($result, $records) = $this->executeQuery($this->query);
+        $result = $this->executeQuery($this->query);
+        $records = $this->countResults($result);
 
         if($cacheRecord && $records){
             $ttl = 0;
@@ -188,20 +200,40 @@ abstract class BaseAdapter{
         return $ret;
     }
 
+    /**
+     * Sets the fields to select
+     * @param array $args
+     */
     public function select(array $args){
         $this->selectFields = $args;
     }
 
+    /**
+     * Set caching attributes
+     * @param array $attrs
+     * @return $this
+     */
     public function cache(array $attrs){
         $this->cacheAttrs = $attrs;
         return $this;
     }
 
+    /**
+     * Set result fetch mode
+     * @param $mode
+     * @return $this
+     */
     public function fetchMode($mode){
         $this->fetchMode = $mode;
         return $this;
     }
 
+    /**
+     * Sets values for the query
+     * @param $args
+     * @param $var
+     * @return $this
+     */
     protected function clause($args, $var){
         $this->lastVar = $var;
         if(is_string($args)){
@@ -215,6 +247,11 @@ abstract class BaseAdapter{
         return $this;
     }
 
+    /**
+     * Sets sort values
+     * @param array $args
+     * @return $this
+     */
     public function order(array $args){
         $key = array_keys($args)[0];
         $val = array_values($args)[0];
@@ -222,30 +259,59 @@ abstract class BaseAdapter{
         return $this;
     }
 
+    /**
+     * Sets limit value
+     * @param $w
+     * @return $this
+     */
     public function limit($w){
         $this->limit = $w;
         return $this;
     }
 
+    /**
+     * Set offset
+     * @param $w
+     * @return $this
+     */
     public function offset($w){
         $this->offset = $w;
         return $this;
     }
 
+    /**
+     * Define select attributes
+     * @param $args
+     * @return $this
+     */
     public function where($args){
         return $this->clause($args, 'where');
     }
 
+    /**
+     * Define select attributes
+     * @param $args
+     * @return $this
+     */
     public function orWhere($args){
         return $this->clause($args, 'or');
     }
 
+    /**
+     * Define select attributes
+     * @param $args
+     * @return $this
+     */
     public function andWhere($args){
         return $this->clause($args, 'and');
     }
 
-    public function in(/*$args*/){
-        $args = func_get_args();
+    /**
+     * Define select attributes
+     * @param $args
+     * @return $this
+     */
+    public function in(array $args){
         $lastVar = $this->lastVar;
         $key = $this->lastWhere;
         $this->{$lastVar}[$key] = $args;
