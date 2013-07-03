@@ -1,7 +1,10 @@
 <?php
 return array(
     'services' => array(
-
+        /**
+         * Define a variable to store MySQL credentials
+         * for the master and slave nodes
+         */
         'mysqlCredentials' => array(
             'master' => array(
                 'host' => 'localhost:3306',
@@ -17,6 +20,9 @@ return array(
             )
         ),
 
+        /**
+         * Redis caching storage
+         */
         'cache' => array(
             'invokable' => 'Edge\Core\Cache\RedisCache',
             'args' => array(
@@ -25,6 +31,9 @@ return array(
             'shared' => true
         ),
 
+        /**
+         * Mongo connection object
+         */
         'mongo' => array(
             'invokable' => 'Edge\Core\Database\MongoConnection',
             'args' => array(
@@ -57,6 +66,8 @@ return array(
         )
     ),
     'routes' => include(__DIR__."/routes.php"),
+    'notFound' => array("\Application\Controllers\Home", "notFound"),
+    'serverError' => array("\Application\Controllers\Home", "serverError"),
     'timezone' => 'Europe/Athens',
     'env' => 'development'
 );

@@ -8,7 +8,7 @@ use Edge\Core\Edge,
  * Class Layout
  * Manages the layout template file and provides
  * helper functions to handle minification and
- * compression of static css and javascrupt files
+ * compression of static css and javascript files
  * @package Edge\Core
  */
 class Layout extends Template{
@@ -17,7 +17,7 @@ class Layout extends Template{
     private $css;
 
     /**
-     * @param array $tpl
+     * @param $tpl
      * @param array $js
      * @param array $css
      */

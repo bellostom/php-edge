@@ -7,12 +7,12 @@ use Edge\Controllers\BaseController,
 
 class Home extends BaseController{
 
-    protected static $layout = 'Application/Views/Layouts/ui.layout.tpl';
+    protected static $layout = 'Layouts/ui.layout.tpl';
     protected static $js = array(
         'Application/Views/facebook.js'
     );
 
-    public function filters(){
+    public function filters1(){
         return array_merge(parent::filters(), array(
             array(
                 'Edge\Core\Filters\PageCache',
@@ -26,88 +26,13 @@ class Home extends BaseController{
     }
 
     public function index(){
-        $r = \Edge\Models\User::select()
-                                ->where(array("id"=>1))
-                                ->order(array("username"=>"asc"))
-                                ->fetchMode(2)
-                                ->run();
-
-        var_dump($r);
-        exit;
-        $tpl = static::loadView('Application/Views/ui.test1.tpl');
+        $tpl = static::loadView('ui.test1.tpl');
         $tpl->test = 'thomas';
-        return $tpl->parse();
+        return parent::render($tpl);
     }
 
     public static function fetchUser(){
         return time();
-    }
-
-    public function city($cityID){
-        $user = \Edge\Models\User::getUserByUsername("guest");
-
-        var_dump($user->hasPrivilege('create user'));
-        var_dump($user->roles);
-
-        exit;
-        $city = \Application\Models\City::getItemById($cityID);
-        print $city->region->name;
-        exit;
-        $country = \Application\Models\Country::getItemById($cityID);
-        foreach($country->cities as $city){
-            echo $city->name;
-        }
-        exit;
-        $city->region = "thomas";
-        print $city->region->name;
-        exit;
-        foreach($city->region as $region){
-            print $region->name;
-        }
-    }
-
-    public function test(){
-        $db = \Edge\Core\Edge::app()->writedb;
-        $db->startTransaction();
-        $r = new \Edge\Models\User();
-        $r->username = 'thomas';
-        $r->save();
-        //throw new \Exception("error");
-        return 1;
-
-
-        $r = \Edge\Models\User::getUserByUsername("thomas");
-        print "Updating ".$r->name."<br/>";
-        $r->pass="test";
-        $r->delete();
-
-        return 1;
-
-
-
-        $r = \Edge\Models\User::find('all', array(
-            'conditions' => array('name' => 'thomas')
-        ));
-        print $r->name;
-        return 1;
-        $r = \Edge\Models\User::find('all', array(
-            'fetchMode' => \Edge\Models\User::FETCH_RESULTSET,
-            'cache' => array(
-                'ttl' => 100
-            )
-        ));
-        foreach($r as $user){
-            echo $user->name."<br>";
-        }
-        //var_dump($r);
-        return 1;
-        $tpl = new \Edge\Core\Template('Application/Views/ui.test.tpl', array(
-                'ttl' => 10*60,
-                'varyBy' => 'url',
-                //'cacheValidator' => new Validator\QueryValidator("SELECT COUNT(id) FROM users")
-            ));
-        $tpl->test = "thomas";
-        return $tpl->parse();
     }
 
     public function post($id, $attrs){

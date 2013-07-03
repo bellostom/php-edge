@@ -21,10 +21,15 @@ abstract class BaseController{
         if(!static::$layout){
             throw new Core\Exceptions\EdgeException("Layout template must be defined by class ". get_called_class());
         }
-        $layout = new Layout(static::$layout, static::$js, static::$css);
+        $file = static::getTemplateFile(static::$layout);
+        $layout = new Layout($file, static::$js, static::$css);
         $layout->title = "Edge PHP framework";
         $layout->body = $tpl->parse();
         return $layout->parse();
+    }
+
+    private static function getTemplateFile($file){
+        return sprintf("%s/Views/%s", explode("\\", get_called_class())[0], $file);
     }
 
     /**
@@ -63,7 +68,7 @@ abstract class BaseController{
      * @return Core\Template
      */
     protected static function loadView($file, $cacheAttrs=array()){
-        return new Core\Template($file, $cacheAttrs);
+        return new Core\Template(static::getTemplateFile($file), $cacheAttrs);
     }
 
 	/**
