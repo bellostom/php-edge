@@ -182,9 +182,9 @@ abstract class BaseAdapter{
      * order them by username
      * \Edge\Models\User::select()
                         ->where("id"))
-                        ->in(1,2)
+                        ->in([1,2])
                         ->orWhere("name")
-                        ->in("Thomas", "John")
+                        ->in(["Thomas", "John"])
                         ->andWhere(array("sex"=>"male"))
                         ->order(array("username"=>"asc"))
                         ->run();
