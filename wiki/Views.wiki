@@ -115,10 +115,6 @@ class Home extends BaseController{
         ));
     }
 
-    /**
-     * Return the template decorated with a Layout
-     * @return string
-     */
     public function index(){
         $tpl = static::loadView('ui.index.tpl',["ttl"=>60]);
         $tpl->title = 'Welcome';
