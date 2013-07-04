@@ -1,4 +1,4 @@
-* [Introduction #Introduction]
+* [#Introduction Introduction]
     * [ArticlesXSS Web security]
     * [ArticlesDom DOM manipulation]
     * [ArticlesStyle CSS and style]
