@@ -17,3 +17,11 @@ Check the below pages for more details
 [Configuration]
 
 [Routing]
+
+[Controllers]
+
+[Views]
+
+[Models]
+
+[Internationalization]
