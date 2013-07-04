@@ -103,7 +103,7 @@ So going back on our example where we cache the whole view
 
 This way, although the view is cached the expression within *alwaysEvaluate* will be invoked and the value will be displayed.
 
-Note here that whenever you use *alwaysEvaluate* you must add the *DynamicOutput* filter in the controller. So in our example the Controller would look like
+Note here that whenever you use *alwaysEvaluate* you must add the *`DynamicOutput`* filter in the controller. So in our example the Controller would look like
 {{{
 class Home extends BaseController{
 
