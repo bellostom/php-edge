@@ -9,10 +9,10 @@ class Home extends BaseController{
 
     protected static $layout = 'Layouts/ui.layout.tpl';
     protected static $js = array(
-        'Application/Views/facebook.js'
+        'static/js/facebook.js'
     );
 
-    public function filters1(){
+    public function filters(){
         return array_merge(parent::filters(), array(
             array(
                 'Edge\Core\Filters\PageCache',

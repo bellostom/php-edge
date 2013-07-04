@@ -54,7 +54,7 @@ return array(
         'logger' => array(
             'invokable' => function($c){
                 $attrs = array(
-                    "file" => "app.log",
+                    "file" => "../app.log",
                     "dateFormat" => "j/n/Y g:i a",
                     "logLevel" => 'DEBUG'
                 );

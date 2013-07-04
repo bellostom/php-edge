@@ -29,7 +29,7 @@ abstract class BaseController{
     }
 
     private static function getTemplateFile($file){
-        return sprintf("%s/Views/%s", explode("\\", get_called_class())[0], $file);
+        return sprintf("../%s/Views/%s", explode("\\", get_called_class())[0], $file);
     }
 
     /**

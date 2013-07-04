@@ -8,9 +8,15 @@ class ClassLoader{
     private $refreshed = false;
     private $classList = array();
     private static $SAVE_FILE;
+    public $basePath;
 
     public function __construct(){
+        $this->basePath = realpath(dirname(__DIR__)."/../");
         static::$SAVE_FILE = __DIR__.'/_Modules.php';
+        $this->registerNamespaces(array(
+            'Edge' => $this->basePath,
+            'Monolog' => $this->basePath."/Edge/Core/Logger"
+        ));
     }
 
     private function initClassList(){
