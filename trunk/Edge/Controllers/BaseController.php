@@ -10,6 +10,21 @@ abstract class BaseController{
 	protected static $css = array();
 	protected static $js = array();
     protected static $layout = null;
+    protected static $defaultLayoutAttrs = [
+        'title' => 'Edge PHP Framework'
+    ];
+
+    /**
+     * Load the layout file
+     * This method is commonly overridden by child
+     * controllers, in order to specify common
+     * blocks, like headers, footers, van menus etc
+     * @return Layout
+     */
+    protected static function getLayout(){
+        $file = static::getTemplateFile(static::$layout);
+        return new Layout($file, static::$js, static::$css);
+    }
 
     /**
      * Render the layout file
@@ -21,13 +36,23 @@ abstract class BaseController{
         if(!static::$layout){
             throw new Core\Exceptions\EdgeException("Layout template must be defined by class ". get_called_class());
         }
-        $file = static::getTemplateFile(static::$layout);
-        $layout = new Layout($file, static::$js, static::$css);
-        $layout->title = "Edge PHP framework";
+        $layout = static::getLayout();
+        $attrs = array_merge(static::$defaultLayoutAttrs, $attrs);
+        $layout->title = $attrs['title'];
         $layout->body = $tpl->parse();
         return $layout->parse();
     }
 
+    /**
+     * Return the path to the template file.
+     * The path is resolved based on the caller.
+     * So if a call to getTemplateFile('ui.index.tpl') was made
+     * from the class Home which is located at
+     * Application/Controllers/Home.php then the template file
+     * is looked up in Application/Views/ui.index.tpl
+     * @param $file (ie ui.index.tpl)
+     * @return string
+     */
     private static function getTemplateFile($file){
         return sprintf("../%s/Views/%s", explode("\\", get_called_class())[0], $file);
     }
