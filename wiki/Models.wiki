@@ -259,7 +259,7 @@ private function sendVerificationEmail(){
 
 ==Querying Records==
 
-*Edge* provides a convinient way of querying records in a simple manner
+*Edge* provides a convenient way of querying records in a simple manner
 
 {{{
 SELECT * FROM users WHERE username='admin'
