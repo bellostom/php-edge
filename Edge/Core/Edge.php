@@ -1,13 +1,14 @@
 <?php
 namespace Edge\Core;
 use Edge\Core\Pimple,
+    Edge\Core\Exceptions\EdgeException,
     Edge\Models\User;
 
 /**
  * Class responsible for loading configurations options and
  * bootstrapping the application
  */
-class Edge{
+class Edge implements \ArrayAccess{
 
     private $container;
     private static $__instance;
@@ -17,7 +18,7 @@ class Edge{
 
     public function __construct($config){
         if(!is_null(static::$__instance)){
-            throw new \Edge\Core\Exceptions\EdgeException("Only one instance of the Web App can exist");
+            throw new EdgeException("Only one instance of the Web App can exist");
         }
         $defaults = include(__DIR__.'/../Config/config.php');
         $defaultRoutes = include(__DIR__.'/../Config/routes.php');
@@ -128,5 +129,31 @@ class Edge{
      */
     public static function app(){
         return self::$__instance;
+    }
+
+    /**
+     * Proxy to Pimple
+     * @param mixed $offset
+     * @return bool
+     */
+    public function offsetExists($offset){
+        return isset($this->container[$offset]);
+    }
+
+    /**
+     * Proxy array access to Pimple
+     * @param mixed $offset
+     * @return mixed
+     */
+    public function offsetGet($offset){
+        return $this->container[$offset];
+    }
+
+    public function offsetSet($offset, $value){
+        throw new EdgeException("Services can be defined through configuration file only");
+    }
+
+    public function offsetUnset($offset){
+        throw new EdgeException("Services cannot be unset");
     }
 }
