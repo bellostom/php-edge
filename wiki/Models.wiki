@@ -225,3 +225,92 @@ SELECT role.* FROM role
                 AND u.user_id = '1'
 
 }}}
+
+==Event Handlers==
+
+Event handlers are methods where you can define logic to be executed before or after a record is created, updated or deleted.
+
+*Edge* exposes the below events via methods you can implement on the Models
+{{{
+public function on_create(){}
+public function on_after_create(){}
+public function on_update(){}
+public function on_after_update(){}
+public function on_delete(){}
+public function on_after_delete(){}
+}}}
+
+An example of where such behavior is helpful is when for instance you wish to send a verification email to a user after they register.
+
+To accomplish that you would implement the below in the User model
+
+{{{
+public function on_after_create(){
+   //always call the parent's method so that if the parent
+   //has defined logic, it gets executed as well
+   parent::on_after_create();
+   $this->sendVerificationEmail();
+}
+
+private function sendVerificationEmail(){
+  //logic to send email
+}
+}}}
+
+==Querying Records==
+
+*Edge* provides a convinient way of querying records in a simple manner
+
+{{{
+SELECT * FROM users WHERE username='admin'
+
+User::select()
+     ->where(array("username"=>"admin"))
+     ->run();
+
+
+
+SELECT * FROM users WHERE id='2'
+
+User::select()
+     ->where(array("id"=>"2"))
+     ->fetchMode(User::FETCH_ASSOC_ARRAY)
+     ->run();
+
+
+
+SELECT id,name FROM users
+         WHERE id in (1,2)
+         OR name IN ("Thomas", "John")
+         AND sex = "male"
+         ORDER BY username ASC
+
+User::select(["id","name"])
+    ->where("id"))
+    ->in([1,2])
+    ->orWhere("name")
+    ->in(["Thomas", "John"])
+    ->andWhere(["sex"=>"male"])
+    ->order(["username"=>"asc"])
+    ->cache(["ttl"=>10*60])
+    ->fetchMode(User::FETCH_RESULTSET)
+    ->run();
+
+
+
+SELECT * FROM users ORDER BY username ASC limit 0,10
+
+User::select()
+      ->order(["username"=>"asc"])
+      ->limit(0)
+      ->offset(10)
+      ->fetchMode(Record::FETCH_NATIVE_RESULTSET)
+      ->run();
+}}}
+
+By default *Edge* will return an insstance of the class that run the query (in the examples above User).
+
+You can override this by defining one of the below
+  * Record::FETCH_NATIVE_RESULTSET: Returns the database's native result set (mysqli_result for MySQL or MongoCursor for Mongo)
+  * Record::FETCH_RESULTSET: Returns an *Edge* iterator which returns an instance of the class that called the select() at each iteration.
+  * Record::FETCH_ASSOC_ARRAY: returns a PHP associative array (for results that return just 1 record).
