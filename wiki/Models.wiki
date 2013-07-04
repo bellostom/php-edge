@@ -1,0 +1,227 @@
+#summary Details about Models.
+#sidebar ModelsToC
+
+=Introduction=
+
+*Edge* implements a lightweight Active Record ORM pattern.
+
+This means that each database record is represented by a single instance.
+
+Currently, *Edge* has builtin support for MySQL and Mongo DB, but because the framework has no support of building joins and complex queries by default, it should be trivial to add support for other SQL RDBMS.
+
+Below is an example of an Article class
+
+{{{
+<?php
+namespace Application\Models;
+
+use Edge\Models\Identifiable;
+
+class Article extends Identifiable {
+
+    protected static $_members = array('feed_id');
+
+    public static function getTable(){
+        return 'article';
+    }
+
+    protected function feed(){
+        return $this->belongsTo('Application\Models\Feed');
+    }
+}
+}}}
+
+Here, we see that the Article class extends Identifiable which is an abstract class (Edge/Models/Identifiabe.php) and provides methods to retrieve records by id and name.
+
+This means that the Article class has 3 attributes:
+
+id, name and feed_id and the corresponding table is *article*.
+
+In the *protected static $_members* array you define the attributes that the class has and these need to be the same with the table's structure (in the case of MySQL).
+
+You do not need to define all attributes when inheriting from a class that defines its own attributes, like the case we have here.
+
+The base Record class, iterates the inheritance chain and constructs an array with all the defined attributes.
+
+==Saving records==
+
+To create and save an Article
+
+{{{
+$article = new Article();
+$article->name = "Edge";
+$article->feed_id = 1;
+$article->save();
+
+//or 
+
+$data = [
+  "name" => "Edge",
+  "feed_id" => 1
+];
+$article = new Article($data);
+$article->save();
+
+print $article->id;
+}}}
+
+Identifiable defines that the id attribute is a Primary Key by implementing the below method
+{{{
+    public static function getPk(){
+        return array("id");
+    }
+}}}
+
+When the object is saved, *Edge* will detect if any of the PKs have an auto increment flag and set the value.
+
+==Retrieving, updating and deleting==
+{{{
+$article = Article::getItemById(1);
+$article->name = "New value";
+$article->update();
+
+//to delete
+$article->delete();
+}}}
+
+==Setters and Getters==
+
+To define a setter or/and getter for an attribute simply implement a protected method and prepend it with set or get. Example:
+
+{{{
+/**
+* Invoked every time $this->name is called
+*/
+protected function getName(){
+  return $this->attributes['name'];
+}
+
+/**
+* Invoked every time $this->name = 'value' is called
+*/
+protected function setName($val){
+  $this->assignAttribute('name', $val);
+}
+}}}
+
+==Defining Relationships==
+
+*Edge* allows you to define relationships between classes, the same way you define relationships between database tables.
+
+There are 4 types of relationships:
+
+  # One to One via hasOne()
+  # One to Many via hasMany()
+  # A record belongs to a parent via belongsTo()
+  # Many to Many via manyToMany()
+
+In the Article class above we can see that there is a method
+{{{
+    protected function feed(){
+        return $this->belongsTo('Application\Models\Feed');
+    }
+}}}
+
+This means that there is a relationship between Article and Feed.
+
+By accessing
+{{{
+//we access it as a property and not as a method
+$article->feed
+}}}
+
+you get back an instance of the Feed class to which the Article belongs.
+
+In SQL terms it is equivelant to
+{{{
+SELECT * FROM feed where id=1;
+}}}
+
+Let's have a look at the Feed class
+
+{{{
+<?php
+namespace Application\Models;
+
+use Edge\Models\Identifiable;
+
+class Feed extends Identifiable {
+
+    public static function getTable(){
+        return 'feed';
+    }
+
+    protected function articles(){
+        return $this->hasMany('Application\Models\Article');
+    }
+}
+}}}
+
+These tells us that the relationship between Articles and Feeds is one to many (1 Feed has many Articles).
+
+So if we access
+{{{
+foreach($feed->articles as $article){
+   echo $article->name;
+}
+}}}
+
+we get back an iterator (Edge/Core/Database/ResultSet/ResultSet.php) which yields an Article instance on each iteration.
+
+It is important to note here 2 things:
+
+  # The relationships are resolved upon request. When the object is instantiated nothing is loaded. When a request is made i.e to $feed->articles, the resolution takes place then.
+
+  # Once a relationship is resolved, it is cached so any subsequent requests (during the thread's execution) does not reprocess the relationship.
+
+*hasOne()* functions the same way as *belongsTo()*
+
+===Assumptions===
+When you do not pass a second argument to hasOne(), hasMany(), belongsTo(), *Edge* makes some assumptions in order to resolve dependencies.
+
+  * In the case of *hasOne()* and *hasMany()* it assumes that the FK is named tablename_id (ie feed_id) and that the value by which to query can be retrieved by invoking $this->id.
+
+ * In the case of *belongsTo()* it assumes that the column of the table is named id and the value to query for can be retrieved by $this->tablename_id in the current instance (ie $this->feed_id)
+
+If the above rules are not met by your class you can pass an array in order to provide them
+
+{{{
+
+$this->belongsTo('Application\Models\Article', ['fk' => 'fid', 'value' => $this->fk]);
+
+}}}
+
+===Many to Many relationships===
+Many to many relationships are a bit more complex when defining them.
+The common way we define many to many relationships in RDBMS, is by creating a link table between the 2 entities.
+
+Let's consider an example with a RBAC (Role Based Access Control) system, which is implemented by *Edge*.
+
+Each user can have many roles and a role can have many users.
+So having a look at the User class (Edge/Models/User.php) we load the roles the user belongs to as follows
+
+{{{
+    /**
+     * Load the roles that are assigned to the user
+     * @return ResultSet
+     */
+    protected function roles(){
+        return $this->manyToMany('Edge\Models\Role', array(
+            'linkTable' => 'user_role',
+            'fk1' => 'user_id',
+            'fk2' => 'role_id',
+            'value' => $this->id
+        ));
+    }
+
+}}}
+
+We also pass an array which describes the link table, the FK's and the user id value with which to retrieve the results. The generated SQL looks like
+
+{{{
+SELECT role.* FROM role
+                INNER JOIN user_role u
+                ON role.id = u.role_id
+                AND u.user_id = '1'
+
+}}}
