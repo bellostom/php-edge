@@ -2,3 +2,4 @@
   * [#Saving_records Saving Redords]
   * [#Retrieving,_updating_and_deleting Retrieving]
   * [#Setters_and_Getters Setters and Getters]
+  * [#Defining_Relationships Relationships]
