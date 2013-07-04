@@ -30,8 +30,8 @@ class Home extends BaseController{
                 'Edge\Core\Filters\PageCache',
                 'ttl' => 10*60,
                 'varyBy' => 'url',
-                'cacheValidator' => new Validator\QueryValidator("SELECT COUNT(id) FROM users"),
-                'applyTo' => array('index', 'post')
+                'cacheValidator' => new Validator\QueryValidator("SELECT MAX(updated) FROM articles"),
+                'applyTo' => array('index')
             ),
             array('Edge\Core\Filters\DynamicOutput')
         ));
@@ -55,8 +55,8 @@ class Home extends BaseController{
      * @return string
      */
     public function renderPartial(){
-        $tpl = static::loadView('ui.test1.tpl');
-        $tpl->test = 'thomas';
+        $tpl = static::loadView('ui.index.tpl');
+        $tpl->title = 'Welcome';
         return $tpl->parse();
     }
 
@@ -65,9 +65,12 @@ class Home extends BaseController{
      * @return string
      */
     public function index(){
-        $tpl = static::loadView('ui.test1.tpl');
-        $tpl->test = 'thomas';
+        $tpl = static::loadView('ui.index.tpl');
+        $tpl->title = 'Welcome';
         return parent::render($tpl);
     }
 }
 }}}
+
+The above is a basic example that includes the features discussed earlier. 
+
