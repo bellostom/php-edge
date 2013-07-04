@@ -1,2 +1,4 @@
 * [Introduction #Introduction]
-* [Saving Redords #Saving Records]
+* [Saving Redords #Saving_records]
+* [Retrieving #Retrieving,_updating_and_deleting]
+* [Setters and Getters #Setters_and_Getters]
