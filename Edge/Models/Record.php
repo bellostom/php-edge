@@ -130,6 +130,7 @@ abstract class Record implements EventHandler, CachableRecord{
             $staticAttrs = $class->getStaticProperties();
             $lineage = array_merge($lineage, $staticAttrs['_members']);
         }
+        $lineage = array_unique($lineage);
         return array_combine($lineage, array_fill(0, count($lineage), null));
     }
 
@@ -362,9 +363,10 @@ abstract class Record implements EventHandler, CachableRecord{
      * @param $query
      * @return mixed
      */
-    public static function selectQuery($query){
+    public static function selectQuery($query, array $cacheAttrs=array()){
         $adapter = static::selectCommon();
         $adapter->query = $query;
+        $adapter->cache($cacheAttrs);
         return $adapter;
     }
 
