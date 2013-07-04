@@ -1,6 +1,7 @@
 <?php
 namespace Edge\Core;
 
+use Edge\Core\Edge;
 /**
  * Class InternalCache
  * Uses the TraitCachable trait to expose caching
@@ -40,6 +41,9 @@ class Template extends InternalCache{
 	public function __construct($tpl, array $cacheAttrs=array()){
 		$this->tpl = $tpl;
         $this->attrs['this'] = $this;
+        if(isset(Edge::app()['i18n'])){
+            $this->attrs['i18n'] = Edge::app()->i18n;
+        }
         parent::__construct($cacheAttrs);
 	}
 
