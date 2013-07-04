@@ -1,4 +1,2 @@
 * [Introduction #Introduction]
 * [Saving Redords #Saving Records]
-* [Retrieval #Retrieving, updating and deleting]
-* [Saving Redords #Saving Records]
