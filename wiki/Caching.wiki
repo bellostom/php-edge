@@ -64,7 +64,7 @@ $cache->add("some_unique_key", $data, 10*60);
 $data = $cache->get("some_unique_key");
 
 //to delete the data
-$cache->delete("some_uniqueu_key");
+$cache->delete("some_unique_key");
 }}}
 
 ==Query Caching==
@@ -111,4 +111,53 @@ User::select()
          'ttl' => 20*60'
       ])
      ->run();
+}}}
+
+==Cache Validators==
+
+Additionally, you can specify a condition which is evaluated every time you retrieve a cached item and determines whether the data are stale or not.
+
+*Edge* currently supports two ways for validating caches
+
+  # By executing a query (`QueryValidator`)
+  # By checking the modification time of a file (`FileValidator`)
+
+Let's take as an example a View that displays information for a list of users. In this scenario, the Action loads some entries from a user table, pass the result to the view which iterates the result and outputs some HTML. Not very intensive in db terms but it will do for our example.
+
+We can cache the db query and pass a validator object that checks if the user count has changed, in which case the cache is invalidated.
+
+{{{
+public function list(){
+	$users = User::select()
+		     ->cache([
+                          'ttl' => 0, //never expire, defaults to this if not specified
+		          'cacheValidator' => new QueryValidator("SELECT COUNT(id) FROM users")
+		       ])
+		    ->run();
+	$view = static::loadView('ui.users.tpl');
+	$view->users = $users;
+	$view->parse();
+}
+}}}
+
+===Options for Views and Fragment Caching===
+
+The above rules also apply when specifying caching directives for views and fragment caching.
+
+Additionally, for these components you can specify to vary the generated cache based on
+
+  # The requested URL (which is the default by the way)
+  # The session 
+
+This means that when genearting the cache key, the engine will take into account the above parameters.
+
+{{{
+public function list(){
+	$view = static::loadView('ui.users.tpl', [
+             'varyBy' => 'session' //or url
+             'ttl' => 30*60
+         ]);
+	$view->parse();
+}
+
 }}}
