@@ -35,6 +35,12 @@ public function menu(){
 }
 }}}
 
+Additionally, you can safely output untrusted content by escaping it using
+
+{{{
+<p class="content"><?= $this->escape($untrustedContent); ?></p>
+}}}
+
 ==Caching a View==
 
 You can cache the output of a View by specifying an array with caching attributes, as the second argument to the *loadView* method.
