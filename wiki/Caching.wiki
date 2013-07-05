@@ -12,7 +12,7 @@ Caching is an essential component for modern high traffic web applications. It h
 
 The first 2 options store data in memory and are considerably faster than file caching, so opt for these options whenever possible.
 
-==Configuration==
+==Configuration and Usage==
 
 As any other services within *Edge*, we configure caching in the config.php file.
 
@@ -51,9 +51,22 @@ Below are some samples for each one of the 3 options
         )
 }}}
 
+
+To access the cache and use it, you do as with every other service like
+{{{
+use Edge\Core\Edge;
+$cache = Edge::app()->cache;
+
+//assume $data stores some expensive to calculate data
+$cache->add("some_unique_key", $data, 10*60);
+
+//to retrieve the data
+$data = $cache->get("some_unique_key");
+}}}
+
 ==Query Caching==
 
-By default *Edge* caches each instance of any Model that derives from Record.
+By default *Edge* caches each instance of any Model that derives from Record. This means that every time you query a model and the result you get back is 1 entry, this willbe cached.
 
 So when you query the below
 
@@ -67,7 +80,7 @@ User::select()
 
 these queries return a User instance and by default they are cached.
 
-When you update the specific instance *Edge* automatically invalidates its cached items referring to the specific instance.
+When you update the specific instance *Edge* automatically invalidates its cached items referring to the specific instance. The same happens when you delete the record, all caches of the record are deleted.
 
 If you do not want this behavior you can define the below method in your Model classes which will disable caching.
 
@@ -76,3 +89,14 @@ public static function cacheRecord(){
     return false;
 }
 }}}
+
+You can implicitly specify a query to be cached 
+
+{{{
+User::select()
+     ->where("id")
+     ->in(1,50,200)
+     ->cache([
+         'ttl' => 20*60
+      ])
+     ->run();
