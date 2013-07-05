@@ -1,6 +1,5 @@
 #summary How to install Edge on your system
 
-= Introduction =
 
 In order to install *Edge* on your system you will need
   * *PHP 5.4*
