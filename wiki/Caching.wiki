@@ -19,5 +19,34 @@ As any other services within *Edge*, we configure caching in the config.php file
 Below are some samples for each one of the 3 options
 
 {{{
+        /**
+         * Memcached storage
+         * We can pass as many servers as we want
+         * The order is host:port:weight
+         */
+        'cache' => array(
+            'invokable' => 'Edge\Core\Cache\MemoryCache',
+            'args' => array(
+                array('master:11311:1')
+            ),
+            'shared' => true
+        )
 
+        /**
+         * Redis storage
+         */
+        'cache' => array(
+            'invokable' => 'Edge\Core\Cache\RedisCache',
+            'args' => array('localhost:6379') ,
+            'shared' => true
+        )
+
+        /**
+         * File storage
+         */
+        'cache' => array(
+            'invokable' => 'Edge\Core\Cache\FileCache',
+            'args' => array('/data/cache'),
+            'shared' => true
+        )
 }}}
