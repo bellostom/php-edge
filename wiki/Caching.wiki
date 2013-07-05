@@ -27,7 +27,7 @@ Below are some samples for each one of the 3 options
         'cache' => array(
             'invokable' => 'Edge\Core\Cache\MemoryCache',
             'args' => array(
-                array('master:11311:1')
+                array('localhost:11311:1')
             ),
             'shared' => true
         )
@@ -49,4 +49,30 @@ Below are some samples for each one of the 3 options
             'args' => array('/data/cache'),
             'shared' => true
         )
+}}}
+
+==Query Caching==
+
+By default *Edge* caches each instance of any Model that derives from Record.
+
+So when you query the below
+
+{{{
+User::getItemById(1);
+
+User::select()
+     ->where(["username" => "admin"])
+     ->run();
+}}}
+
+these queries return a User instance and by default they are cached.
+
+When you update the specific instance *Edge* automatically invalidates its cached items referring to the specific instance.
+
+If you do not want this behavior you can define the below method in your Model classes which will disable caching.
+
+{{{
+public static function cacheRecord(){
+    return false;
+}
 }}}
