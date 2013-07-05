@@ -4,20 +4,11 @@ namespace Edge\Core\Session;
 class SessionFileStorage extends BaseSessionStorage{
     private $sessionDir;
 
-    public function __construct(array $settings){
-        parent::__construct($settings);
-        $this->sessionDir = $settings['session.path'];
+    public function __construct($sessionDir){
+        $this->sessionDir = $sessionDir;
         if(!is_dir($this->sessionDir)){
             mkdir($this->sessionDir, 0777);
         }
-    }
-
-    public function open($savePath, $sessionName){
-        return true;
-    }
-
-    public function close(){
-        return true;
     }
 
     public function read($id){

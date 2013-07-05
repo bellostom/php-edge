@@ -3,10 +3,14 @@ namespace Edge\Core\Session;
 
 class Session{
 
-    public function __construct($storage, $settings){
-        $driver = new $storage($settings);
-        session_set_save_handler($driver, true);
+    public function __construct(\SessionHandlerInterface $storage, $settings){
+        ini_set('session.name', $settings['session.name']);
+        ini_set('session.cookie_httponly', $settings['session.httponly']);
+        ini_set('session.gc_maxlifetime', $settings['session.timeout']);
+
+        session_set_save_handler($storage, true);
         session_start();
+
         if (!isset($_SESSION['initiated'])) {
             session_regenerate_id(true);
             $_SESSION['initiated'] = true;

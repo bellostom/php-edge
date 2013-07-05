@@ -5,9 +5,9 @@ use Edge\Core;
 class RedisCache extends BaseCache {
 	private $link;
 
-	public function __construct(array $settings) {
+	public function __construct($settings) {
 		$this->link = new \Redis();
-        list($host, $port) = explode(":", $settings[0]);
+        list($host, $port) = explode(":", $settings);
         $this->link->connect($host, (int) $port);
 	}
 

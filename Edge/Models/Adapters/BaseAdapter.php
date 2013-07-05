@@ -75,7 +75,7 @@ abstract class BaseAdapter{
         return md5(serialize($data));
     }
 
-    protected function cacheData($key, $data, $ttl){
+    protected function cacheData($key, $data, $ttl, $cacheValidator=null){
         $_data = null;
         switch($this->fetchMode){
             case Record::FETCH_ASSOC_ARRAY:
@@ -96,7 +96,7 @@ abstract class BaseAdapter{
                 break;
         }
 
-        $res = Edge::app()->cache->add($key, $_data, $ttl);
+        $res = Edge::app()->cache->add($key, $_data, $ttl, $cacheValidator);
         if(!$res){
             throw new \Exception("Could not write data to cache");
         }
@@ -124,11 +124,15 @@ abstract class BaseAdapter{
 
         if($cacheRecord && $records){
             $ttl = 0;
+            $validator = null;
             if($cacheAttrs && array_key_exists('ttl', $cacheAttrs)){
                 $ttl = $cacheAttrs['ttl'];
             }
+            if($cacheAttrs && array_key_exists('cacheValidator', $cacheAttrs)){
+                $validator = $cacheAttrs['cacheValidator'];
+            }
             $cacheKey = $this->getCacheKey();
-            return $this->cacheData($cacheKey, $result, $ttl);
+            return $this->cacheData($cacheKey, $result, $ttl, $validator);
         }
 
         //no caching specified
