@@ -1,13 +1,6 @@
 <?php
-/**
- * Created by JetBrains PhpStorm.
- * User: thomas
- * Date: 12/5/2013
- * Time: 10:52 πμ
- * To change this template use File | Settings | File Templates.
- */
-
 namespace Edge\Core\Cache\Validator;
+
 use Edge\Core\Edge;
 
 /**

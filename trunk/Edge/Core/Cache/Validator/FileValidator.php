@@ -1,6 +1,6 @@
 <?php
-
 namespace Edge\Core\Cache\Validator;
+
 use Edge\Core\Edge;
 
 /**
