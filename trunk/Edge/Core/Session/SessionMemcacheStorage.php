@@ -3,19 +3,11 @@
 namespace Edge\Core\Session;
 
 class SessionMemcacheStorage extends BaseSessionStorage{
-    private $link;
 
-    public function __construct(array $settings){
-        parent::__construct($settings);
-        $this->link = $settings['session.path'];
-    }
+    protected $link;
 
-    public function open($savePath, $sessionName){
-        return true;
-    }
-
-    public function close(){
-        return true;
+    public function __construct(\Edge\Core\Cache\MemoryCache $link){
+        $this->link = $link;
     }
 
     public function read($id){
