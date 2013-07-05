@@ -6,6 +6,14 @@ In order to install *Edge* on your system you will need
   * *PHP 5.4*
   * *A web server (ie Apache)*
 
+Additionally, 
+
+  * To use memcached for caching you need php-memcache. Install via *pecl install memcache*
+
+  * To use Redis for caching you need php-redis. Install via *pecl install redis*
+
+  * To use MongoDB you need php-mongo. Install via *pecl install mongo*
+
 Going into details on how you can install the above is out of the scope of this document, but a lot of information exists all over the web.
 
 Checkout edge using a svn client
@@ -21,9 +29,9 @@ Paste the below directives to the apache config file
 NameVirtualHost *:80
 
 <VirtualHost *:80>
-   DocumentRoot /var/www/php-edge
+   DocumentRoot /var/www/php-edge/Public
    ServerName devel.edge.net
-   <Directory /var/www/php-edge>
+   <Directory /var/www/php-edge/Public>
         AllowOverride All
    </Directory>
 </VirtualHost>
