@@ -1,0 +1,23 @@
+#summary Details on Edge's caching system.
+
+==Introduction==
+
+Caching is an essential component for modern high traffic web applications. It helps scale the application and eleviate database load.
+
+*Edge* supports three storage engines
+
+  # Memcached ([http://memcached.org])
+  # Redis ([http://redis.io])
+  # File caching
+
+The first 2 options store data in memory and are considerably faster than file caching, so opt for these options whenever possible.
+
+==Configuration==
+
+As any other services within *Edge*, we configure caching in the config.php file.
+
+Below are some samples for each one of the 3 options
+
+{{{
+
+}}}
