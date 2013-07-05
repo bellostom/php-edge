@@ -3,6 +3,7 @@ namespace Edge\Models;
 
 use Edge\Core\Exceptions,
     Edge\Core\Edge,
+    Edge\Models\Adapters\MySQLAdapter,
     Edge\Core\Interfaces\EventHandler,
     Edge\Core\Interfaces\CachableRecord;
 
@@ -359,15 +360,25 @@ abstract class Record implements EventHandler, CachableRecord{
     }
 
     /**
-     * Execute a
-     * @param $query
-     * @return mixed
+     * Execute a select query
+     * @param $attrs array of params
+     * @param array $cacheAttrs
+     * @return MySQLAdapter
+     * @throws \Edge\Core\Exceptions\EdgeException
      */
-    public static function selectQuery($query, array $cacheAttrs=array()){
+    public static function selectQuery(array $attrs){
         $adapter = static::selectCommon();
-        $adapter->query = $query;
-        $adapter->cache($cacheAttrs);
-        return $adapter;
+        if(!($adapter instanceof MySQLAdapter)){
+            throw new Exceptions\EdgeException("selectQuery can only be invoked for SQL statements");
+        }
+        $adapter->query = $attrs['query'];
+        if(isset($attrs['cache'])){
+            $adapter->cache($attrs['cache']);
+        }
+        if(isset($attrs['fetchMode'])){
+            $adapter->fetchMode($attrs['fetchMode']);
+        }
+        return $adapter->run();
     }
 
     protected static function selectCommon(){

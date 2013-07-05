@@ -198,7 +198,10 @@ abstract class BaseAdapter{
      * @return array|CachedObjectSet|mixed|null
      */
     public function run(){
-        $this->query = $this->getQuery();
+        //check if we are invoked from selectQuery
+        if(!$this->query){
+            $this->query = $this->getQuery();
+        }
         $ret = $this->execute();
         $this->reset();
         return $ret;

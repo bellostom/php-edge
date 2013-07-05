@@ -27,6 +27,6 @@ class QueryValidator extends CacheValidator{
     }
 
     protected function validate(){
-        return Edge::app()->db->db_fetch_one($this->sql);
+        return Edge::app()->db->dbFetchOne($this->sql);
     }
 }
