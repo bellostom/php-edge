@@ -100,8 +100,7 @@ User::select()
      ->where("id")
      ->in(1,50,200)
      ->cache([
-         'ttl' => 20*60,' 
-         'cacheValidator' => 
+         'ttl' => 20*60'
       ])
      ->run();
 }}}
