@@ -1,12 +1,4 @@
 <?php
-/**
- * Created by JetBrains PhpStorm.
- * User: thomas
- * Date: 12/5/2013
- * Time: 10:48 πμ
- * To change this template use File | Settings | File Templates.
- */
-
 namespace Edge\Core\Cache\Validator;
 
 abstract class CacheValidator{
