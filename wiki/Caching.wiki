@@ -79,6 +79,14 @@ User::getItemById(1);
 User::select()
      ->where(["username" => "admin"])
      ->run();
+or
+
+User::selectQuery([
+       "query" => "SELECT * FROM users",
+       "fetchMode" => 1,
+       "cache" => ["ttl" => 20]
+]);
+
 }}}
 
 these queries return a User instance and by default they are cached.
