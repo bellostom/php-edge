@@ -62,6 +62,9 @@ $cache->add("some_unique_key", $data, 10*60);
 
 //to retrieve the data
 $data = $cache->get("some_unique_key");
+
+//to delete the data
+$cache->delete("some_uniqueu_key");
 }}}
 
 ==Query Caching==
@@ -97,6 +100,8 @@ User::select()
      ->where("id")
      ->in(1,50,200)
      ->cache([
-         'ttl' => 20*60
+         'ttl' => 20*60,' 
+         'cacheValidator' => 
       ])
      ->run();
+}}}
