@@ -4,6 +4,8 @@
 
 Caching is an essential component for modern high traffic web applications. It helps scale the application and eleviate database load.
 
+A lot of the below fetaures were implemented after going through how other popular frameworks implement caching.
+
 *Edge* supports three storage engines
 
   # Memcached ([http://memcached.org])
