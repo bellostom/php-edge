@@ -24,4 +24,6 @@ Check the below pages for more details
 
 [Models]
 
+[Caching]
+
 [Internationalization]
