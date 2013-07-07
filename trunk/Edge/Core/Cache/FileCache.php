@@ -1,6 +1,8 @@
 <?php
 namespace Edge\Core\Cache;
 
+use Edge\Core\Exceptions\EdgeException;
+
 class FileCache extends BaseCache{
 	private $cache_dir;
 
@@ -62,4 +64,8 @@ class FileCache extends BaseCache{
 		}
 		return false;
 	}
+
+    protected function getLock($key, $ttl){
+        throw new EdgeException("Do not use this engine for locking");
+    }
 }

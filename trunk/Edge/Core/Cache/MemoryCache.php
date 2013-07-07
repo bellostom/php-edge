@@ -66,6 +66,10 @@ class MemoryCache extends BaseCache {
 		return $this->link->delete($key, 0);
 	}
 
+    protected function getLock($key, $ttl){
+        return $this->link->add($key, true, 0, $ttl);
+    }
+
 	public function __destruct() {
 		$this->link->close();
 	}

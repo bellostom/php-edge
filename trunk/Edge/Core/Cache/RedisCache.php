@@ -63,16 +63,23 @@ class RedisCache extends BaseCache {
 	}
 
 	public function setValue($key, $value, $ttl=0) {
-		$res = $this->link->set($key, $value);
-        if($ttl){
-            $this->link->expire($key, $ttl);
+        if($ttl == 0){
+            $ttl = 31536000;
         }
-		return $res;
+		return $this->link->setex($key, $ttl, $value);
 	}
 
 	public function deleteValue($key) {
 		return $this->link->del($key);
 	}
+
+    protected function getLock($key, $ttl){
+        $ret = $this->link->setnx($key, true);
+        if($ret){
+            $this->link->expire($key, $ttl);
+        }
+        return $ret;
+    }
 
 	public function __destruct() {
 		$this->link->close();
