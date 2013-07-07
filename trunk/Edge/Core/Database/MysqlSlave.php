@@ -147,4 +147,3 @@ class MysqlSlave {
         return !is_null($this->link) && $this->link->ping();
     }
 }
-?>

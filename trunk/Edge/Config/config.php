@@ -55,7 +55,7 @@ return array(
             'invokable' => function($c){
                 $attrs = array(
                     "file" => "../app.log",
-                    "dateFormat" => "j/n/Y g:i a",
+                    "dateFormat" => "j/n/Y G:i:s",
                     "logLevel" => 'DEBUG'
                 );
                 return Monolog\EdgeLogger::factory($attrs);
@@ -64,9 +64,14 @@ return array(
         ),
 
         /**
-         * Define where the sessions are going to be savedd
+         * Define where the sessions are going to be saved
          */
-        'sessionStorage' => 'Edge\Core\Session\SessionMemcacheStorage',
+        'sessionStorage' => array(
+            'invokable' => function($c){
+                return new Edge\Core\Session\SessionMemcacheStorage($c['cache']);
+            },
+            'shared' => true
+        ),
 
         /**
          * Session class
@@ -77,8 +82,7 @@ return array(
                 $settings = array(
                     'session.name' => 'edge',
                     'session.timeout' => 20*60,
-                    'session.httponly' => true,
-                    'session.path' => $c['cache']
+                    'session.httponly' => true
                 );
                 return new Edge\Core\Session\Session($c['sessionStorage'], $settings);
             },
