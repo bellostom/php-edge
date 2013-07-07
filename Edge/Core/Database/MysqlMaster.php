@@ -36,4 +36,3 @@ class MysqlMaster extends MysqlSlave {
         parent::__destruct();
     }
 }
-?>
