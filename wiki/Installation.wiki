@@ -52,3 +52,5 @@ You can now access *Edge* by visiting
 {{{
 http://devel.edge.net
 }}}
+
+You will be greeted with a Welcome page which can act as a staring point for your web application.
