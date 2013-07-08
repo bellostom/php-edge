@@ -2,7 +2,7 @@
 namespace Edge\Core\i18n;
 /**
  * Class String
- * Access localized strings either as array
+ * Access localized strings either as array or object
  * or object
  * @package Edge\Core\i18n
  */
