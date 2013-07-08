@@ -259,7 +259,9 @@ private function sendVerificationEmail(){
 
 ==Querying Records==
 
-*Edge* provides a convenient way of querying records in a simple manner
+*Edge* provides a convenient way of querying records in a simple manner.
+
+Additionally, you can specify caching directives to increase performance of slow queries. Check [Caching] for details
 
 {{{
 SELECT * FROM users WHERE username='admin'
@@ -308,7 +310,7 @@ User::select()
       ->run();
 }}}
 
-By default *Edge* will return an insstance of the class that run the query (in the examples above User).
+By default *Edge* will return an instance of the class that run the query (in the examples above User).
 
 You can override this by defining one of the below
   * Record::FETCH_NATIVE_RESULTSET: Returns the database's native result set (mysqli_result for MySQL or MongoCursor for Mongo)
