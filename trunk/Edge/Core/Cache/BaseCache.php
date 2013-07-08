@@ -22,7 +22,7 @@ abstract class BaseCache {
     /**
      * The number of seconds we cache the lock key
      */
-    CONST LOCK_KEY_TIMEOUT = 30; //secs
+    CONST LOCK_KEY_TIMEOUT = 60; //secs
 
     /**
      * Serialize the data before sending them to the underlying
@@ -104,10 +104,13 @@ abstract class BaseCache {
                 if(time() + BaseCache::CACHE_THRESHOLD >= $expires){
                     $lock = $this->lock($key);
                     if(!$lock){
-                        Edge::app()->logger->debug(\getmypid(). " Could not acquire lock $expires. Serving stale");
+                        Edge::app()->logger->debug("Could not acquire lock. Serving stale");
                         return $data;
                     }
-                    Edge::app()->logger->debug(\getmypid()." Acquired lock");
+                    Edge::app()->logger->debug("Acquired lock");
+                    //increase the expiration until we calculate the value
+                    //so that other threads can serve the old value and
+                    //increase concurrency
                     $expires = 5*60;
                     $this->add($key, $data, $expires, $validator);
                     return false;

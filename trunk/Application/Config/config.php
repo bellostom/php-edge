@@ -1,67 +1,21 @@
 <?php
+/**
+ * You can define or override services and settings
+ * Check Edge/Config/config.php for a list of services and
+ * configurations options.
+ * To access a service
+ * Edge::app()->serviceName;
+ * To access a configuration option
+ * Edge::app()->getConfig('timezone');
+ */
 return array(
     'services' => array(
-        /**
-         * Define a variable to store MySQL credentials
-         * for the master and slave nodes
-         */
-        'mysqlCredentials' => array(
-            'master' => array(
-                'host' => 'localhost:3306',
-                'db' => 'edge',
-                'user' => 'root',
-                'pass' => ''
-            ),
-            'slave' => array(
-                'host' => 'localhost:3306',
-                'db' => 'edge',
-                'user' => 'root',
-                'pass' => ''
-            )
-        ),
-
         /**
          * Redis caching storage
          */
         'cache' => array(
             'invokable' => 'Edge\Core\Cache\RedisCache',
-            'args' => array(
-                array('localhost:6379')
-            ),
-            'shared' => true
-        ),
-
-        /**
-         * Mongo connection object
-         */
-        'mongo' => array(
-            'invokable' => 'Edge\Core\Database\MongoConnection',
-            'args' => array(
-                array(
-                    'host' => 'localhost',
-                    'db' => 'people'
-                )
-            ),
-            'shared' => true
-        ),
-
-        'isTransactional' => false,
-
-        'db' => array(
-            'invokable' => function($c){
-                static $obj;
-                if(is_null($obj)){
-                    $obj = new Edge\Core\Database\MysqlSlave($c['mysqlCredentials']['slave']);
-                }
-                return ($c['isTransactional'])?$c['writedb']:$obj;
-            }
-        ),
-
-        'writedb' => array(
-            'invokable' => function($c){
-                $c['isTransactional'] = true;
-                return new Edge\Core\Database\MysqlMaster($c['mysqlCredentials']['master']);
-            },
+            'args' => array('localhost:6379'),
             'shared' => true
         )
     ),

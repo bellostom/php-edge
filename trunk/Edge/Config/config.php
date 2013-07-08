@@ -15,6 +15,65 @@ return array(
         ),
 
         /**
+         * Define a variable to store MySQL credentials
+         * for the master and slave nodes
+         */
+        'mysqlCredentials' => array(
+            'master' => array(
+                'host' => 'localhost:3306',
+                'db' => 'edge',
+                'user' => 'root',
+                'pass' => ''
+            ),
+            'slave' => array(
+                'host' => 'localhost:3306',
+                'db' => 'edge',
+                'user' => 'root',
+                'pass' => ''
+            )
+        ),
+
+        'isTransactional' => false,
+
+        /**
+         * Send read requests to slave
+         */
+        'db' => array(
+            'invokable' => function($c){
+                static $obj;
+                if(is_null($obj)){
+                    $obj = new Edge\Core\Database\MysqlSlave($c['mysqlCredentials']['slave']);
+                }
+                return ($c['isTransactional'])?$c['writedb']:$obj;
+            }
+        ),
+
+        /**
+         * Send insert,update,delete requests to master
+         */
+        'writedb' => array(
+            'invokable' => function($c){
+                $c['isTransactional'] = true;
+                return new Edge\Core\Database\MysqlMaster($c['mysqlCredentials']['master']);
+            },
+            'shared' => true
+        ),
+
+        /**
+         * Mongo connection object
+         */
+        'mongo' => array(
+            'invokable' => 'Edge\Core\Database\MongoConnection',
+            'args' => array(
+                array(
+                    'host' => 'localhost',
+                    'db' => 'people'
+                )
+            ),
+            'shared' => true
+        ),
+
+        /**
          * Class handling the process of incoming Requests
          */
         'request' => array(
