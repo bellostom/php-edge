@@ -81,13 +81,6 @@ User::getItemById(1);
 User::select()
      ->where(["username" => "admin"])
      ->run();
-or
-
-User::selectQuery([
-       "query" => "SELECT * FROM users",
-       "fetchMode" => 1,
-       "cache" => ["ttl" => 20]
-]);
 
 }}}
 
