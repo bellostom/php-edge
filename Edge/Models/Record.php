@@ -392,9 +392,9 @@ abstract class Record implements EventHandler, CachableRecord{
      * Save the object to the persistence layer
      */
     public function save(){
-        $this->on_create();
+        $this->onCreate();
         static::getAdapter()->save($this);
-        $this->on_after_create();
+        $this->onAfterCreate();
     }
 
     /**
@@ -403,33 +403,36 @@ abstract class Record implements EventHandler, CachableRecord{
      *
      */
     public function delete(){
-        $this->on_delete();
+        $this->onDelete();
         static::getAdapter()->delete($this);
-        $this->on_after_delete();
+        $this->onAfterDelete();
     }
 
     /**
      * Update object
      */
     public function update(){
-        $this->on_update();
+        $this->onUpdate();
         static::getAdapter()->update($this);
-        $this->on_after_update();
+        $this->onAfterUpdate();
     }
 
-    public function on_create(){
-
-    }
-
-    public function on_after_create(){
+    public function onCreate(){
 
     }
 
-    public function on_update(){
+    public function onAfterCreate(){
 
     }
 
-    public function on_after_update(){
+    public function onUpdate(){
+
+    }
+
+    /**
+     * Update any cached versions of the instance
+     */
+    public function onAfterUpdate(){
         if(static::cacheRecord()){
             $mem = Edge::app()->cache;
             $index = $this->getInstanceIndexKey();
@@ -442,14 +445,14 @@ abstract class Record implements EventHandler, CachableRecord{
         }
     }
 
-    public function on_delete(){
+    public function onDelete(){
 
     }
 
     /**
      * Delete any cached versions of the instance
      */
-    public function on_after_delete(){
+    public function onAfterDelete(){
         if(static::cacheRecord()){
             $mem = Edge::app()->cache;
             $logger = Edge::app()->logger;
