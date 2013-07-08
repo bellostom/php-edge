@@ -1,5 +1,5 @@
   * [#Introduction Introduction]
-  * [#Saving_records Saving Redords]
+  * [#Saving_records Saving Records]
   * [#Retrieving,_updating_and_deleting Retrieving]
   * [#Setters_and_Getters Setters and Getters]
   * [#Defining_Relationships Relationships]
