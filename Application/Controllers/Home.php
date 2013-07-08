@@ -1,9 +1,7 @@
 <?php
 namespace Application\Controllers;
 
-use Edge\Controllers\BaseController,
-    Edge\Core\Cache\Validator,
-    Edge\Core\Edge;
+use Edge\Controllers\BaseController;
 
 class Home extends BaseController{
 
