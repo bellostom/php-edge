@@ -166,7 +166,7 @@ foreach($feed->articles as $article){
 }
 }}}
 
-we get back an iterator (Edge/Core/Database/ResultSet/ResultSet.php) which yields an Article instance on each iteration.
+we get back an iterator (`Edge/Core/Database/ResultSet/ResultSet.php`) which yields an Article instance on each iteration.
 
 It is important to note here 2 things:
 
