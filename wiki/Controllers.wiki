@@ -20,9 +20,15 @@ An example of a Controller can be found below
 class Home extends BaseController{
 
     protected static $layout = 'Layouts/ui.layout.tpl';
-    protected static $js = array(
+
+    protected static $js = [
         'static/js/facebook.js'
-    );
+    ];
+
+    protected static $css = [
+        'static/css/theme.css',
+        'static/css/main.css
+    ];
 
     public function filters(){
         return array_merge(parent::filters(), array(
@@ -73,4 +79,3 @@ class Home extends BaseController{
 }}}
 
 The above is a basic example that includes the features discussed earlier. 
-
