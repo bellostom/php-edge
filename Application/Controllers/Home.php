@@ -8,41 +8,17 @@ use Edge\Controllers\BaseController,
 class Home extends BaseController{
 
     protected static $layout = 'Layouts/ui.layout.tpl';
-    protected static $js = array(
-        'static/js/facebook.js'
-    );
 
-    public function filters(){
-        return array_merge(parent::filters(), array(
-            array(
-                'Edge\Core\Filters\PageCache',
-                'ttl' => 10*60,
-                'varyBy' => 'url',
-                //'cacheValidator' => new Validator\QueryValidator("SELECT COUNT(id) FROM users"),
-                'applyTo' => array('index', 'post')
-            ),
-            array('Edge\Core\Filters\DynamicOutput')
-        ));
-    }
-
+    /**
+     * Render the layout with the contents
+     * of Application/Views/ui.index.tpl
+     * @return mixed|string
+     */
     public function index(){
-        $tpl = static::loadView('ui.test1.tpl');
-        $tpl->test = 'thomas';
-        return parent::render($tpl);
-    }
-
-    public static function fetchUser(){
-        return time();
-    }
-
-    public function post($id, $attrs){
-        return array(
-            "thomas" => "bellos",
-            "hello" => "there",
-            "data" => array(
-                "name" => "Stergios",
-                "surname" => "Bellos"
-            )
-        );
+        $tpl = static::loadView('ui.index.tpl');
+        $tpl->title = 'Welcome to Edge';
+        return parent::render($tpl, [
+            'title' => 'Edge MVC'
+        ]);
     }
 }

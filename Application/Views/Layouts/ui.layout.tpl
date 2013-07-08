@@ -2,7 +2,6 @@
 <html>
 <head>
     <title><?= $title; ?></title>
-    <script src="<?= $this->getJsScript(); ?>"></script>
 </head>
 <body>
     <?= $body; ?>
