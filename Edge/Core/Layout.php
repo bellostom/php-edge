@@ -13,8 +13,8 @@ use Edge\Core\Edge,
  */
 class Layout extends Template{
 
-	private $js;
-    private $css;
+	protected $js;
+    protected $css;
 
     /**
      * @param $tpl

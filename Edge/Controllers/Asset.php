@@ -31,6 +31,13 @@ class Asset extends BaseController{
         return static::load($key, "text/css");
     }
 
+    /**
+     * Serve the file to the browser with aggressive caching
+     * directives.
+     * @param $key
+     * @param $contentType
+     * @return mixed
+     */
     protected static function load($key, $contentType){
         preg_match("/[0-9]+/", $key, $m);
         $mod = $m[0];
