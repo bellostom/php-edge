@@ -31,7 +31,7 @@ class Article extends Identifiable {
 }
 }}}
 
-Here, we see that the Article class extends Identifiable which is an abstract class (Edge/Models/Identifiabe.php) and provides methods to retrieve records by id and name.
+Here, we see that the Article class extends Identifiable which is an abstract class (Edge/Models/Identifiable.php) and provides methods to retrieve records by id and name.
 
 This means that the Article class has 3 attributes:
 
@@ -187,7 +187,10 @@ If the above rules are not met by your class you can pass an array in order to p
 
 {{{
 
-$this->belongsTo('Application\Models\Article', ['fk' => 'fid', 'value' => $this->fk]);
+$this->belongsTo('Application\Models\Article', [
+      'fk' => 'fid', 
+      'value' => $this->fk
+]);
 
 }}}
 
@@ -260,6 +263,8 @@ private function sendVerificationEmail(){
 ==Querying Records==
 
 *Edge* provides a convenient way of querying records in a simple manner.
+
+All parameters are escaped to prevent SQL injection
 
 Additionally, you can specify caching directives to increase performance of slow queries. Check [Caching] for details
 
