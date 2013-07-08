@@ -101,7 +101,7 @@ You can implicitly specify a query to be cached
 {{{
 User::select()
      ->where("id")
-     ->in(1,50,200)
+     ->in([1,50,200])
      ->cache([
          'ttl' => 20*60'
       ])
@@ -156,3 +156,21 @@ public function list(){
 }
 
 }}}
+
+==Cache Stampede Prevention==
+[http://en.wikipedia.org/wiki/Cache_stampede Cache stampede] is a situation where a heavily accessed item expires causing a lot of threads to recalculate the data at the same time. In a high traffic website this can cause a spike in the system load especially if the value to be cached is slow to calculate and may lead to unresponsive or slow server response.
+
+To prevent situations like the above you can specify a second parameter to the get() method.
+
+It is highly recommended to follow this, especially if the data you are caching are slow to calculate. Below is a sample of the method invokation
+
+{{{
+
+
+$cache = Edge::app()->cache;
+$expensiveValue = $cache->get("unique_id", true);
+
+
+}}}
+
+In the above scenario, the first thread that will  identify that the cached item is about to expire, will assume responsibility for calculating the value. All other threads will be served the current value (although a bit stale), until the new value is persisted in the cache storage.
