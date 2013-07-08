@@ -157,6 +157,7 @@ The services section is where we define the services we need to use in our web a
             },
             'shared' => true
         )
+}}}
 
 or a service directly.
 
