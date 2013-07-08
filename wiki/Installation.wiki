@@ -22,6 +22,13 @@ cd /var/www/
 svn checkout http://php-edge.googlecode.com/svn/trunk/ php-edge
 }}}
 
+Within the folder you will find 3 folders and 1 SQL file
+
+  # *Edge* includes the framework libraries
+  # *Application* includes a skeleton structure. Use this for your project
+  # *Public* contains the bootstrap index.php and it is the directory that you should make public in your web server.
+  # structure.sql contains sql statements for user and RBAC tables. This file is optional for running *Edge*
+
 Now, let's create a virtual host within Apache, so that we can access *Edge* through the browser.
 Paste the below directives to the apache config file
 {{{
