@@ -54,3 +54,5 @@ http://devel.edge.net
 }}}
 
 You will be greeted with a Welcome page which can act as a starting point for your web application. You will find all the files under the Application folder.
+
+Continue to [Introduction]
