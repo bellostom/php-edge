@@ -138,4 +138,4 @@ class Home extends BaseController{
 
 Of course you can add *alwaysEvaluate* expressions within fragment caching also.
 
-You can find more details on caching [#Caching here]
+You can find more details on caching [Caching here]
