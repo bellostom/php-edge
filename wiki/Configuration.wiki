@@ -132,10 +132,15 @@ Let's have a look at what is going on here.
 The services section is where we define the services we need to use in our web application. You can store attributes that will be used by a service, ie
 
 {{{
-/**
+         /**
          * Define where the sessions are going to be saved
          */
-        'sessionStorage' => 'Edge\Core\Session\SessionMemcacheStorage',
+        'sessionStorage' => array(
+            'invokable' => function($c){
+                return new Edge\Core\Session\SessionMemcacheStorage($c['cache']);
+            },
+            'shared' => true
+        ),
 
         /**
          * Session class
@@ -146,14 +151,12 @@ The services section is where we define the services we need to use in our web a
                 $settings = array(
                     'session.name' => 'edge',
                     'session.timeout' => 20*60,
-                    'session.httponly' => true,
-                    'session.path' => $c['cache']
+                    'session.httponly' => true
                 );
                 return new Edge\Core\Session\Session($c['sessionStorage'], $settings);
             },
             'shared' => true
         )
-}}}
 
 or a service directly.
 
@@ -165,7 +168,7 @@ shared => true
 
 in a service, this makes the service a singleton.
 
-It is important to note here, that the services are initialized only when you request it (lazy loading) and not when the configuration file is processed, so there is no performance loss regardless the number of services defined.
+It is important to note here, that the services are initialized only when you request it (lazy loading) and not when the configuration file is processed, so there is no overhead regardless the number of services defined.
 
 ==Accessing a Service==
 
