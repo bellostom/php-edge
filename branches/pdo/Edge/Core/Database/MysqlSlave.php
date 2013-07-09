@@ -11,6 +11,7 @@ class MysqlSlave {
     protected $user;
     protected $pass;
     protected $timezone = false;
+    CONST CONN_STRING = 'mysql:host=%s;port=%s;dbname=%s;charset=utf8';
 
     public function __construct(array $settings){
         $this->host = $settings['host'];
@@ -24,22 +25,29 @@ class MysqlSlave {
 
     protected function connect() {
         list($host, $port) = explode(':', $this->host);
-        $this->link = new \mysqli($host, $this->user,	$this->pass, $this->db, $port);
+        $dsn = sprintf(MysqlSlave::CONN_STRING, $host, $port, $this->db);
+        $this->link = new \PDO($dsn, $this->user, $this->pass);
+        $this->link->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+       /* $this->link = new \mysqli($host, $this->user,	$this->pass, $this->db, $port);
         if($this->link->connect_errno){
             throw new Core\Exceptions\EdgeException("Error connecting to the {$this->db} db. Error: ". $this->link->connect_error);
         }
-        $this->link->set_charset('utf8');
+        $this->link->set_charset('utf8');*/
         if($this->timezone !== false){
-            $this->link->query(sprintf("SET time_zone='%s'", $this->timezone));
+            $this->link->exec(sprintf("SET time_zone='%s'", $this->timezone));
         }
     }
 
     public function dbMetadata($table) {
-        $result = $this->dbQuery("SELECT * FROM $table limit 1");
-        $finfo = $result->fetch_fields();
-        $store = array();
-        foreach($finfo as $column) {
-            $store[$column->name] = array($column->type, $column->flags);
+        if(!$this->isAlive()) {
+            $this->connect();
+        }
+        $q = $this->link->query("DESC $table");
+        $data = $q->fetchAll(\PDO::FETCH_ASSOC);
+        $q->closeCursor();
+        $store = [];
+        foreach($data as $info){
+            $store[$info['Field']] = $info['Extra'];
         }
         return $store;
     }
@@ -49,19 +57,12 @@ class MysqlSlave {
         return $this->dbFetchOne($q);
     }
 
-    public function dbFetchArray($rs) {
-        return $rs->fetch_array(MYSQLI_ASSOC);
+    public function dbFetchArray(\PDOStatement $rs) {
+        return $rs->fetch(\PDO::FETCH_ASSOC);
     }
 
-    public function dbFetchAll($rs){
-        if(!method_exists($rs, 'fetch_all')){
-            $data = array();
-            while($r = $this->dbFetchArray($rs)){
-                $data[] = $r;
-            }
-            return $data;
-        }
-        return $rs->fetch_all(MYSQLI_ASSOC);
+    public function dbFetchAll(\PDOStatement $rs){
+        return $rs->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     public function dbFetchObject($rs, $classname=null) {
@@ -71,24 +72,26 @@ class MysqlSlave {
         return $rs->fetch_object();
     }
 
-    public function dbQuery($q) {
+    public function dbQuery($q, array $params=[]) {
         if(!$this->isAlive()) {
             $this->connect();
         }
-        $res = $this->link->query($q);
-        if(!$res) {
-            $err_no = $this->link->errno;
+        $stmt = $this->link->prepare($q);
+        try{
+            $stmt->execute($params);
+            return $stmt;
+        }catch(\PDOException $e){
+            $errNo = $e->errorInfo[1];
             $message = sprintf("Error executing query %s. Error was %s. Error Code %s ",
-                $q, $this->link->error, $err_no);
-            if($err_no == 1213) {
+                $q, $e->getMessage(), $errNo);
+            if($errNo == 1213) {
                 throw new Core\Exceptions\DeadLockException($message);
-            }else if ($err_no == 1062) {
+            }else if ($errNo == 1062) {
                 throw new Core\Exceptions\DuplicateEntry($message);
             }else{
                 throw new Core\Exceptions\EdgeException($message);
             }
         }
-        return $res;
     }
 
     public function dbSeek($rs, $index) {
@@ -96,7 +99,7 @@ class MysqlSlave {
     }
 
     public function dbInsertId() {
-        return $this->link->insert_id;
+        return $this->link->lastInsertId();
     }
 
     public function dbFoundRows() {
@@ -122,28 +125,18 @@ class MysqlSlave {
         if(!$this->isAlive()) {
             $this->connect();
         }
-        return $this->link->real_escape_string($str);
+        return $this->link->quote($str);
     }
 
     public function dbNumRows($rs) {
         return $rs->num_rows;
     }
 
-    public function dbErrno() {
-        return $this->link->errno;
-    }
-
-    public function dbError() {
-        return $this->link->error;
-    }
-
     public function __destruct() {
-        if(!is_null($this->link)) {
-            $this->link->close();
-        }
+        $this->link = null;
     }
 
     protected function isAlive() {
-        return !is_null($this->link) && $this->link->ping();
+        return !is_null($this->link);
     }
 }

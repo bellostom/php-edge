@@ -7,10 +7,17 @@ use Edge\Models\Record,
 
 class MySQLAdapter extends BaseAdapter{
 
+    private $_values = [];
+
     public function executeQuery($sql){
         $db = $this->getDbConnection();
         Edge::app()->logger->debug($sql);
         return $db->dbQuery($sql);
+    }
+
+    public function reset(){
+        $this->_values = [];
+        parent::reset();
     }
 
     protected function countResults($rs){
@@ -104,7 +111,7 @@ class MySQLAdapter extends BaseAdapter{
             $db = Edge::app()->writedb;
             $metadata = $db->dbMetadata($table);
             foreach($pks as $attr){
-                if(isset($metadata[$attr]) && $metadata[$attr][1] & \MYSQLI_AUTO_INCREMENT_FLAG){
+                if($metadata[$attr] == 'auto_increment'){
                     $entry->$attr = $db->dbInsertId();
                 }
             }
@@ -186,14 +193,8 @@ class MySQLAdapter extends BaseAdapter{
     /**
      * Join the conditions array to be used as a WHERE
      * clause in a SQL query
-     * $object->delete(array(
-            'conditions' => array(
-               'id' => array(10,20),
-               'lang' => 'uk'
-           )
-     * ));
      */
-    public function joinConditions(array $conditions, $db, $clause='AND'){
+    public function joinConditions1(array $conditions, $db, $clause='AND'){
         $data = array_map(function($k, $v) use ($db){
             if(is_array($v)){
                 $vals = array();
@@ -203,6 +204,26 @@ class MySQLAdapter extends BaseAdapter{
                 return sprintf("%s in (%s)", $k, join(",", $vals));
             }
             return sprintf('%s = \'%s\'', $k, $db->dbEscapeString($v));
+        }, array_keys($conditions), array_values($conditions));
+        return join(" $clause ", $data);
+    }
+
+    public function joinConditions(array $conditions, $db, $clause='AND'){
+        $data = array_map(function($k, $v) use ($db){
+            if(is_array($v)){
+                $vals = array();
+                $idx = 1;
+                foreach($v as $kv){
+                    $placeHolder = sprintf(":holder%d", $idx);
+                    $this->_values[$placeHolder] = $kv;
+                    $vals[] = $placeHolder;
+                    $idx++;
+                }
+                return sprintf("%s in (%s)", $k, join(",", $vals));
+            }
+            $placeHolder = ":$k";
+            $this->_values[$placeHolder] = $v;
+            return sprintf('%s = :%s', $k, $k);
         }, array_keys($conditions), array_values($conditions));
         return join(" $clause ", $data);
     }

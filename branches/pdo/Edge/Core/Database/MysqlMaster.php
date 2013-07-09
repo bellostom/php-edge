@@ -4,32 +4,28 @@ namespace Edge\Core\Database;
 use Edge\Core\Edge;
 
 class MysqlMaster extends MysqlSlave {
-    private $isTransactional = false;
 
     public function startTransaction()	{
-        if(!$this->isTransactional) {
-            $this->dbQuery("START TRANSACTION");
+        if(!$this->link->inTransaction()) {
+            $this->link->beginTransaction();
             Edge::app()->logger->info("START TRANSACTION");
-            $this->isTransactional = true;
         }
     }
 
     public function commit() {
-        if($this->isTransactional) {
+        if($this->link->inTransaction()) {
             $this->link->commit();
             Edge::app()->logger->info("COMMIT");
-            $this->isTransactional = false;
         }
     }
 
     public function rollback() {
         $this->link->rollback();
         Edge::app()->logger->info("ROLLBACK");
-        $this->isTransactional = false;
     }
 
     public function __destruct() {
-        if($this->isTransactional){
+        if($this->link->inTransaction()){
             Edge::app()->logger->info("COMMITING NON COMMITED TRANSACTION");
             $this->commit();
         }
