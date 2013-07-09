@@ -1,0 +1,9 @@
+RewriteEngine On
+
+RewriteRule ^favicon.ico$ favicon.ico [L]
+
+RewriteCond %{SCRIPT_FILENAME} !-f
+RewriteCond %{SCRIPT_FILENAME} !-d
+RewriteRule ^(.*)$ index.php/$1
+AddHandler php5-script .tpl
+
