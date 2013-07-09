@@ -235,12 +235,12 @@ Event handlers are methods where you can define logic to be executed before or a
 
 *Edge* exposes the below events via methods you can implement on the Models
 {{{
-public function on_create(){}
-public function on_after_create(){}
-public function on_update(){}
-public function on_after_update(){}
-public function on_delete(){}
-public function on_after_delete(){}
+public function onCreate(){}
+public function onAfterCreate(){}
+public function onUpdate(){}
+public function onAfterUpdate(){}
+public function onDelete(){}
+public function onAfterDelete(){}
 }}}
 
 An example of where such behavior is helpful is when for instance you wish to send a verification email to a user after they register.
@@ -248,10 +248,10 @@ An example of where such behavior is helpful is when for instance you wish to se
 To accomplish that you would implement the below in the User model
 
 {{{
-public function on_after_create(){
+public function onAfterCreate(){
    //always call the parent's method so that if the parent
    //has defined logic, it gets executed as well
-   parent::on_after_create();
+   parent::onAfterCreate();
    $this->sendVerificationEmail();
 }
 
@@ -264,7 +264,7 @@ private function sendVerificationEmail(){
 
 *Edge* provides a convenient way of querying records in a simple manner.
 
-All parameters are escaped to prevent SQL injection
+All parameters are escaped to prevent SQL injection.
 
 Additionally, you can specify caching directives to increase performance of slow queries. Check [Caching] for details
 
