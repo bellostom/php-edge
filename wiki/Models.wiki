@@ -273,7 +273,7 @@ SELECT * FROM users WHERE username='admin'
 
 User::select()
      ->where(array("username"=>"admin"))
-     ->run();
+     ->fetch();
 
 
 
@@ -281,8 +281,7 @@ SELECT * FROM users WHERE id='2'
 
 User::select()
      ->where(array("id"=>"2"))
-     ->fetchMode(User::FETCH_ASSOC_ARRAY)
-     ->run();
+     ->fetch(User::FETCH_ASSOC_ARRAY);
 
 
 
@@ -300,8 +299,7 @@ User::select(["id","name"])
     ->andWhere(["sex"=>"male"])
     ->order(["username"=>"asc"])
     ->cache(["ttl"=>10*60])
-    ->fetchMode(User::FETCH_RESULTSET)
-    ->run();
+    ->fetch(User::FETCH_RESULTSET);
 
 
 
@@ -311,8 +309,7 @@ User::select()
       ->order(["username"=>"asc"])
       ->limit(0)
       ->offset(10)
-      ->fetchMode(Record::FETCH_NATIVE_RESULTSET)
-      ->run();
+      ->fetch(Record::FETCH_NATIVE_RESULTSET);
 }}}
 
 By default *Edge* will return an instance of the class that run the query (in the examples above User).
