@@ -86,15 +86,37 @@ abstract class Record implements EventHandler, CachableRecord{
      * Child classes should implement
      * @return string Return the table's name
      */
-    public static function getTable(){}
+    public static function getTable(){
+        throw new Exceptions\EdgeException(get_called_class() . " must implement method getTable()");
+    }
 
     /**
-     * Child classes should implement
+     * Child classes should implement in case they need to
+     * specify PKs
      * @return array Return an array with the table's
      * primary keys
      */
-    public static function getPk(){}
+    public static function getPk(){
+        return array();
+    }
 
+    /**
+     * php's sprintf does not support named params
+     * $values = array(
+            ':table' => 'users',
+            ':linkTable' => 'user_role',
+            ':fk2' => 'user_id',
+            ':fk1' => 'role_id',
+            ':value' => 1
+        );
+        $q = $model::sprintf("SELECT :table.* FROM :table
+                INNER JOIN :linkTable u
+                ON :table.id = u.:fk2
+                AND u.:fk1 = ':value'", $values);
+     * @param $subject
+     * @param array $values
+     * @return mixed
+     */
     public static function sprintf($subject, array $values){
         $keys = array_keys($values);
         $vals = array_values($values);
