@@ -134,7 +134,7 @@ class Router{
             $routes = $this->routes[$httpMethod];
             $route = static::uriResolver($uri, $routes);
         }
-        if(!$route){
+        if(!$route && isset($this->routes['*'])){
             $route = static::uriResolver($uri, $this->routes['*']);
         }
         return $route;
