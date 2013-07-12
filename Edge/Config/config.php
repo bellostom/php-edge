@@ -151,7 +151,6 @@ return array(
     /**
      * The below are configuration options
      */
-    'loginUrl' => '/home/login',
     'routerClass' => 'Edge\Core\Router',
     'userClass' => 'Edge\Models\User',
     'timezone' => 'Europe/Athens',

@@ -6,8 +6,15 @@ abstract class AuthController extends BaseController{
     public function filters(){
         return array(
             array(
-                'Edge\Core\Filters\Authorization'
+                'Edge\Core\Filters\Authorization',
+                'url' => $this->getLoginUrl()
             )
         );
     }
+
+    /**
+     * Define the url for the login page
+     * @return mixed
+     */
+    abstract protected function getLoginUrl();
 }

@@ -10,9 +10,16 @@ use Edge\Core\Edge,
  */
 class Authorization extends BaseFilter{
 
+    protected $url;
+
+    public function __construct(array $attrs){
+        $this->url = $attrs['url'];
+        parent::__construct();
+    }
+
     public function preProcess(Http\Response $response, Http\Request $request){
         if(Edge::app()->user()->isGuest()){
-            $response->redirect(Edge::app()->loginUrl);
+            $response->redirect($this->url);
         }
     }
 }
