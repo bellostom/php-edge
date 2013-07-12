@@ -88,7 +88,7 @@ class User extends Identifiable {
 	public static function getUserByUsername($name)	{
         return parent::select()
                         ->where(array("username" => $name))
-                        ->run();
+                        ->fetch();
 	}
 
 	/**
@@ -120,4 +120,3 @@ class User extends Identifiable {
 		return sha1($this->salt.$pass);
 	}
 }
-?>
