@@ -169,16 +169,15 @@ abstract class BaseAdapter{
                         ->order(array("username"=>"asc"))
                         ->limit(0)
                         ->offset(10)
-                        ->fetchMode(Record::FETCH_RESULTSET)
                         ->cache(array('ttl' => 10*60))
-                        ->run();
+                        ->fetch(Record::FETCH_RESULTSET);
      *
      *
      *
      * Select a user with username thomas
      * \Edge\Models\User::select()
                         ->where(array("username"=>"thomas"))
-                        ->run();
+                        ->fetch();
      *
      *
      * Select users with id 1 or 2 or name in ("Thomas", "John")
@@ -191,7 +190,7 @@ abstract class BaseAdapter{
                         ->in(["Thomas", "John"])
                         ->andWhere(array("sex"=>"male"))
                         ->order(array("username"=>"asc"))
-                        ->run();
+                        ->fetch();
      *
      *
      *
@@ -233,6 +232,16 @@ abstract class BaseAdapter{
     public function fetchMode($mode){
         $this->fetchMode = $mode;
         return $this;
+    }
+
+    /**
+     * Shortcut to run()
+     * @param int $fetchMode
+     * @return array|CachedObjectSet|mixed|null
+     */
+    public function fetch($fetchMode=Record::FETCH_INSTANCE){
+        $this->fetchMode($fetchMode);
+        return $this->run();
     }
 
     /**

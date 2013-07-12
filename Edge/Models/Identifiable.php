@@ -14,13 +14,12 @@ abstract class Identifiable extends Record{
 	public static function getItemByName($value, $fetchMode=Identifiable::FETCH_INSTANCE) {
         return parent::select()
                         ->where(array("name" => $value))
-                        ->fetchMode($fetchMode)
-                        ->run();
+                        ->fetch($fetchMode);
 	}
 
 	public static function getItemById($id)	{
         return parent::select()
                         ->where(array("id" => $id))
-                        ->run();
+                        ->fetch();
 	}
 }

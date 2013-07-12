@@ -262,7 +262,7 @@ abstract class Record implements EventHandler, CachableRecord{
             }
             $instance = $model::select()
                                 ->where(array($keys['fk'] => $keys['value']))
-                                ->run();
+                                ->fetch();
         }
         return $instance;
     }
@@ -292,7 +292,7 @@ abstract class Record implements EventHandler, CachableRecord{
             }
             $instance = $model::select()
                 ->where(array($keys['fk'] => $keys['value']))
-                ->run();
+                ->fetch();
         }
         return $instance;
     }
@@ -341,8 +341,7 @@ abstract class Record implements EventHandler, CachableRecord{
             $instance = $model::select()
                               ->where($keys['fk'])
                               ->in($keys['value'])
-                              ->fetchMode(Record::FETCH_RESULTSET)
-                              ->run();
+                              ->fetch(Record::FETCH_RESULTSET);
         }
         return $instance;
     }

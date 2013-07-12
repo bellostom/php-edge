@@ -25,7 +25,7 @@ abstract class MongoRecord extends Record{
         }
         return parent::select()
                         ->where(array("_id" => $id))
-                        ->run();
+                        ->fetch();
 	}
 
     protected function belongsTo($model, $options=array()){
