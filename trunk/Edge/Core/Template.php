@@ -80,6 +80,11 @@ class Template extends InternalCache{
 	    return $this->readTemplate();
 	}
 
+    public function getCsrfToken(){
+        return sprintf('<input name="csrfToken" type="hidden" value="%s" />',
+                        Edge::app()->request->getCsrfToken());
+    }
+
     /**
      * Escape string coming from unknown sources
      * to prevent XSS
