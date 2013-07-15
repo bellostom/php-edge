@@ -68,10 +68,8 @@ abstract class Record implements EventHandler, CachableRecord{
      * array or the object will be initialized with default values.
      */
     public function __construct(array $attrs=array()){
-        if(count($attrs) == 0){
-            $attrs = static::getMembers();
-        }
-        $this->attributes = $attrs;
+        $this->setAttributes($attrs);
+
     }
 
     /**
@@ -80,6 +78,13 @@ abstract class Record implements EventHandler, CachableRecord{
      */
     public function getAttributes(){
         return $this->attributes;
+    }
+
+    public function setAttributes(array $attrs){
+        $defaults = static::getMembers();
+        $attrs = array_intersect_key($attrs, $defaults);
+        $attrs = array_replace_recursive($defaults, $attrs);
+        $this->attributes = $attrs;
     }
 
     /**
@@ -213,7 +218,7 @@ abstract class Record implements EventHandler, CachableRecord{
         else if(array_key_exists($attr, $this->attributes)){
             return $this->attributes[$attr];
         }
-        throw new Exceptions\UnknownProperty(get_called_class(), $attr);
+        throw new Exceptions\UnknownProperty($attr, get_called_class());
     }
 
     /**

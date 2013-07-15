@@ -16,8 +16,12 @@ class User extends Identifiable {
 
 	public function __construct(array &$data=array()) {
 		parent::__construct($data);
-		if($this->salt == '')
+		if($this->salt == ''){
 			$this->salt = Utils::genRandom();
+        }
+        if($this->pass && strlen($this->pass) != 40){
+            $this->setPass($this->pass);
+        }
 	}
 
     public static function getPk(){
