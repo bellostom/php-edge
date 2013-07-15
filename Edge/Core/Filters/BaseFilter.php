@@ -39,7 +39,7 @@ abstract class BaseFilter implements \Edge\Core\Interfaces\Filter{
      * @return bool
      */
     public function appliesTo($action){
-        if($this->applyTo[0] == "*"){
+        if(count($this->applyTo) == 1 && $this->applyTo[0] == "*"){
             return true;
         }
         return in_array($action, $this->applyTo);

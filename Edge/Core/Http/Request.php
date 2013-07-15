@@ -45,6 +45,14 @@ class Request {
         }
     }
 
+    public function getCsrfToken(){
+        $session = Edge::app()->session;
+        if(!isset($session->csrfToken)){
+            $session->csrfToken = md5(\Edge\Utils\Utils::genRandom(10));
+        }
+        return $session->csrfToken;
+    }
+
     public function setCookie($name, $value, $expires){
         Edge::app()->cookie->set($name, $value, $expires);
     }
