@@ -12,7 +12,7 @@ class Session{
         session_start();
 
         if (!isset($_SESSION['initiated'])) {
-            session_regenerate_id(true);
+            $this->regenerate();
             $_SESSION['initiated'] = true;
         }
         if (isset($_SESSION['acc']) && (time() - $_SESSION['acc'] > $settings['session.timeout'])) {
@@ -21,6 +21,10 @@ class Session{
             $_SESSION['initiated'] = true;
         }
         $_SESSION['acc'] = time();
+    }
+
+    public function regenerate(){
+        session_regenerate_id(true);
     }
 
     public function getSessionId(){
