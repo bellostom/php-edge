@@ -13,8 +13,6 @@ class Home extends BaseController{
      * @return mixed|string
      */
     public function index(){
-        var_dump(\Edge\Models\User::getItemById(1)->roles);
-        return;
         $tpl = static::loadView('ui.index.tpl');
         $tpl->title = 'Welcome to Edge';
         return parent::render($tpl, [
