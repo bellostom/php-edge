@@ -123,6 +123,7 @@ abstract class BaseController{
         $userClass = Core\Edge::app()->getConfig('userClass');
         $user = $userClass::getUserByUsername($username);
         if($user && $user->authenticate($password)){
+            Core\Edge::app()->session->regenerate();
             Core\Edge::app()->user($user);
             return true;
         }
