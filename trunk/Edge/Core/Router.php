@@ -10,6 +10,7 @@ class Router{
     protected $response;
     protected $request;
     protected $routes;
+    protected $permissions = null;
 
 	public function __construct(array $routes){
         $this->routes = $routes;
@@ -29,6 +30,10 @@ class Router{
 	public function getArgs(){
 		return $this->args;
 	}
+
+    public function getPermissions(){
+        return $this->permissions;
+    }
 
 	public function getAction(){
 		return $this->method;
@@ -91,7 +96,7 @@ class Router{
      * @param $routes
      * @return array|bool
      */
-    private static function uriResolver($url, $routes){
+    private function uriResolver($url, $routes){
         if(isset($routes[$url])){
             $ret = $routes[$url];
             $ret[] = array();
@@ -129,10 +134,10 @@ class Router{
         $route = false;
         if(array_key_exists($httpMethod, $this->routes)){
             $routes = $this->routes[$httpMethod];
-            $route = static::uriResolver($uri, $routes);
+            $route = $this->uriResolver($uri, $routes);
         }
         if(!$route && isset($this->routes['*'])){
-            $route = static::uriResolver($uri, $this->routes['*']);
+            $route = $this->uriResolver($uri, $this->routes['*']);
         }
         return $route;
     }
@@ -160,6 +165,10 @@ class Router{
 		$this->controller = ucfirst($route[0]);
         $this->method = $route[1];
         $this->args = $route[2];
+        if(isset($route['acl'])){
+            $this->permissions = $route['acl'];
+            unset($route['acl']);
+        }
 
         if(!$this->request->is('get')){
             $this->args[] = $this->request->getParams();
@@ -218,8 +227,8 @@ class Router{
 
         $instance = new $class();
         if(method_exists($instance, $this->method)){
-            $filters = static::getFilters($instance);
             try{
+                $filters = static::getFilters($instance);
                 $invokeRequest = $this->runFilters($filters, 'preProcess');
                 if($invokeRequest){
 
