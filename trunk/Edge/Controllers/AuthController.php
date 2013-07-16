@@ -6,7 +6,7 @@ abstract class AuthController extends BaseController{
     public function filters(){
         return array(
             array(
-                'Edge\Core\Filters\Authorization',
+                'Edge\Core\Filters\Authentication',
                 'url' => $this->getLoginUrl()
             )
         );

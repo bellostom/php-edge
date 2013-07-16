@@ -8,7 +8,7 @@ use Edge\Core\Edge,
  * Preprocess filter that checks authorization
  * @package Edge\Core\Filters
  */
-class Authorization extends BaseFilter{
+class Authentication extends BaseFilter{
 
     protected $url;
 
