@@ -3,6 +3,7 @@ namespace Edge\Core\Filters;
 
 use Edge\Core\Edge,
     Edge\Core\Exceptions\Forbidden,
+    Edge\Core\Exceptions\EdgeException,
     Edge\Core\Http;
 
 /**
@@ -43,7 +44,13 @@ class AccessControl extends BaseFilter{
 
     public function preProcess(Http\Response $response, Http\Request $request){
         if(Edge::app()->user()->isAdmin()){
+            if(!$this->permissions){
+                Edge::app()->logger->warn("No permissions defined for URL ". Edge::app()->request->getRequestUrl());
+            }
             return true;
+        }
+        if(!$this->permissions){
+            throw new EdgeException("No permissions defined for URL ". Edge::app()->request->getRequestUrl());
         }
         foreach($this->permissions as $perm){
             if(!Edge::app()->user()->hasPrivilege($perm)){

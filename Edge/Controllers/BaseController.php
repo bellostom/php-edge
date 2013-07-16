@@ -27,6 +27,32 @@ abstract class BaseController{
     }
 
     /**
+     * Return the URL from the routes array that corresponds
+     * to the selected attributes
+     * ie
+     * parent::createLink(get_called_class(), 'updateRole', [':id' => $role->id], 'POST');
+     * @param $controller
+     * @param $action
+     * @param array $attrs
+     * @param string $method
+     * @return string
+     */
+    protected function createLink($controller, $action, array $attrs=array(), $method='GET'){
+        $routes = Core\Edge::app()->getRoutes();
+        foreach($routes[$method] as $url=>$options){
+            if($options[0] == $controller && $options[1] == $action){
+                if(!$attrs){
+                    return $url;
+                }
+                $keys = array_keys($attrs);
+                $vals = array_values($attrs);
+                return str_replace($keys, $vals, $url);
+            }
+        }
+        return null;
+    }
+
+    /**
      * Render the layout file
      * @param Core\Template $tpl
      * @param array $attrs

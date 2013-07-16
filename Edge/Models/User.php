@@ -9,10 +9,7 @@ class User extends Identifiable {
         'username', 'pass', 'salt', 'surname'
     );
 
-    protected $_roles = array();
-
 	const GUEST = 1;
-	const AUTH_USER =3;
 
 	public function __construct(array &$data=array()) {
 		parent::__construct($data);
@@ -68,7 +65,7 @@ class User extends Identifiable {
     }
 
 	public function isAdmin(){
-		return $this->id == User::ADMIN;
+		return $this->username == 'admin';
 	}
 
     public function isGuest(){
