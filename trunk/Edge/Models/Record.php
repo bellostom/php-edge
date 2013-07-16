@@ -87,6 +87,14 @@ abstract class Record implements EventHandler, CachableRecord{
         $this->attributes = $attrs;
     }
 
+    public function updateAttributes(array $attrs){
+        foreach($attrs as $k=>$v){
+            if(isset($this->attributes[$k])){
+                $this->$k = $v;
+            }
+        }
+    }
+
     /**
      * Child classes should implement
      * @return string Return the table's name
