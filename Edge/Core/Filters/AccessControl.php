@@ -7,25 +7,24 @@ use Edge\Core\Edge,
     Edge\Core\Http;
 
 /**
- * Prep rocess filter that checks whether the current user
+ * Preprocess filter that checks whether the current user
  * has permission to invoke the requested method.
- * The usual way to apply the filter is to create an instance method
- * in the controller, which defines a mapping between the controller's methods
- * and the permissions each method requires, along with the filter itself
- * Basic example
+ * You define acl rules in the routes.php file
+ * Example
  *
  *
-    protected function getAclMap(){
-        return array(
-            'index' => array('create user')
-        );
-    }
+    return array(
+        'POST' => array(
+            '/users/delete/:id' => array("Application\\Controllers\\User", "delete",
+                                       "acl"=>array("Delete Users"))
+        )
+    );
 
     public function filters(){
         return array_merge(parent::filters(), array(
             array(
                 'Edge\Core\Filters\AccessControl',
-                "permissions" => $this->getAclMap()[Edge::app()->router->getAction()]
+                "permissions" => Edge:app()->router->getPermissions()
             )
         ));
     }
