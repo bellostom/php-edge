@@ -1,6 +1,8 @@
 <?php
 namespace Edge\Core;
 
+use Edge\Core\Exceptions\Unauthorized;
+
 class Router{
 	protected $controller;
 	protected $method;
@@ -36,22 +38,17 @@ class Router{
         return $this->controller;
     }
 
-	protected function handleServerError(){
+	protected function handleServerError($msg){
         $edge = Edge::app();
-		$arg = strtolower($_SERVER['REQUEST_METHOD']);
 		$class = $edge->getConfig('serverError');
-		$this->response->httpCode = 500;
-		$this->response->body = call_user_func(array(new $class[0], $class[1]), $arg);
-        $this->response->write();
+		$this->response->body = call_user_func(array(new $class[0], $class[1]), $msg);
 	}
 
 	protected function handle404Error(){
         $edge = Edge::app();
-        $arg = strtolower($_SERVER['REQUEST_METHOD']);
         $class = $edge->getConfig('notFound');
         $this->response->httpCode = 404;
-        $this->response->body = call_user_func(array(new $class[0], $class[1]), $arg);
-        $this->response->write();
+        $this->response->body = call_user_func(array(new $class[0], $class[1]), $this->request->getRequestUrl());
 	}
 
     /**
@@ -157,6 +154,7 @@ class Router{
         if(!$route){
             Edge::app()->logger->err("$url is not mapped to any route");
             $this->handle404Error();
+            $this->response->write();
         }
 
 		$this->controller = ucfirst($route[0]);
@@ -221,9 +219,10 @@ class Router{
         $instance = new $class();
         if(method_exists($instance, $this->method)){
             $filters = static::getFilters($instance);
-            $invokeRequest = $this->runFilters($filters, 'preProcess');
-            if($invokeRequest){
-                try{
+            try{
+                $invokeRequest = $this->runFilters($filters, 'preProcess');
+                if($invokeRequest){
+
                     $processed = false;
                     $retries = 0;
                     $max_retries = 20;
@@ -246,23 +245,19 @@ class Router{
                         throw new \Exception('Deadlock detected');
                     }
                 }
-                catch(UnauthorizedException $e){
-                    $this->response->httpCode = 401;
+                $this->runFilters($filters, 'postProcess');
+            }
+            catch(\Exception $e){
+                Edge::app()->logger->err($e->getMessage());
+                if($this->response->httpCode == 200){
+                    $this->response->httpCode = 500;
                 }
-                catch(\ReflectionException $e){
-                    Edge::app()->logger->err($e->getMessage());
-                    $this->handle404Error();
-                }
-                catch(\Exception $e){
-                    Edge::app()->logger->err($e->getMessage());
-                    $this->handleServerError();
-                }
+                $this->handleServerError($e->getMessage());
             }
         }
         else{
             $this->handle404Error();
         }
-        $this->runFilters($filters, 'postProcess');
         $this->response->write();
     }
 }

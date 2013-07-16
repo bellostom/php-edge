@@ -2,6 +2,7 @@
 namespace Edge\Core\Filters;
 
 use Edge\Core\Edge,
+    Edge\Core\Exceptions\BadRequest,
     Edge\Core\Http;
 
 /**
@@ -24,14 +25,10 @@ class CsrfProtection extends BaseFilter{
             $tokenName = $this->tokenName;
             $body = $request->getParams();
             if(!isset($body[$tokenName])){
-                $response->httpCode = 400;
-                Edge::app()->logger->err("The body does not contain a CSRF token");
-                $response->write();
+                throw new BadRequest("The body does not contain a CSRF token");
             }
             if($body[$tokenName] != $request->getCsrfToken()){
-                $response->httpCode = 400;
-                Edge::app()->logger->err("The specified CSRF token is not valid");
-                $response->write();
+                throw new BadRequest("The specified CSRF token is not valid");
             }
             return true;
         }
