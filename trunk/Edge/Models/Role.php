@@ -22,6 +22,19 @@ class Role extends Identifiable{
         return 'roles';
     }
 
+    public function getPermissions(){
+        return $this->perms;
+    }
+
+    public function addPermissions(array $ids){
+        foreach($ids as $permId){
+            $rolePerm = new RolePermission();
+            $rolePerm->role_id = $this->id;
+            $rolePerm->perm_id = $permId;
+            $rolePerm->save();
+        }
+    }
+
     /**
      * Load the permissions that the role has
      * @return ResultSet
@@ -48,7 +61,7 @@ class Role extends Identifiable{
      * @return bool
      */
     public function hasPerm($permission) {
-        return isset($this->perms[$permission]);
+        return array_key_exists($permission, $this->perms);
     }
 
 }
