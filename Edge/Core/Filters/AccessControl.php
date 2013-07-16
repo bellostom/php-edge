@@ -2,6 +2,7 @@
 namespace Edge\Core\Filters;
 
 use Edge\Core\Edge,
+    Edge\Core\Exceptions\Forbidden,
     Edge\Core\Http;
 
 /**
@@ -43,8 +44,7 @@ class AccessControl extends BaseFilter{
     public function preProcess(Http\Response $response, Http\Request $request){
         foreach($this->permissions as $perm){
             if(!Edge::app()->user()->hasPrivilege($perm)){
-                $response->httpCode = 401;
-                $response->write();
+                throw new Forbidden("User has not the privilege to invoke ". $request->getRequestUrl());
             }
         }
     }

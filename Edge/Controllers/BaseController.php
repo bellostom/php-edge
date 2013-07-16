@@ -102,10 +102,10 @@ abstract class BaseController{
 	 * http codes.
 	 * Should be overwritten by apps
 	 * to provide more details
-	 * @param string $http_method
+	 * @param string $url
 	 */
-	public function notFound($http_method) {
-		return 'Not Found';
+	public function notFound($url) {
+		return 'URL '.$url.' not found';
 	}
 
 	/**
@@ -115,8 +115,8 @@ abstract class BaseController{
 	 * to provide more details
 	 * @param string $http_method
 	 */
-	public function serverError($http_method) {
-		return 'Server Error';
+	public function serverError($message) {
+		return $message;
 	}
 
     public function authorize($username, $password){
