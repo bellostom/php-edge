@@ -42,6 +42,9 @@ class AccessControl extends BaseFilter{
     }
 
     public function preProcess(Http\Response $response, Http\Request $request){
+        if(Edge::app()->user()->isAdmin()){
+            return true;
+        }
         foreach($this->permissions as $perm){
             if(!Edge::app()->user()->hasPrivilege($perm)){
                 throw new Forbidden("User has not the privilege to invoke ". $request->getRequestUrl());

@@ -287,19 +287,21 @@ abstract class Record implements EventHandler, CachableRecord{
      * @return mixed
      */
     protected function hasOne($model, $keys=array()){
-        static $instance;
-        if(is_null($instance)){
-            if(!isset($keys['fk'])){
-                $keys['fk'] = sprintf("%s_id", static::getTable());
-            }
-            if(!isset($keys['value'])){
-                $keys['value'] = $this->id;
-            }
-            $instance = $model::select()
+        static $instances= [];
+
+        if(!isset($keys['fk'])){
+            $keys['fk'] = sprintf("%s_id", static::getTable());
+        }
+        if(!isset($keys['value'])){
+            $keys['value'] = $this->id;
+        }
+        $key = sprintf("%s:%s", $keys['fk'], $keys['value']);
+        if(is_null($instances[$key])){
+            $instances[$key] = $model::select()
                                 ->where(array($keys['fk'] => $keys['value']))
                                 ->fetch();
         }
-        return $instance;
+        return $instances[$key];
     }
 
     /**
@@ -316,20 +318,14 @@ abstract class Record implements EventHandler, CachableRecord{
      * @return mixed
      */
     protected function belongsTo($model, $keys=array()){
-        static $instance;
-        if(is_null($instance)){
-            if(!isset($keys['fk'])){
-                $keys['fk'] = 'id';
-            }
-            if(!isset($keys['value'])){
-                $id = sprintf("%s_id", $model::getTable());
-                $keys['value'] = $this->$id;
-            }
-            $instance = $model::select()
-                ->where(array($keys['fk'] => $keys['value']))
-                ->fetch();
+        if(!isset($keys['fk'])){
+            $keys['fk'] = 'id';
         }
-        return $instance;
+        if(!isset($keys['value'])){
+            $id = sprintf("%s_id", $model::getTable());
+            $keys['value'] = $this->$id;
+        }
+        return static::hasOne($model, $keys);
     }
 
     /**
@@ -344,14 +340,15 @@ abstract class Record implements EventHandler, CachableRecord{
      * @return ResultSet
      */
     protected function manyToMany($model, $attrs=array()){
-        static $instance;
-        if(is_null($instance)){
-            if(!isset($attrs['value'])){
-                $attrs['value'] = $this->id;
-            }
-            $instance = static::getAdapter()->manyToMany($model, $attrs);
+        static $instances = [];
+        if(!isset($attrs['value'])){
+            $attrs['value'] = $this->id;
         }
-        return $instance;
+        $key = sprintf("%s:%s", $attrs['linkTable'], $attrs['value']);
+        if(!isset($instances[$key])){
+            $instances[$key] = static::getAdapter()->manyToMany($model, $attrs);
+        }
+        return $instances[$key];
     }
 
     /**
@@ -365,20 +362,22 @@ abstract class Record implements EventHandler, CachableRecord{
      * @return mixed
      */
     protected function hasMany($model, $keys=array()){
-        static $instance;
-        if(is_null($instance)){
-            if(!isset($keys['fk'])){
-                $keys['fk'] = sprintf("%s_id", static::getTable());
-            }
-            if(!isset($keys['value'])){
-                $keys['value'] = array($this->id);
-            }
-            $instance = $model::select()
+        static $instances = [];
+
+        if(!isset($keys['fk'])){
+            $keys['fk'] = sprintf("%s_id", static::getTable());
+        }
+        if(!isset($keys['value'])){
+            $keys['value'] = array($this->id);
+        }
+        $key = sprintf("%s:%s", $keys['fk'], $keys['value']);
+        if(!isset($instances[$key])){
+            $instances[$key] = $model::select()
                               ->where($keys['fk'])
                               ->in($keys['value'])
                               ->fetch(Record::FETCH_RESULTSET);
         }
-        return $instance;
+        return $instances[$key];
     }
 
     public static function first(){
