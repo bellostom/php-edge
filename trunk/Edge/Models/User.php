@@ -1,15 +1,16 @@
 <?php
 namespace Edge\Models;
-use Edge\Utils\Utils;
+
+use Edge\Utils\Utils,
+    Edge\Core\Exceptions\EdgeException;
 
 
 class User extends Identifiable {
 
     protected static $_members = array(
-        'username', 'pass', 'salt', 'surname'
+        'username', 'pass', 'salt', 'surname', 'email',
+        'created', 'is_verified', 'auth_token', 'is_system'
     );
-
-	const GUEST = 1;
 
 	public function __construct(array &$data=array()) {
 		parent::__construct($data);
@@ -42,6 +43,15 @@ class User extends Identifiable {
         ));
     }
 
+    public function generateAuthToken(){
+        return md5(\Edge\Utils\Utils::genRandom(12));
+    }
+
+    public function emailAuthToken($url){
+        $message = sprintf("Follow the below link to change your password\\r\\n%s", $url);
+        mail($this->email, "Change Password", $message);
+    }
+
     /**
      * Check whether the user can execute the selected
      * action
@@ -72,7 +82,7 @@ class User extends Identifiable {
 	}
 
     public function isGuest(){
-        return $this->id == User::GUEST;
+        return $this->username == 'guest';
     }
 
 	/**
@@ -90,10 +100,27 @@ class User extends Identifiable {
 	 * @param string $name
 	 */
 	public static function getUserByUsername($name)	{
-        return parent::select()
-                        ->where(array("username" => $name))
-                        ->fetch();
+        return static::getUserByAttribute(array("username" => $name));
 	}
+
+    public static function getUserByAuthToken($authToken){
+        return static::getUserByAttribute(array("auth_token" => $authToken));
+    }
+
+    protected static function getUserByAttribute(array $attrs){
+        return parent::select()
+            ->where($attrs)
+            ->fetch();
+    }
+
+    /**
+     *
+     * Get user by email
+     * @param string $email
+     */
+    public static function getUserByEmail($email)	{
+        return static::getUserByAttribute(array("email" => $email));
+    }
 
 	/**
 	 *
@@ -123,4 +150,12 @@ class User extends Identifiable {
 	private function encodePassword($pass){
 		return sha1($this->salt.$pass);
 	}
+
+
+    public function delete(){
+        if($this->is_system){
+            throw new EdgeException("System users cannot be deleted");
+        }
+        return parent::delete();
+    }
 }
