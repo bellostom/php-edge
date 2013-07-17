@@ -37,8 +37,11 @@ abstract class BaseController{
      * @param string $method
      * @return string
      */
-    protected function createLink($controller, $action, array $attrs=array(), $method='GET'){
+    public static function createLink($controller, $action, array $attrs=array(), $method='GET'){
         $routes = Core\Edge::app()->getRoutes();
+        if(!isset($routes[$method])){
+            return null;
+        }
         foreach($routes[$method] as $url=>$options){
             if($options[0] == $controller && $options[1] == $action){
                 if(!$attrs){
@@ -48,6 +51,9 @@ abstract class BaseController{
                 $vals = array_values($attrs);
                 return str_replace($keys, $vals, $url);
             }
+        }
+        if($method != '*'){
+            return static::createLink($controller, $action, $attrs, '*');
         }
         return null;
     }
