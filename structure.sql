@@ -24,8 +24,10 @@ DROP TABLE IF EXISTS `permissions`;
 CREATE TABLE `permissions` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `perm_name_idx` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 
 /*Table structure for table `role_perm` */
@@ -49,7 +51,8 @@ DROP TABLE IF EXISTS `roles`;
 CREATE TABLE `roles` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `role_name_idx` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 
 
@@ -78,13 +81,20 @@ CREATE TABLE `users` (
   `username` varbinary(40) DEFAULT NULL,
   `surname` varchar(100) DEFAULT NULL,
   `salt` char(11) DEFAULT NULL,
+  `email` varchar(45) DEFAULT NULL,
+  `cms_access` tinyint(1) DEFAULT '0',
+  `is_system` tinyint(1) DEFAULT '0',
+  `auth_token` char(32) DEFAULT NULL,
+  `is_verified` tinyint(1) DEFAULT '0',
+  `created` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `username_idx` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8;
+  UNIQUE KEY `username_idx` (`username`),
+  UNIQUE KEY `user_mail_idx` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
 
 /*Data for the table `users` */
 
-insert  into `users`(`id`,`name`,`pass`,`username`,`surname`,`salt`) values (1,'Guest','0b669572bbdf920ee511389a2c41a4dc126b5df9','guest','','958Om0MoGgt'),(3,'Administrator','3e4e2b155727719b28f6c6e0d335cca003665adb','admin',NULL,'4JTMCHKM1t9'),(23,'','','thomas','','iUByaTprRTj');
+insert  into `users`(`id`,`name`,`pass`,`username`,`surname`,`salt`,`email`,`cms_access`,`is_system`,`auth_token`,`is_verified`) values (1,'Guest','0b669572bbdf920ee511389a2c41a4dc126b5df9','guest','','958Om0MoGgt',NULL,0,1,NULL,1),(3,'Administrator','3e4e2b155727719b28f6c6e0d335cca003665adb','admin',NULL,'4JTMCHKM1t9',NULL,1,1,NULL,1);
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;

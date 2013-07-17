@@ -57,11 +57,12 @@ class Edge implements \ArrayAccess{
         }
         elseif(is_null($instance)){
             $userID = $this->session->userID;
-            $class = $this->getConfig('userClass');
             if(!isset($userID)){
-                $userID = $class::GUEST;
+                $instance = \Edge\Models\User::getUserByUsername('guest');
+            }else{
+                $class = $this->getConfig('userClass');
+                $instance = $class::getUserById($userID);
             }
-            $instance = $class::getUserById($userID);
         }
         return $instance;
     }
