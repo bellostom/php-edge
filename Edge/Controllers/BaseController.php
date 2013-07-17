@@ -31,6 +31,8 @@ abstract class BaseController{
      * to the selected attributes
      * ie
      * parent::createLink(get_called_class(), 'updateRole', [':id' => $role->id], 'POST');
+     * or
+     * parent::createLink('Application\Controllers\Home', 'index', ["anchor"=>"#list_products"])
      * @param $controller
      * @param $action
      * @param array $attrs
@@ -44,12 +46,14 @@ abstract class BaseController{
         }
         foreach($routes[$method] as $url=>$options){
             if($options[0] == $controller && $options[1] == $action){
-                if(!$attrs){
-                    return $url;
+                $anchor = '';
+                if(isset($attrs['anchor'])){
+                    $anchor = $attrs['anchor'];
+                    unset($attrs['anchor']);
                 }
                 $keys = array_keys($attrs);
                 $vals = array_values($attrs);
-                return str_replace($keys, $vals, $url);
+                return str_replace($keys, $vals, $url).$anchor;
             }
         }
         if($method != '*'){
