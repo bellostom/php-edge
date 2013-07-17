@@ -49,6 +49,9 @@ class User extends Identifiable {
      * @return bool
      */
     public function hasPrivilege($perm) {
+        if($this->isAdmin()){
+            return true;
+        }
         foreach ($this->roles as $role) {
             if ($role->hasPerm($perm)) {
                 return true;
