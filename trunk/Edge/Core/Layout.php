@@ -50,7 +50,8 @@ class Layout extends Template{
         foreach($arr as $file){
             $mod[] = filemtime($file);
         }
-        $link = sprintf("/%s/%d.%s", $type, max($mod), $type);
+        $key = md5((string) max($mod) + serialize($arr));
+        $link = sprintf("/%s/%s.%s", $type, $key, $type);
         $this->cache($link, $type);
         return $link;
     }
