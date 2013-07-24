@@ -15,7 +15,7 @@ use Edge\Core\Exceptions,
  * class that will be responsible for the interaction.
  * The default adapter class is the MySQLAdapter.
  */
-abstract class Record implements EventHandler, CachableRecord{
+abstract class Record implements EventHandler, CachableRecord, \Serializable{
     /**
      * @var array Stores the class's attributes
      * These attributes are mapped to the DB record
@@ -69,7 +69,25 @@ abstract class Record implements EventHandler, CachableRecord{
      */
     public function __construct(array $attrs=array()){
         $this->setAttributes($attrs);
+    }
 
+    /**
+     * Serializable interface
+     * Serialize only data within the attributes array
+     * and not any other members defined by subclasses
+     * @return string
+     */
+    public function serialize(){
+        return serialize($this->getAttributes());
+    }
+
+    /**
+     * Serializable interface
+     * Deserialize the array and initialize
+     * our object
+     */
+    public function unserialize($data){
+        $this->setAttributes(unserialize($data));
     }
 
     /**

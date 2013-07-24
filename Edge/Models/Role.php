@@ -64,4 +64,9 @@ class Role extends Identifiable{
         return array_key_exists($permission, $this->perms);
     }
 
+    public function unserialize($data){
+        parent::unserialize($data);
+        $this->initPermissions();
+    }
+
 }
