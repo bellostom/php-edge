@@ -35,13 +35,17 @@ class MysqlSlave {
     }
 
     public function dbMetadata($table) {
-        $result = $this->dbQuery("SELECT * FROM $table limit 1");
-        $finfo = $result->fetch_fields();
-        $store = array();
-        foreach($finfo as $column) {
-            $store[$column->name] = array($column->type, $column->flags);
+        static $cache = [];
+        if(!isset($cache[$table])){
+            $result = $this->dbQuery("SELECT * FROM $table limit 1");
+            $finfo = $result->fetch_fields();
+            $store = array();
+            foreach($finfo as $column) {
+                $store[$column->name] = array($column->type, $column->flags);
+            }
+            $cache[$table] = $store;
         }
-        return $store;
+        return $cache[$table];
     }
 
     public function now() {
