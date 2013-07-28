@@ -5,7 +5,9 @@ use Edge\Core\Edge,
     Edge\Core\Http;
 
 /**
- * Preprocess filter that checks authorization
+ * Preprocess filter that checks that requires that
+ * a user is authenticated before invoking the specified
+ * action
  * @package Edge\Core\Filters
  */
 class Authentication extends BaseFilter{

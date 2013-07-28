@@ -3,7 +3,7 @@ namespace Edge\Core;
 
 use Edge\Core\Edge,
     Edge\Utils\JSMin,
-    Edge\Utils\cssmin;
+    Edge\Utils\Css;
 /**
  * Class Layout
  * Manages the layout template file and provides
@@ -50,7 +50,7 @@ class Layout extends Template{
         foreach($arr as $file){
             $mod[] = filemtime($file);
         }
-        $key = md5((string) max($mod) + serialize($arr));
+        $key = md5((string) max($mod) . serialize($arr));
         $link = sprintf("/%s/%s.%s", $type, $key, $type);
         $this->cache($link, $type);
         return $link;
@@ -71,7 +71,7 @@ class Layout extends Template{
             if($type == 'js') {
                 $content = JSMin::minify($content);
             }else{
-                $content = cssmin::minify($content);
+                $content = Css::minify($content);
             }
             Edge::app()->cache->add($key, $content);
         }
