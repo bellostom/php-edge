@@ -1,8 +1,6 @@
 <?php
 namespace Edge\Core;
 
-use Edge\Core\Exceptions\Unauthorized;
-
 class Router{
 	protected $controller;
 	protected $method;
