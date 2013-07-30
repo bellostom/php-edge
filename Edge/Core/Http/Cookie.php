@@ -72,6 +72,6 @@ class Cookie {
         if($this->encrypt){
             return $this->validateCookie($name);
         }
-        return $_COOKIE[$name];
+        return isset($_COOKIE[$name])?$_COOKIE[$name]:null;
     }
 }

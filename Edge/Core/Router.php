@@ -41,6 +41,46 @@ class Router{
         return $this->controller;
     }
 
+    /**
+     * Return the URL from the routes array that corresponds
+     * to the selected attributes
+     * ie
+     * parent::createLink(get_called_class(), 'updateRole', [':id' => $role->id], 'POST');
+     * or
+     * parent::createLink('Application\Controllers\Home', 'index', ["anchor"=>"#list_products"])
+     * @param $controller
+     * @param $action
+     * @param array $attrs
+     * @param string $method
+     * @return string
+     */
+    public function createLink($controller, $action, array $attrs=array(), $method='GET'){
+        $routes = $this->routes;
+        if(!isset($routes[$method])){
+            return null;
+        }
+        foreach($routes[$method] as $url=>$options){
+            if($options[0] == $controller && $options[1] == $action){
+                $anchor = '';
+                if(isset($attrs['anchor'])){
+                    $anchor = $attrs['anchor'];
+                    unset($attrs['anchor']);
+                }
+                if(substr($url, strlen($url) - 1) == "*"){
+                    $url = substr($url, 0, strlen($url) - 1);
+                    return $url . join("/", array_values($attrs));
+                }
+                $keys = array_keys($attrs);
+                $vals = array_values($attrs);
+                return str_replace($keys, $vals, $url).$anchor;
+            }
+        }
+        if($method != '*'){
+            return $this->createLink($controller, $action, $attrs, '*');
+        }
+        return null;
+    }
+
 	protected function handleServerError($msg){
         $edge = Edge::app();
 		$class = $edge->getConfig('serverError');
