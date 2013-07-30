@@ -51,6 +51,10 @@ abstract class BaseController{
                     $anchor = $attrs['anchor'];
                     unset($attrs['anchor']);
                 }
+                if(substr($url, strlen($url) - 1) == "*"){
+                    $url = substr($url, 0, strlen($url) - 1);
+                    return $url . join("/", array_values($attrs));
+                }
                 $keys = array_keys($attrs);
                 $vals = array_values($attrs);
                 return str_replace($keys, $vals, $url).$anchor;

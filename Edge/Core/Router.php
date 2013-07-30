@@ -103,6 +103,23 @@ class Router{
 
         $urlDashes = substr_count($url, "/");
         foreach($routes as $requestedUrl => $attrs){
+
+            $greedy = false;
+            //if route is defined to match anything ie /home/article/*
+            if(substr($requestedUrl, strlen($requestedUrl)-1) == "*"){
+                $requestedUrl = substr($requestedUrl, 0, strlen($requestedUrl)-2);
+                $greedy = true;
+            }
+
+            if($greedy){
+                if(substr($url, 0, strlen($requestedUrl)) === $requestedUrl){
+                    $args = explode("/", substr($url, strlen($requestedUrl), strlen($url)));
+                    unset($args[0]);
+                    $attrs[] = array_map('htmlspecialchars', $args);
+                    return $attrs;
+                }
+            }
+
             if(substr_count($requestedUrl, "/") != $urlDashes){
                 continue;
             }
