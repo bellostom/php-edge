@@ -66,6 +66,7 @@ class Cookie {
             $value = $this->sign($value, $expires);
         }
         setcookie($name, $value, $expires, "/", false, $this->secure, $this->httpOnly);
+        $_COOKIE[$name] = $value;
     }
 
     public function get($name){
