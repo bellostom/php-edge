@@ -58,7 +58,7 @@ class Cookie {
     }
 
     public function delete($name){
-        setcookie($name, "", time()-3600);
+        setcookie($name, "", time()-3600, "/", $this->secure, $this->httpOnly);
     }
 
     public function set($name, $value, $expires){

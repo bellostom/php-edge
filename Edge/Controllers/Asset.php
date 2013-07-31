@@ -22,13 +22,11 @@ class Asset extends BaseController{
     }
 
     public function js($file){
-        $key = sprintf("/js/%s", $file);
-        return static::load($key, "application/javascript");
+        return static::load($file, "application/javascript");
     }
 
     public function css($file){
-        $key = sprintf("/css/%s", $file);
-        return static::load($key, "text/css");
+        return static::load($file, "text/css");
     }
 
     /**
@@ -39,8 +37,8 @@ class Asset extends BaseController{
      * @return mixed
      */
     protected static function load($key, $contentType){
-        preg_match("/[0-9]+/", $key, $m);
-        $mod = $m[0];
+        $mod = explode("_", $key);
+        $mod = $mod[0];
         $response = Edge::app()->response;
         $response->contentType = $contentType;
         $response->expires(time() + 365 * 24 * 3600);
