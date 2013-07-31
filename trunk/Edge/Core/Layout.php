@@ -50,10 +50,12 @@ class Layout extends Template{
         foreach($arr as $file){
             $mod[] = filemtime($file);
         }
-        $key = md5((string) max($mod) . serialize($arr));
+        $modified = (string) max($mod);
+        $key = md5($modified . serialize($arr));
+        $file = sprintf("%s_%s.%s", $modified, $key, $type);
         $link = Edge::app()->router->createLink("Edge\\Controllers\\Asset", $type,
-                                            [':file' => sprintf("%s.%s", $key, $type)]);
-        $this->cache($link, $type);
+                                            [':file' => $file]);
+        $this->cache($file, $type);
         return $link;
     }
 

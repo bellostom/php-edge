@@ -155,7 +155,7 @@ abstract class BaseController{
 	public function logout() {
         $app = Core\Edge::app();
 		$app->session->destroy();
-        $app->user(\Edge\Models\User::getUserById(\Edge\Models\User::GUEST));
+        $app->user(\Edge\Models\User::getUserByUsername("guest"));
 		return true;
 	}
 }
