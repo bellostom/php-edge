@@ -480,19 +480,27 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
 
     }
 
+    protected function clearInstanceCache(){
+        $mem = Edge::app()->cache;
+        $logger = Edge::app()->logger;
+        $index = $this->getInstanceIndexKey();
+        $list = $mem->get($index);
+        if($list && count($list) > 0){
+            foreach($list as $item){
+                $mem->delete($item);
+                $logger->info('deleting from cache item '.$item);
+            }
+            $mem->delete($index);
+            $logger->info('deleting from cache index '.$index);
+        }
+    }
+
     /**
      * Update any cached versions of the instance
      */
     public function onAfterUpdate(){
         if(static::cacheRecord()){
-            $mem = Edge::app()->cache;
-            $index = $this->getInstanceIndexKey();
-            $list = $mem->get($index);
-            if($list && count($list) > 0){
-                foreach($list as $item){
-                    $mem->add($item, $this);
-                }
-            }
+            $this->clearInstanceCache();
         }
     }
 
@@ -505,18 +513,7 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
      */
     public function onAfterDelete(){
         if(static::cacheRecord()){
-            $mem = Edge::app()->cache;
-            $logger = Edge::app()->logger;
-            $index = $this->getInstanceIndexKey();
-            $list = $mem->get($index);
-            if($list && count($list) > 0){
-                foreach($list as $item){
-                    $mem->delete($item);
-                    $logger->info('deleting from cache item '.$item);
-                }
-                $mem->delete($index);
-                $logger->info('deleting from cache index '.$index);
-            }
+            $this->clearInstanceCache();
         }
     }
 }
