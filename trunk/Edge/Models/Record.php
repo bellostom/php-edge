@@ -314,7 +314,7 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
             $keys['value'] = $this->id;
         }
         $key = sprintf("%s:%s", $keys['fk'], $keys['value']);
-        if(is_null($instances[$key])){
+        if(!isset($instances[$key])){
             $instances[$key] = $model::select()
                                 ->where(array($keys['fk'] => $keys['value']))
                                 ->fetch();
