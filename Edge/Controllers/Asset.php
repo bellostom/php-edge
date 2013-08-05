@@ -37,12 +37,18 @@ class Asset extends BaseController{
      * @return mixed
      */
     protected static function load($key, $contentType){
+        $etag = md5($key);
         $mod = explode("_", $key);
         $mod = $mod[0];
         $response = Edge::app()->response;
         $response->contentType = $contentType;
         $response->expires(time() + 365 * 24 * 3600);
+        $response->setEtag($etag);
         $response->lastModified($mod);
+        if($response->isEtagValid($etag, $mod)){
+            $response->httpCode = 304;
+            $response->write();
+        }
         return Edge::app()->cache->get($key);
     }
 }
