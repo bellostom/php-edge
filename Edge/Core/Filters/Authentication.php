@@ -16,7 +16,7 @@ class Authentication extends BaseFilter{
 
     public function __construct(array $attrs){
         $this->url = $attrs['url'];
-        parent::__construct();
+        parent::__construct($attrs);
     }
 
     public function preProcess(Http\Response $response, Http\Request $request){

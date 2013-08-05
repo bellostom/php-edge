@@ -37,7 +37,7 @@ class AccessControl extends BaseFilter{
     private $permissions;
 
     public function __construct(array $attrs){
-        parent::__construct(array_key_exists('applyTo', $attrs)?$attrs['applyTo']:array("*"));
+        parent::__construct($attrs);
         $this->permissions = $attrs['permissions'];
     }
 
