@@ -16,7 +16,7 @@ class PageCache extends BaseFilter{
     private $isCached = false;
 
     public function __construct(array $attrs){
-        parent::__construct(array_key_exists('applyTo', $attrs)?$attrs['applyTo']:array("*"));
+        parent::__construct($attrs);
         $this->init($attrs);
     }
 

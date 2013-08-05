@@ -17,7 +17,7 @@ class CsrfProtection extends BaseFilter{
         if(isset($attrs['tokenName'])){
             $this->tokenName = $attrs['tokenName'];
         }
-        parent::__construct($attrs['applyTo']);
+        parent::__construct($attrs);
     }
 
     public function preProcess(Http\Response $response, Http\Request $request){

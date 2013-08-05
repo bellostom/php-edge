@@ -20,8 +20,11 @@ abstract class BaseFilter implements \Edge\Core\Interfaces\Filter{
      * By default the filters will run for all actions
      * @param array $applyTo
      */
-    public function __construct(array $applyTo=array("*")){
-        $this->applyTo = $applyTo;
+    public function __construct(array $attrs=array()){
+        if(!isset($attrs['applyTo'])){
+            $attrs['applyTo'] = ["*"];
+        }
+        $this->applyTo = $attrs["applyTo"];
     }
 
     public function preProcess(Http\Response $response, Http\Request $request){

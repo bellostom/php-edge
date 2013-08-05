@@ -1,6 +1,8 @@
 <?php
 namespace Edge\Core;
 
+use Edge\Core\Exceptions\NotFound;
+
 class Router{
 	protected $controller;
 	protected $method;
@@ -280,10 +282,10 @@ class Router{
             $class = sprintf('Application\Controllers\%s', $this->controller);
         }
 
-        $instance = new $class();
-        if(method_exists($instance, $this->method)){
+        $this->controller = new $class();
+        if(method_exists($this->controller, $this->method)){
             try{
-                $filters = static::getFilters($instance);
+                $filters = static::getFilters($this->controller);
                 $invokeRequest = $this->runFilters($filters, 'preProcess');
                 if($invokeRequest){
 
@@ -296,7 +298,8 @@ class Router{
                             $retries++;
                             $this->response->body = $this->request
                                                           ->getTransformer()
-                                                          ->encode(call_user_func_array(array($instance, $this->method),
+                                                          ->encode(call_user_func_array(array($this->controller,
+                                                                                                $this->method),
                                                                                         $this->args));
                             $processed = true;
                         }catch(Exceptions\DeadLockException $e) {
@@ -316,7 +319,12 @@ class Router{
                 if($this->response->httpCode == 200){
                     $this->response->httpCode = 500;
                 }
-                $this->handleServerError($e->getMessage());
+                if($e instanceof NotFound){
+                    $this->handle404Error();
+                }
+                else{
+                    $this->handleServerError($e->getMessage());
+                }
             }
         }
         else{
