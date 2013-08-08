@@ -200,14 +200,10 @@ class Router{
     }
 
 	protected function setAttrs(){
-        $url = '';
-        if(array_key_exists('PATH_INFO', $_SERVER)){
-		    $url = $_SERVER['PATH_INFO'];
-        }
-
+		$url = $_SERVER['REQUEST_URI'];
 		if(empty($url)){
 			$url = "//";
-            $_SERVER['PATH_INFO'] = "/";
+            $_SERVER['REQUEST_URI'] = "/";
 		}
 		if ($url[strlen($url)-1] == '/'){
 			$url = substr($url, 0, -1);
