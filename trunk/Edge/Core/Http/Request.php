@@ -66,7 +66,7 @@ class Request {
     }
 
     public function getRequestUrl(){
-        return $_SERVER['PATH_INFO'];
+        return isset($_SERVER['ORIG_REQUEST_URI'])?$_SERVER['ORIG_REQUEST_URI']:$_SERVER['REQUEST_URI'];
     }
 
     public function getContentType(){
