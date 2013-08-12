@@ -154,6 +154,9 @@ class Router{
             }
 
             if($greedy){
+                if(substr_count($url, "?") > 0){
+                    $url = explode("?", $url)[0];
+                }
                 if(substr($url, 0, strlen($requestedUrl)) === $requestedUrl){
                     $args = explode("/", substr($url, strlen($requestedUrl), strlen($url)));
                     unset($args[0]);
