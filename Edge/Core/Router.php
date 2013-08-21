@@ -69,7 +69,7 @@ class Router{
                     unset($attrs['anchor']);
                 }
                 if(substr($url, strlen($url) - 1) == "*"){
-                    $url = substr($url, 0, strlen($url) - 1);
+                    $url = substr($url, 0, strlen($url) - 2);
                     return $url . join("/", array_values($attrs));
                 }
                 $keys = array_keys($attrs);
