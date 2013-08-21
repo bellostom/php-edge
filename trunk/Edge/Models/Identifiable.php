@@ -22,4 +22,8 @@ abstract class Identifiable extends Record{
                         ->where(array("id" => $id))
                         ->fetch();
 	}
+
+    public static function getAll($fetchMode=Identifiable::FETCH_RESULTSET){
+        return parent::select()->fetch($fetchMode);
+    }
 }
