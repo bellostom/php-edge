@@ -84,6 +84,18 @@ class MySQLAdapter extends BaseAdapter{
      */
     public function save(Record $entry){
         $db = Edge::app()->writedb;
+        $table = $entry->getTable();
+        $pks = $entry->getPk();
+        if(count($pks) > 0){
+            $metadata = $db->dbMetadata($table);
+            foreach($pks as $attr){
+                if(isset($metadata[$attr]) && $metadata[$attr][1] & \MYSQLI_AUTO_INCREMENT_FLAG){
+                    if($entry->$attr == ""){
+                        $entry->$attr = 0;
+                    }
+                }
+            }
+        }
         $data = array_map(function($v) use ($db){
             return sprintf('"%s"', $db->dbEscapeString($v));
         }, $entry->getAttributes());

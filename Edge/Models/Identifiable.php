@@ -23,7 +23,7 @@ abstract class Identifiable extends Record{
                         ->fetch();
 	}
 
-    public static function getAll($fetchMode=Identifiable::FETCH_RESULTSET){
-        return parent::select()->fetch($fetchMode);
+    public static function getAll($fetchMode=Identifiable::FETCH_RESULTSET, $orderBy=['name'=>'asc']){
+        return parent::select()->order($orderBy)->fetch($fetchMode);
     }
 }
