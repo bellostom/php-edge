@@ -52,9 +52,10 @@ class AccessControl extends BaseFilter{
             throw new EdgeException("No permissions defined for URL ". Edge::app()->request->getRequestUrl());
         }
         foreach($this->permissions as $perm){
-            if(!Edge::app()->user()->hasPrivilege($perm)){
-                throw new Forbidden("User has not the privilege to invoke ". $request->getRequestUrl());
+            if(Edge::app()->user()->hasPrivilege($perm)){
+                return true;
             }
         }
+        throw new Forbidden("User has not the privilege to invoke ". $request->getRequestUrl());
     }
 }
