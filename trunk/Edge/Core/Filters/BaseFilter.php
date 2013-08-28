@@ -22,7 +22,7 @@ abstract class BaseFilter implements \Edge\Core\Interfaces\Filter{
      */
     public function __construct(array $attrs=array()){
         if(!isset($attrs['applyTo'])){
-            $attrs['applyTo'] = ["*"];
+            $attrs['applyTo'] = ["*", "exceptions" => []];
         }
         $this->applyTo = $attrs["applyTo"];
     }
@@ -42,9 +42,10 @@ abstract class BaseFilter implements \Edge\Core\Interfaces\Filter{
      * @return bool
      */
     public function appliesTo($action){
-        if(count($this->applyTo) == 1 && $this->applyTo[0] == "*"){
+        $exceptions = (isset($this->applyTo['exceptions']))?$this->applyTo['exceptions']:[];
+        if($this->applyTo[0] == "*" && !in_array($action, $exceptions)){
             return true;
         }
-        return in_array($action, $this->applyTo);
+        return in_array($action, $this->applyTo) && !in_array($action, $exceptions);
     }
 }
