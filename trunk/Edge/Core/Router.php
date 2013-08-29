@@ -1,7 +1,8 @@
 <?php
 namespace Edge\Core;
 
-use Edge\Core\Exceptions\NotFound;
+use Edge\Core\Database\MysqlMaster,
+    Edge\Core\Exceptions\NotFound;
 
 class Router{
 	protected $controller;
@@ -314,6 +315,10 @@ class Router{
                 $this->runFilters($filters, 'postProcess');
             }
             catch(\Exception $e){
+                $db = Edge::app()->db;
+                if($db instanceof MysqlMaster){
+                    $db->rollback();
+                }
                 Edge::app()->logger->err($e->getMessage());
                 if($this->response->httpCode == 200){
                     $this->response->httpCode = 500;

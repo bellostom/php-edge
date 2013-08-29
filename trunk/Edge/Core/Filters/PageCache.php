@@ -31,7 +31,7 @@ class PageCache extends BaseFilter{
         if($val){
             $response->body = $val;
             $this->isCached = true;
-            //Edge::app()->logger->debug("Loading from cache page ".$request->getRequestUrl());
+            Edge::app()->logger->debug("Loading from cache page ".$request->getRequestUrl());
             return false;
         }
         return true;
