@@ -468,18 +468,30 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
         $this->onAfterUpdate();
     }
 
+    /**
+     * Invoked before the object is created
+     */
     public function onCreate(){
 
     }
 
+    /**
+     * Invoked after the object is created
+     */
     public function onAfterCreate(){
 
     }
 
+    /**
+     * Invoked before the object is updated
+     */
     public function onUpdate(){
 
     }
 
+    /**
+     * Remove all caches for the object
+     */
     protected function clearInstanceCache(){
         $mem = Edge::app()->cache;
         $logger = Edge::app()->logger;
@@ -496,6 +508,7 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
     }
 
     /**
+     * Invoked after the object is updated
      * Update any cached versions of the instance
      */
     public function onAfterUpdate(){
@@ -504,11 +517,15 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
         }
     }
 
+    /**
+     * Invoked before the object is deleted
+     */
     public function onDelete(){
 
     }
 
     /**
+     * Invoked after the object is deleted
      * Delete any cached versions of the instance
      */
     public function onAfterDelete(){
