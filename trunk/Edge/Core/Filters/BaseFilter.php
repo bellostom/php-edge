@@ -13,7 +13,21 @@ use Edge\Core\Edge,
  */
 abstract class BaseFilter implements \Edge\Core\Interfaces\Filter{
 
+    /*
+     * @var array
+     * Array of methods for which the
+     * filter should run
+     * Default is to run the filter
+     * for every method
+     */
     private $applyTo;
+
+    /**
+     * @var array
+     * Array of methods to exclude from applying
+     * the filter
+     */
+    private $exceptions;
 
     /**
      * Pass an array with actions that filters should process
@@ -22,9 +36,13 @@ abstract class BaseFilter implements \Edge\Core\Interfaces\Filter{
      */
     public function __construct(array $attrs=array()){
         if(!isset($attrs['applyTo'])){
-            $attrs['applyTo'] = ["*", "exceptions" => []];
+            $attrs['applyTo'] = ["*"];
+        }
+        if(!isset($attrs['exceptions'])){
+            $attrs['exceptions'] = [];
         }
         $this->applyTo = $attrs["applyTo"];
+        $this->exceptions = $attrs["exceptions"];
     }
 
     public function preProcess(Http\Response $response, Http\Request $request){
@@ -42,10 +60,9 @@ abstract class BaseFilter implements \Edge\Core\Interfaces\Filter{
      * @return bool
      */
     public function appliesTo($action){
-        $exceptions = (isset($this->applyTo['exceptions']))?$this->applyTo['exceptions']:[];
-        if($this->applyTo[0] == "*" && !in_array($action, $exceptions)){
+        if(count($this->applyTo) == 1 && $this->applyTo[0] == "*" && !in_array($action, $this->exceptions)){
             return true;
         }
-        return in_array($action, $this->applyTo) && !in_array($action, $exceptions);
+        return in_array($action, $this->applyTo) && !in_array($action, $this->exceptions);
     }
 }

@@ -30,7 +30,6 @@ class MysqlMaster extends MysqlSlave {
 
     public function __destruct() {
         if($this->isTransactional){
-            Edge::app()->logger->info("COMMITING NON COMMITED TRANSACTION");
             $this->commit();
         }
         parent::__destruct();
