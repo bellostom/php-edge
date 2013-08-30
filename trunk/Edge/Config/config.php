@@ -90,7 +90,7 @@ return array(
             'args' => array(
                 array(
                     'secure' => false,
-                    'encrypt' => true,
+                    'sign' => false,
                     'secret' => 'C7s9r7yYYyVCDZZstzyl',
                     'httpOnly' => true
                 )
