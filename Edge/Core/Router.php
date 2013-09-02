@@ -209,7 +209,7 @@ class Router{
 			$url = "//";
             $_SERVER['REQUEST_URI'] = "/";
 		}
-		if ($url[strlen($url)-1] == '/'){
+		if ($url != '/' && $url[strlen($url)-1] == '/'){
 			$url = substr($url, 0, -1);
 		}
         $route = $this->resolveRoute($url);
