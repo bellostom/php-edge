@@ -117,7 +117,7 @@ return array(
                     "dateFormat" => "j/n/Y G:i:s",
                     "logLevel" => 'DEBUG'
                 );
-                return Monolog\EdgeLogger::factory($attrs);
+                return Edge\Core\Logger\Monolog\EdgeLogger::factory($attrs);
             },
             'shared' => true
         ),
