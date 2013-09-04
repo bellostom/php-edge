@@ -132,7 +132,7 @@ abstract class BaseCache {
                     //so that other threads can serve the old value and
                     //increase concurrency
                     $expires = 5*60;
-                    $this->add($nsKey, $data, $expires, $validator);
+                    $this->add($key, $data, $expires, $validator);
                     return false;
                 }
             }
