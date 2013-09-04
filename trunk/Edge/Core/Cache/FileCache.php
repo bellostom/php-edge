@@ -6,7 +6,8 @@ use Edge\Core\Exceptions\EdgeException;
 class FileCache extends BaseCache{
 	private $cache_dir;
 
-	public function __construct($cacheDir){
+	public function __construct($cacheDir, $namespace){
+        parent::__construct($namespace);
 		$this->cache_dir = $cacheDir;
 		if(!is_dir($this->cache_dir)) {
 			mkdir($this->cache_dir);

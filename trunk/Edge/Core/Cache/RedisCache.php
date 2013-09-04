@@ -5,10 +5,11 @@ use Edge\Core;
 class RedisCache extends BaseCache {
 	private $link;
 
-	public function __construct($settings) {
+	public function __construct(array $settings) {
 		$this->link = new \Redis();
-        list($host, $port) = explode(":", $settings);
+        list($host, $port) = explode(":", $settings[0]);
         $this->link->connect($host, (int) $port);
+        parent::__construct($settings['namespace']);
 	}
 
     /**
@@ -44,6 +45,7 @@ class RedisCache extends BaseCache {
      * @return void
      */
     public function increment($key, $value = 1){
+        $key = parent::getNsKey($key);
         return $this->link->incrby($key, $value);
     }
 
@@ -55,6 +57,7 @@ class RedisCache extends BaseCache {
      * @return void
      */
     public function decrement($key, $value = 1){
+        $key = parent::getNsKey($key);
         return $this->link->decrby($key, $value);
     }
 

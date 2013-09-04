@@ -13,6 +13,16 @@ use Edge\Core\Edge,
 abstract class BaseCache {
 
     /**
+     * A namespace to confine caches keys
+     * Useful when you are using the same
+     * cache instance for multiple installations
+     * Each cache key is prefixed with the namespace
+     * to avoid collisions
+     * @var string
+     */
+    protected $namespace;
+
+    /**
      * Look ahead value for cached items
      * If item will expire in 30 secs, recalculate
      * the data.
@@ -23,6 +33,10 @@ abstract class BaseCache {
      * The number of seconds we cache the lock key
      */
     CONST LOCK_KEY_TIMEOUT = 60; //secs
+
+    public function __construct($namespace){
+        $this->namespace = $namespace;
+    }
 
     /**
      * Serialize the data before sending them to the underlying
@@ -43,6 +57,10 @@ abstract class BaseCache {
         return unserialize($data);
     }
 
+    protected function getNsKey($key){
+        return sprintf("%s:%s", $this->namespace, $key);
+    }
+
     /**
      * Store an item to the cache
      * Each item is actually an array with 3 values
@@ -59,6 +77,7 @@ abstract class BaseCache {
      * @return boolean
      */
     public function add($key, $value, $ttl=0, $cacheValidator=null){
+        $key = $this->getNsKey($key);
         if(!is_null($cacheValidator)){
             $cacheValidator->execute();
         }
@@ -91,7 +110,8 @@ abstract class BaseCache {
      * @return mixed
      */
     public function get($key, $lock=false){
-        $value = $this->getValue($key);
+        $nsKey = $this->getNsKey($key);
+        $value = $this->getValue($nsKey);
         if($value){
             list($data, $expires, $validator) = static::unserialize($value);
             if($validator instanceof CacheValidator){
@@ -112,7 +132,7 @@ abstract class BaseCache {
                     //so that other threads can serve the old value and
                     //increase concurrency
                     $expires = 5*60;
-                    $this->add($key, $data, $expires, $validator);
+                    $this->add($nsKey, $data, $expires, $validator);
                     return false;
                 }
             }
@@ -123,6 +143,7 @@ abstract class BaseCache {
     }
 
     protected function lock($key){
+        $key = $this->getNsKey($key);
         return $this->getLock($key.".lock", BaseCache::LOCK_KEY_TIMEOUT);
     }
 
@@ -131,7 +152,7 @@ abstract class BaseCache {
      * @param string $key
      */
     public function delete($key){
-        $this->deleteValue($key);
+        $this->deleteValue($this->getNsKey($key));
     }
 
     abstract public function setValue($key, $value, $ttl);
