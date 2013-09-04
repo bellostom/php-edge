@@ -6,6 +6,7 @@ class MemoryCache extends BaseCache {
 	private $link;
 
 	public function __construct(array $settings) {
+        parent::__construct($settings['namespace']);
 		$this->link = new \Memcache();
 		foreach($settings as $server){
 			list($server, $port, $weight) = explode(':', $server);
@@ -40,6 +41,7 @@ class MemoryCache extends BaseCache {
      * @return void
      */
     public function increment($key, $value = 1){
+        $key = parent::getNsKey($key);
         return $this->link->increment($key, $value);
     }
 
@@ -51,6 +53,7 @@ class MemoryCache extends BaseCache {
      * @return void
      */
     public function decrement($key, $value = 1){
+        $key = parent::getNsKey($key);
         return $this->link->decrement($key, $value);
     }
 
