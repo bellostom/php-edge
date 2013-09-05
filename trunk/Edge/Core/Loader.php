@@ -1,5 +1,5 @@
 <?php
-set_include_path(realpath(__DIR__."/../../"));
+set_include_path("." . PATH_SEPARATOR . realpath(__DIR__."/../../"));
 spl_autoload_extensions('.php');
 spl_autoload_register(function($class){
     $file = str_replace('\\','/',$class);
