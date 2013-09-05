@@ -188,7 +188,7 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
                 $lineage = array_merge($lineage, $staticAttrs['_members']);
             }
             $lineage = array_unique($lineage);
-            $attrs[$cls] = array_combine($lineage, array_fill(0, count($lineage), null));
+            $attrs[$cls] = array_combine($lineage, array_fill(0, count($lineage), ""));
         }
         return $attrs[$cls];
     }
