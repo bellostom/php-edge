@@ -9,10 +9,8 @@ return array(
         'cache' => array(
             'invokable' => 'Edge\Core\Cache\MemoryCache',
             'args' => array(
-                array(
-                    'master:11311:1',
-                    'namespace' => "edge"
-                )
+                "servers" => array('master:11211:1'),
+                'namespace' => "edge"
             ),
             'shared' => true
         ),
@@ -68,10 +66,8 @@ return array(
         'mongo' => array(
             'invokable' => 'Edge\Core\Database\MongoConnection',
             'args' => array(
-                array(
-                    'host' => 'localhost',
-                    'db' => 'people'
-                )
+                'host' => 'localhost',
+                'db' => 'people'
             ),
             'shared' => true
         ),
@@ -91,12 +87,10 @@ return array(
         'cookie' => array(
             'invokable' => 'Edge\Core\Http\Cookie',
             'args' => array(
-                array(
-                    'secure' => false,
-                    'sign' => false,
-                    'secret' => 'C7s9r7yYYyVCDZZstzyl',
-                    'httpOnly' => true
-                )
+                'secure' => false,
+                'sign' => false,
+                'secret' => 'C7s9r7yYYyVCDZZstzyl',
+                'httpOnly' => true
             ),
             'shared' => true
         ),

@@ -7,7 +7,7 @@ class RedisCache extends BaseCache {
 
 	public function __construct(array $settings) {
 		$this->link = new \Redis();
-        list($host, $port) = explode(":", $settings[0]);
+        list($host, $port) = explode(":", $settings["server"]);
         $this->link->connect($host, (int) $port);
         parent::__construct($settings['namespace']);
 	}

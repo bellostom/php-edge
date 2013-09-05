@@ -8,7 +8,7 @@ class MemoryCache extends BaseCache {
 	public function __construct(array $settings) {
         parent::__construct($settings['namespace']);
 		$this->link = new \Memcache();
-		foreach($settings as $server){
+		foreach($settings['servers'] as $server){
 			list($server, $port, $weight) = explode(':', $server);
 			$this->link->addServer($server, (int) $port, 0, (int) $weight);
 		}
