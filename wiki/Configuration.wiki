@@ -20,7 +20,7 @@ will override the default ones.
 
 *Edge* makes use of a Dependency Injection Container to register and expose services and configurations options.
 
-Specifically, it makes use of [http://pimple.sensiolabs.org/ Pimple], in order to accomodate for these requirements.
+Specifically, it makes use of [http://pimple.sensiolabs.org/ Pimple], in order to accommodate for these requirements.
 
 Below is a sample configuration file that registers services and configuration options
 
@@ -36,7 +36,8 @@ return array(
         'cache' => array(
             'invokable' => 'Edge\Core\Cache\MemoryCache',
             'args' => array(
-                array('master:11311:1')
+                "servers" => array('master:11311:1'),
+                "namespace" => "edge"
             ),
             'shared' => true
         ),
@@ -56,12 +57,10 @@ return array(
         'cookie' => array(
             'invokable' => 'Edge\Core\Http\Cookie',
             'args' => array(
-                array(
-                    'secure' => false,
-                    'encrypt' => true,
-                    'secret' => 'C7s9r7yYYyVCDZZstzyl',
-                    'httpOnly' => true
-                )
+                'secure' => false,
+                'sign' => true,
+                'secret' => 'C7s9r7yYYyVCDZZstzyl',
+                'httpOnly' => true
             ),
             'shared' => true
         ),
@@ -85,7 +84,7 @@ return array(
                     "dateFormat" => "j/n/Y g:i a",
                     "logLevel" => 'DEBUG'
                 );
-                return Monolog\EdgeLogger::factory($attrs);
+                return Edge\Core\Logger\Monolog\EdgeLogger::factory($attrs);
             },
             'shared' => true
         ),
