@@ -82,8 +82,6 @@ class Edge implements \ArrayAccess{
                 }else{
                     $value = function($c) use ($params){
                         return new $params['invokable']($params['args']);
-                        $class = new \ReflectionClass($params['invokable']);
-                        return $class->newInstanceArgs($params['args']);
                     };
                 }
             }
