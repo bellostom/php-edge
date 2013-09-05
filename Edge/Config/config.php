@@ -104,6 +104,12 @@ return array(
             'shared' => true
         ),
 
+        'queue' => array(
+            'invokable' => 'Edge\Core\Queue\Queue',
+            'args' => 'localhost:6379',
+            'shared' => true
+        ),
+
         /**
          * Logging class
          */
