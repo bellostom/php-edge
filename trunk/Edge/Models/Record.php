@@ -170,22 +170,27 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
     /**
      * Iterate over the inheritance chain, constructing
      * an array from the $_members attribute.
-     * We do that in order to supply the new instance with
-     * the default members in case the instantiated object
-     * was not supplied with any attrs.
+     * Additionally, we cache the result to improve
+     * performance. Very efficient, especially if a
+     * model has many instances
      * @return array
      */
     protected static function getMembers(){
-        $class = new \ReflectionClass(get_called_class());
-        $staticAttrs = $class->getStaticProperties();
-        $lineage = $staticAttrs['_members'];
-
-        while ($class = $class->getParentClass()) {
+        static $attrs = [];
+        $cls = get_called_class();
+        if(!isset($attrs[$cls])){
+            $class = new \ReflectionClass($cls);
             $staticAttrs = $class->getStaticProperties();
-            $lineage = array_merge($lineage, $staticAttrs['_members']);
+            $lineage = $staticAttrs['_members'];
+
+            while ($class = $class->getParentClass()) {
+                $staticAttrs = $class->getStaticProperties();
+                $lineage = array_merge($lineage, $staticAttrs['_members']);
+            }
+            $lineage = array_unique($lineage);
+            $attrs[$cls] = array_combine($lineage, array_fill(0, count($lineage), null));
         }
-        $lineage = array_unique($lineage);
-        return array_combine($lineage, array_fill(0, count($lineage), null));
+        return $attrs[$cls];
     }
 
     /**
@@ -199,7 +204,7 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
      * @param $val
      */
     public function assignAttribute($attr, $val){
-        if(array_key_exists($attr, $this->attributes)){
+        if(isset($this->attributes[$attr])){
             $this->attributes[$attr] = $val;
         }
         else{
@@ -241,7 +246,7 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
         if(method_exists($this, $getter)){
             return $this->$getter();
         }
-        else if(array_key_exists($attr, $this->attributes)){
+        else if(isset($this->attributes[$attr])){
             return $this->attributes[$attr];
         }
         throw new Exceptions\UnknownProperty($attr, get_called_class());
