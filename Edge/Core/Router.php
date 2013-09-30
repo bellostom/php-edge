@@ -104,8 +104,10 @@ class Router{
      * 'GET' => array(
             '/' => array("Home", "index"),
             '/page/action/:name/:id' => array("Home", "index"),
-            '/user/view/:id' => array("User", "display")
-            '/user/view/1' => array("User", "action")
+            '/user/view/1' => array("User", "display")
+            '/user/edit/:id' => array("User", "edit"),
+            '/user/load/*' => array("User", "load"),
+            '/user/display/:id/*' => array("User", "show")
         ),
         'POST' => array(
             '/rest/api/:id' => array('Home', 'post')
@@ -148,21 +150,38 @@ class Router{
         foreach($routes as $requestedUrl => $attrs){
 
             $greedy = false;
+            $partial = false;
+            $extraArgs = false;
             //if route is defined to match anything ie /home/article/*
             if(substr($requestedUrl, strlen($requestedUrl)-1) == "*"){
                 $requestedUrl = substr($requestedUrl, 0, strlen($requestedUrl)-2);
                 $greedy = true;
+                //if we also have a partial match as well
+                //is /home/article/:/id/*
+                if(substr_count($requestedUrl, ":") > 0){
+                    $partial = true;
+                }
             }
 
             if($greedy){
                 if(substr_count($url, "?") > 0){
                     $url = explode("?", $url)[0];
                 }
-                if(substr($url, 0, strlen($requestedUrl)) === $requestedUrl){
-                    $args = explode("/", substr($url, strlen($requestedUrl), strlen($url)));
-                    unset($args[0]);
-                    $attrs[] = array_map('htmlspecialchars', $args);
-                    return $attrs;
+                if(!$partial){
+                    if(substr($url, 0, strlen($requestedUrl)) === $requestedUrl){
+                        $args = explode("/", substr($url, strlen($requestedUrl), strlen($url)));
+                        unset($args[0]);
+                        $attrs[] = array_map('htmlspecialchars', $args);
+                        return $attrs;
+                    }
+                }
+                else{
+                    //decrement url dashed in order to match
+                    //the aprtial URL the rest of the code
+                    $partialParts = explode("/", $requestedUrl);
+                    $urlParts = explode("/", $url);
+                    $extraArgs = array_slice($urlParts, count($partialParts));
+                    $urlDashes -= count($extraArgs);
                 }
             }
 
