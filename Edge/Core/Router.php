@@ -240,7 +240,7 @@ class Router{
 
 		$this->controller = ucfirst($route[0]);
         $this->method = $route[1];
-        $this->args = $route[2];
+        $this->args = array_values($route[2]);
         if(isset($route['acl'])){
             $this->permissions = $route['acl'];
             unset($route['acl']);
