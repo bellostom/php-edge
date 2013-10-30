@@ -21,10 +21,10 @@ class Router{
 		try{
 			$this->setAttrs();
 		}catch(Exception $e){
-            Edge::app()->logger->err($e->getMessage());
-			$response = Response::getInstance();
-			$response->httpCode = 500;
-			$response->write();
+            $msg = $e->getMessage();
+            Edge::app()->logger->err($msg);
+			$this->handleServerError($msg);
+			$this->response->write();
 		}
 	}
 
@@ -87,14 +87,21 @@ class Router{
 	protected function handleServerError($msg){
         $edge = Edge::app();
 		$class = $edge->getConfig('serverError');
-		$this->response->body = call_user_func(array(new $class[0], $class[1]), $msg);
+        $this->controller = new $class[0];
+        $this->method = $class[1];
+        if($this->response->httpCode == 200){
+            $this->response->httpCode = 500;
+        }
+		$this->response->body = call_user_func(array($this->controller, $this->method), $msg);
 	}
 
 	protected function handle404Error(){
         $edge = Edge::app();
         $class = $edge->getConfig('notFound');
+        $this->controller = new $class[0];
+        $this->method = $class[1];
         $this->response->httpCode = 404;
-        $this->response->body = call_user_func(array(new $class[0], $class[1]), $this->request->getRequestUrl());
+        $this->response->body = call_user_func(array($this->controller, $this->method), $this->request->getRequestUrl());
 	}
 
     /**
@@ -339,9 +346,6 @@ class Router{
                     $db->rollback();
                 }
                 Edge::app()->logger->err($e->getMessage());
-                if($this->response->httpCode == 200){
-                    $this->response->httpCode = 500;
-                }
                 if($e instanceof NotFound){
                     $this->handle404Error();
                 }
