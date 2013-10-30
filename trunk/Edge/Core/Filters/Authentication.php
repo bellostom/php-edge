@@ -2,7 +2,8 @@
 namespace Edge\Core\Filters;
 
 use Edge\Core\Edge,
-    Edge\Core\Http;
+    Edge\Core\Http,
+    Edge\Core\Exceptions\Unauthorized;
 
 /**
  * Preprocess filter that requires
@@ -21,6 +22,9 @@ class Authentication extends BaseFilter{
 
     public function preProcess(Http\Response $response, Http\Request $request){
         if(Edge::app()->user()->isGuest()){
+            if($request->isAjax()){
+                throw new Unauthorized("Unauthorized access");
+            }
             Edge::app()->session->redirectUrl = $request->getRequestUrl();
             $response->redirect($this->url);
         }

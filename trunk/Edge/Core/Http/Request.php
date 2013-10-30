@@ -81,6 +81,10 @@ class Request {
         return $this->transformer instanceof JsonRpcTransformer;
     }
 
+    public function isAjax(){
+        return isset($_SERVER['HTTP_X_REQUESTED_WITH']);
+    }
+
     public function getParams(){
         return $this->params;
     }
