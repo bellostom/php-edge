@@ -10,7 +10,7 @@ class MemoryCache extends BaseCache {
 		$this->link = new \Memcache();
 		foreach($settings['servers'] as $server){
 			list($server, $port, $weight) = explode(':', $server);
-			$this->link->addServer($server, (int) $port, 0, (int) $weight);
+			$this->link->addServer($server, (int) $port, 1, (int) $weight);
 		}
 	}
 
