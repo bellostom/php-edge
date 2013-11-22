@@ -67,12 +67,7 @@ abstract class BaseAdapter{
      * @return string
      */
     protected function getCacheKey(){
-        $data = array($this->table, $this->where,
-            $this->or, $this->and,
-            $this->order, $this->limit,
-            $this->offset, $this->fetchMode,
-            $this->cacheAttrs);
-        return md5(serialize($data));
+        return md5(serialize([$this->fetchMode, $this->query]));
     }
 
     protected function cacheData($key, $data, $ttl, $cacheValidator=null){
@@ -111,7 +106,7 @@ abstract class BaseAdapter{
         $model = $this->model;
         $cacheAttrs = $this->cacheAttrs;
         $cacheRecord = (($model::cacheRecord() && $this->fetchMode == Record::FETCH_INSTANCE)
-            || $cacheAttrs);
+                        || $cacheAttrs);
         if($cacheRecord){
             $value = $this->getCachedRecord();
             if($value){
@@ -138,7 +133,7 @@ abstract class BaseAdapter{
         //no caching specified
         if($records == 0){
             if(in_array($this->fetchMode, array(Record::FETCH_RESULTSET,
-                Record::FETCH_NATIVE_RESULTSET))){
+                                                Record::FETCH_NATIVE_RESULTSET))){
                 return array();
             }
             return null;
@@ -168,31 +163,31 @@ abstract class BaseAdapter{
      * Select the first 10 users ordering them by username ascending
      * and caching them for 10 minutes
      * \Edge\Models\User::select()
-    ->order(array("username"=>"asc"))
-    ->limit(0)
-    ->offset(10)
-    ->cache(array('ttl' => 10*60))
-    ->fetch(Record::FETCH_RESULTSET);
+                        ->order(array("username"=>"asc"))
+                        ->limit(0)
+                        ->offset(10)
+                        ->cache(array('ttl' => 10*60))
+                        ->fetch(Record::FETCH_RESULTSET);
      *
      *
      *
      * Select a user with username thomas
      * \Edge\Models\User::select()
-    ->where(array("username"=>"thomas"))
-    ->fetch();
+                        ->where(array("username"=>"thomas"))
+                        ->fetch();
      *
      *
      * Select users with id 1 or 2 or name in ("Thomas", "John")
      * and sex = male
      * order them by username
      * \Edge\Models\User::select()
-    ->where("id"))
-    ->in([1,2])
-    ->orWhere("name")
-    ->in(["Thomas", "John"])
-    ->andWhere(array("sex"=>"male"))
-    ->order(array("username"=>"asc"))
-    ->fetch();
+                        ->where("id"))
+                        ->in([1,2])
+                        ->orWhere("name")
+                        ->in(["Thomas", "John"])
+                        ->andWhere(array("sex"=>"male"))
+                        ->order(array("username"=>"asc"))
+                        ->fetch();
      *
      *
      *
