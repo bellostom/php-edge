@@ -88,7 +88,7 @@ Again here, you can define an array with cache attributes as the second argument
 
 ==Advanced Caching Concepts==
 
-There are case, when you cache some content, that there are certain blocks that need to be dynamic.
+There are case, when you cache some content, but there are certain blocks that need to be dynamic.
 
 As an example we can think of a header that displays the loggedin user's email address. This information is dynamic, while the rest of the header is most of the times static.
 
