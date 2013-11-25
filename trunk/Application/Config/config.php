@@ -15,9 +15,16 @@ return array(
          */
         'cache' => array(
             'invokable' => 'Edge\Core\Cache\RedisCache',
-            'args' => array('localhost:6379'),
+            'args' => array('server'=>'localhost:6379'),
             'shared' => true
-        )
+        ),
+
+        'sessionStorage' => array(
+            'invokable' => function($c){
+                    return new Edge\Core\Session\SessionRedisStorage($c['cache']);
+                },
+            'shared' => true
+        ),
     ),
     'routes' => include(__DIR__."/routes.php"),
     'notFound' => array("\Application\Controllers\Home", "notFound"),
