@@ -1,16 +1,7 @@
 <?php
-/**
- * Created by JetBrains PhpStorm.
- * User: Thomas
- * Date: 29/5/2013
- * Time: 2:11 μμ
- * To change this template use File | Settings | File Templates.
- */
-
 namespace Edge\Core\Http;
 
-
-class Transformer {
+abstract class Transformer {
     private static $driver;
 
     public static function factory($driver){
@@ -32,11 +23,7 @@ class Transformer {
         return self::$driver;
     }
 
-    public function encode($body){
-        throw new \Exception("Child class should implement encode");
-    }
+    abstract public function encode($body);
 
-    public function decode($body){
-        throw new \Exception("Child class should implement encode");
-    }
+    abstract public function decode($body);
 }
