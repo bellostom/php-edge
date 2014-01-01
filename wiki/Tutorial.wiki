@@ -18,6 +18,6 @@ Login -> Handles the rendering of the login page, along with the authentication.
 
 BaseAdminController -> Base controller for all admin controllers, whic extends AuthController.
 
-Event -> Hanldes CRUD operations for events
+Event -> Handles CRUD operations for events
 
 Tournament -> Handles CRUD operations for tournaments
