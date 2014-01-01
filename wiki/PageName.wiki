@@ -1,8 +1,0 @@
-#summary Tutorial
-
-= Introduction =
-
-In this introductory tutorial, we will be building an administration area, which creates sports and tournaments.
-The purpose of this tutorial is to cover some of the basic concepts, such as CRUD operations along with an overview of some of the basic controllers and filters, which help speed up the development of web applications.
-
-==
