@@ -16,7 +16,7 @@ For our application we will create the below controllers, under the directory Ap
 
 Login -> Handles the rendering of the login page, along with the authentication.
 
-BaseAdminController -> Base controller for all admin controllers, whic extends AuthController.
+BaseAdminController -> Base controller for all admin controllers, which extends AuthController.
 
 Event -> Handles CRUD operations for events
 
