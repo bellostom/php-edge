@@ -81,10 +81,12 @@ abstract class BaseCache {
         if(!is_null($cacheValidator)){
             $cacheValidator->execute();
         }
-        $realTtl = time() + $ttl;
+        $realTtl = 0;
         if($ttl != 0){
+            $realTtl = time() + $ttl;
             $ttl = $ttl + (10*60);
         }
+
         $value = static::serialize(array($value, $realTtl, $cacheValidator));
         return $this->setValue($key, $value, $ttl);
     }
