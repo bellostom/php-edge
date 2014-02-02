@@ -1,8 +1,7 @@
 <?php
 namespace Edge\Core;
 
-use Edge\Core\Edge,
-    Edge\Utils\JSMin,
+use Edge\Utils\JSMin,
     Edge\Utils\Css;
 /**
  * Class Layout
@@ -14,7 +13,9 @@ use Edge\Core\Edge,
 class Layout extends Template{
 
 	protected $js;
+    protected $jsFiles = [];
     protected $css;
+    protected $cssFiles = [];
 
     /**
      * @param $tpl
@@ -28,11 +29,11 @@ class Layout extends Template{
 	}
 
     public function getJsScript(){
-        return $this->getLink('js');
+        return $this->getLink('js', $this->jsFiles);
     }
 
     public function getCssScript(){
-        return $this->getLink('css');
+        return $this->getLink('css', $this->cssFiles);
     }
 
     /**
@@ -44,14 +45,21 @@ class Layout extends Template{
      * @param $type (js|css)
      * @return string
      */
-    protected function getLink($type) {
-        $mod = array();
+    protected function getLink($type, array &$memo) {
         $arr = array_unique($this->$type);
         foreach($arr as $file){
-            $mod[] = filemtime($file);
+            if(substr($file, -1) == '*'){
+                $files = glob($file);
+                foreach($files as $fname){
+                    $memo[$fname] = filemtime($fname);
+                }
+            }
+            else{
+                $memo[$file] = filemtime($file);
+            }
         }
-        $modified = (string) max($mod);
-        $key = md5($modified . serialize($arr));
+        $modified = (string) max(array_values($memo));
+        $key = md5($modified . serialize($memo));
         $file = sprintf("%s_%s.%s", $modified, $key, $type);
         $link = Edge::app()->router->createLink("Edge\\Controllers\\Asset", $type,
                                             [':file' => $file]);
@@ -67,7 +75,8 @@ class Layout extends Template{
     private function cache($key, $type){
         if(!Edge::app()->cache->get($key)){
             $content = '';
-            $arr = array_unique($this->$type);
+            $valName = sprintf("%sFiles", $type);
+            $arr = array_unique(array_keys($this->$valName));
             foreach($arr as $file){
                 $content .= file_get_contents($file)."\n";
             }
