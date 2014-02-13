@@ -16,6 +16,7 @@ class Layout extends Template{
     protected $jsFiles = [];
     protected $css;
     protected $cssFiles = [];
+    protected $minify = true;
 
     /**
      * @param $tpl
@@ -34,6 +35,10 @@ class Layout extends Template{
 
     public function getCssScript(){
         return $this->getLink('css', $this->cssFiles);
+    }
+
+    public function setMinify($value){
+        $this->minify = $value;
     }
 
     /**
@@ -80,10 +85,12 @@ class Layout extends Template{
             foreach($arr as $file){
                 $content .= file_get_contents($file)."\n";
             }
-            if($type == 'js') {
-                $content = JSMin::minify($content);
-            }else{
-                $content = Css::minify($content);
+            if($this->minify){
+                if($type == 'js') {
+                    $content = JSMin::minify($content);
+                }else{
+                    $content = Css::minify($content);
+                }
             }
             Edge::app()->cache->add($key, $content);
         }
