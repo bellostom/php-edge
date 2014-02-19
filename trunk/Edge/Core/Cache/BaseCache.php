@@ -116,6 +116,9 @@ abstract class BaseCache {
         $value = $this->getValue($nsKey);
         if($value){
             list($data, $expires, $validator) = static::unserialize($value);
+            if($expires != 0 && (time() > $expires)){
+                return false;
+            }
             if($validator instanceof CacheValidator){
                 if($validator->isCacheStale()){
                     $this->delete($key);
