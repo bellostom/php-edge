@@ -22,10 +22,10 @@ class Authentication extends BaseFilter{
 
     public function preProcess(Http\Response $response, Http\Request $request){
         if(Edge::app()->user()->isGuest()){
+            Edge::app()->session->redirectUrl = $request->getRequestUrl();
             if($request->isAjax()){
                 throw new Unauthorized("Unauthorized access");
             }
-            Edge::app()->session->redirectUrl = $request->getRequestUrl();
             $response->redirect($this->url);
         }
     }

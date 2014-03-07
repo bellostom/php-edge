@@ -70,8 +70,15 @@ class Router{
                     unset($attrs['anchor']);
                 }
                 if(substr($url, strlen($url) - 1) == "*"){
-                    $url = substr($url, 0, strlen($url) - 1);
-                    return $url . join("/", array_values($attrs));
+                    //handle case such as /css/:file/*
+                    if(strstr($url, ":") !== false){
+                        $url = substr($url, 0, strlen($url) - 2);
+                    }
+                    else{
+                        //handle case such as /cms/page/create/*
+                        $url = substr($url, 0, strlen($url) - 1);
+                        return $url . join("/", array_values($attrs));
+                    }
                 }
                 $keys = array_keys($attrs);
                 $vals = array_values($attrs);
@@ -153,9 +160,8 @@ class Router{
             return $ret;
         }
 
-        $urlDashes = substr_count($url, "/");
         foreach($routes as $requestedUrl => $attrs){
-
+            $urlDashes = substr_count($url, "/");
             $greedy = false;
             $partial = false;
             $extraArgs = false;
@@ -184,7 +190,7 @@ class Router{
                 }
                 else{
                     //decrement url dashed in order to match
-                    //the aprtial URL the rest of the code
+                    //the partial URL the rest of the code
                     $partialParts = explode("/", $requestedUrl);
                     $urlParts = explode("/", $url);
                     $extraArgs = array_slice($urlParts, count($partialParts));
