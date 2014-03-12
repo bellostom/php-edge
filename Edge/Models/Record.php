@@ -204,7 +204,7 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
      * @param $val
      */
     public function assignAttribute($attr, $val){
-        if(isset($this->attributes[$attr])){
+        if(array_key_exists($attr, $this->attributes)){
             $this->attributes[$attr] = $val;
         }
         else{
@@ -246,7 +246,7 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
         if(method_exists($this, $getter)){
             return $this->$getter();
         }
-        else if(isset($this->attributes[$attr])){
+        else if(array_key_exists($attr, $this->attributes)){
             return $this->attributes[$attr];
         }
         throw new Exceptions\UnknownProperty($attr, get_called_class());
