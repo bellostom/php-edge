@@ -42,7 +42,7 @@ class Asset extends BaseController{
         $mod = $mod[0];
         $response = Edge::app()->response;
         $response->contentType = $contentType;
-        $response->expires(time() + 365 * 24 * 3600);
+        $response->expires($mod + 365 * 24 * 3600);
         $response->setEtag($etag);
         $response->lastModified($mod);
         if($response->isEtagValid($etag, $mod)){
