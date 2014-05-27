@@ -29,7 +29,7 @@ class PageCache extends BaseFilter{
     public function preProcess(Http\Response $response, Http\Request $request){
         $val = $this->get($lock=true);
         if($val){
-            $response->body = $val;
+            $response->body = $request->getTransformer()->encode($val);
             $this->isCached = true;
             Edge::app()->logger->debug("Loading from cache page ".$request->getRequestUrl());
             return false;

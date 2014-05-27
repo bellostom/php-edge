@@ -68,4 +68,3 @@ class Response{
 		$this->headers[$name] = $value;
 	}
 }
-?>

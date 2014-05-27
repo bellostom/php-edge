@@ -320,7 +320,6 @@ class Router{
                 $filters = static::getFilters($this->controller);
                 $invokeRequest = $this->runFilters($filters, 'preProcess');
                 if($invokeRequest){
-
                     $processed = false;
                     $retries = 0;
                     $max_retries = 20;
