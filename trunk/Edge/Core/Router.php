@@ -17,6 +17,7 @@ class Router{
         $this->routes = $routes;
         $this->response = Edge::app()->response;
         $this->request = Edge::app()->request;
+        register_shutdown_function(array($this, 'onApplicationShutdown'));
         Edge::app()->router = $this;
 		try{
 			$this->setAttrs();
@@ -42,6 +43,15 @@ class Router{
 
     public function getController(){
         return $this->controller;
+    }
+
+    public function onApplicationShutdown(){
+        $error = error_get_last();
+        $fatal = ($error && in_array($error['type'], [E_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR]));
+        if ($fatal){
+            $this->handleServerError($error["message"]);
+            Edge::app()->response->write();
+        }
     }
 
     /**
