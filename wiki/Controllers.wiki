@@ -12,7 +12,7 @@ Within an *Edge* Controller, apart from the public and private methods, you can 
 
   * *Static css and js files*. You may define css and js files that the Layout needs and *Edge* combines, minifies and caches them to reduce HTTP requests and improve performance
 
-  * *Filters.* Filters are classes that are invoked before and after a Controller's action is invoked. Cases of where filters are useful include, checking whether a user can access a page, page caching etc
+  * *Filters.* Filters are classes that are invoked before and after a Controller's action is invoked. Cases of where filters are useful include, checking whether a user can access a page, page caching etc. Check [Filters] for details
 
 An example of a Controller can be found below
 
