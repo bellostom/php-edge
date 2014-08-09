@@ -7,7 +7,7 @@ Edge\Controllers\BaseController.php
 
 Each URL is mapped to a Controller and an Action, which is basically a public method of the Controller.
 
-Within an *Edge* Controller, apart of the public and private methods, you can also define:
+Within an *Edge* Controller, apart from the public and private methods, you can also define:
   * *A layout file.* This is the main template file of your application. Usually, most web applications have many blocks that are common to every page and only a certain part changes between pages. A layout template, is just that. You define placeholders for these common blocks which are managed from one place and feed it just the part that changes.
 
   * *Static css and js files*. You may define css and js files that the Layout needs and *Edge* combines, minifies and caches them to reduce HTTP requests and improve performance
