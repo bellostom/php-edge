@@ -58,6 +58,33 @@ public function index($id, $name){}
 
 Note, that *Edge* does not make any checks on the type of the variables, while resolving a URL to a route. There are no regular expressions run during the resolution phase.
 
+==Defining Access Control to Routes==
+
+*Edge* provides the ability to the developer to optionally define access control permissions to the routes, by supplying an array with permissions, as a 3rd member of each route array. This functionality, combined with the AccessControl filter, provide a way so that you can control which users can access your actions.
+
+{{{
+return array(
+        'POST' => array(
+            '/users/delete/:id' => array("Application\\Controllers\\User", "delete",
+                                       "acl"=>array("Delete Users"))
+        )
+    );
+}}}
+
+To take advantage of this functionality, you need to add the below filter to your controllers
+{{{
+public function filters(){
+        return array_merge(parent::filters(), array(
+            array(
+                'Edge\Core\Filters\AccessControl',
+                "permissions" => Edge:app()->router->getPermissions()
+            )
+        ));
+    }
+}}}
+In order for a user to be able to request an action that has an acl defined, this user need to have been granted the appropriate permission.
+You can read details on this [RBAC here]
+
 To better understand the steps *Edge* takes in order to resolve a URL, let's consider that a user made a GET request to /view/city/Athens.
 *Edge* does the following:
 
