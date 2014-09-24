@@ -27,27 +27,18 @@ class Response{
 	}
 
 	public function expires($time) {
-		$this->addHeader('Pragma', '');
-		$this->addHeader('Cache-Control', '');
 		$this->addHeader("Expires", gmdate('D, d M Y H:i:s', $time) . ' GMT');
 	}
 
     public function lastModified($modified){
-        $this->addHeader('Pragma', '');
-        $this->addHeader('Cache-Control', '');
         $this->addHeader("Last-Modified", gmdate("D, d M Y H:i:s", $modified)." GMT");
     }
 
 	public function setEtag($etag) {
-		$this->addHeader('Pragma', '');
-		$this->addHeader('Cache-Control', '');
 		$this->addHeader('ETag', '"'.$etag.'"');
 	}
 
 	public function write()	{
-		header("Pragma: no-cache");
-		header("Cache-Control: no-cache,no-store");
-		header("Expires:");
 		header('HTTP/1.0 '. Response::$httpCodes[$this->httpCode]);
         $contentType = ($this->contentType)?$this->contentType:Edge::app()->request->getContentType();
 		$contentType = sprintf("%s; charset=%s", $contentType, $this->charset);
