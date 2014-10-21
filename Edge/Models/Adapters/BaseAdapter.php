@@ -266,9 +266,9 @@ abstract class BaseAdapter{
      * @return $this
      */
     public function order(array $args){
-        $key = array_keys($args)[0];
-        $val = array_values($args)[0];
-        $this->order[$key] = $val;
+        foreach($args as $k=>$v){
+            $this->order[$k] = $v;
+        }
         return $this;
     }
 
