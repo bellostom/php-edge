@@ -2,7 +2,7 @@
 namespace Edge\Controllers;
 
 use Edge\Core,
-    Edge\Core\Layout,
+    Edge\Core\View\Layout,
     Edge\Core\Interfaces;
 
 abstract class BaseController{
@@ -49,7 +49,7 @@ abstract class BaseController{
      * @param array $attrs
      * @return mixed|string
      */
-    protected static function render(Core\Template $tpl, $attrs=array()){
+    protected static function render(Core\View\Template $tpl, $attrs=array()){
         if(!static::$layout){
             throw new Core\Exceptions\EdgeException("Layout template must be defined by class ". get_called_class());
         }
@@ -110,7 +110,7 @@ abstract class BaseController{
      * @return Core\Template
      */
     protected static function loadView($file, $cacheAttrs=array()){
-        return new Core\Template(static::getTemplateFile($file), $cacheAttrs);
+        return new Core\View\Template(static::getTemplateFile($file), $cacheAttrs);
     }
 
 	/**
