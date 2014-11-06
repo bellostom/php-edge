@@ -1,18 +1,21 @@
 <?php
-namespace Edge\Core;
+namespace Edge\Core\View;
 
-use Edge\Core\Edge;
+use Edge\Core\TraitCachable,
+    Edge\Core\Edge;
+
 /**
  * Class InternalCache
  * Uses the TraitCachable trait to expose caching
  * to the classes that use it.
  * @package Edge\Core
  */
-class InternalCache{
+class InternalCache extends BaseTemplate{
 
     use TraitCachable;
 
-    public function __construct(array $cacheAttrs=array()){
+    public function __construct($tpl, array $cacheAttrs=array()){
+        parent::__construct($tpl);
         $this->init($cacheAttrs);
     }
 }
@@ -33,19 +36,8 @@ class InternalCache{
  */
 class Template extends InternalCache{
 
-	protected $tpl;
-    protected $attrs = array();
     protected $isCachable = false;
     private $fragmentCache;
-
-	public function __construct($tpl, array $cacheAttrs=array()){
-		$this->tpl = $tpl;
-        $this->attrs['this'] = $this;
-        if(isset(Edge::app()['i18n'])){
-            $this->attrs['i18n'] = Edge::app()->i18n;
-        }
-        parent::__construct($cacheAttrs);
-	}
 
     protected function init(array $cacheAttrs){
         parent::init($cacheAttrs);
@@ -53,14 +45,6 @@ class Template extends InternalCache{
             $this->isCachable = true;
         }
     }
-
-	public function __set($member, $value){
-		$this->attrs[$member] = $value;
-	}
-
-	public function __get($key){
-		return $this->attrs[$key];
-	}
 
 	public function parse(){
 	    if(!file_exists($this->tpl)){
@@ -83,16 +67,6 @@ class Template extends InternalCache{
     public function getCsrfToken(){
         return sprintf('<input name="csrfToken" type="hidden" value="%s" />',
                         Edge::app()->request->getCsrfToken());
-    }
-
-    /**
-     * Escape string coming from unknown sources
-     * to prevent XSS
-     * @param $str
-     * @return string
-     */
-    public function escape($str){
-        return htmlentities($str, ENT_QUOTES, 'UTF-8');
     }
 
     /**
@@ -142,9 +116,13 @@ class Template extends InternalCache{
             echo $content;
             return false;
         }
+        static::startOutputBuffering();
+        return true;
+    }
+
+    protected static function startOutputBuffering(){
         ob_start();
         ob_implicit_flush(false);
-        return true;
     }
 
     /**
@@ -157,19 +135,33 @@ class Template extends InternalCache{
         echo $content;
     }
 
+    public function addJsFiles(array $files){
+        Layout::addJs($files);
+    }
+
+    public function addCssFiles(array $files){
+        Layout::addCss($files);
+    }
+
+    public function startInlineJs(){
+        static::startOutputBuffering();
+    }
+
+    public function endInLineJs(){
+        $content = ob_get_clean();
+        Layout::addInlineJs($content);
+    }
+
+    public function startInlineCss(){
+        static::startOutputBuffering();
+    }
+
+    public function endInLineCss(){
+        $content = ob_get_clean();
+        Layout::addInlineCss($content);
+    }
+
     protected function getExtraParams(){
         return $this->tpl;
     }
-
-	private function readTemplate(){
-		extract($this->attrs);
-	    ob_start();
-	    if (is_file($this->tpl)){
-	        include($this->tpl);
-        }
-	    $parsed = ob_get_contents();
-	    ob_end_clean();
-	    return $parsed;
-	}
 }
-?>

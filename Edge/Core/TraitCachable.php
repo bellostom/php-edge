@@ -8,7 +8,7 @@ use Edge\Core\Http;
  * Trait that handles common operations for caching
  * Used by
  * Edge\Core\Filters\PageCache
- * Edge\Core\Template\InternalCache
+ * Edge\Core\View\Template\InternalCache
  * @package Edge\Core
  */
 trait TraitCachable {
