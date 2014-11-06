@@ -112,13 +112,13 @@ class Router{
 		$this->response->body = call_user_func(array($this->controller, $this->method), $msg);
 	}
 
-	protected function handle404Error(){
+	protected function handle404Error($message = "" ){
         $edge = Edge::app();
         $class = $edge->getConfig('notFound');
         $this->controller = new $class[0];
         $this->method = $class[1];
         $this->response->httpCode = 404;
-        $this->response->body = call_user_func(array($this->controller, $this->method), $this->request->getRequestUrl());
+        $this->response->body = call_user_func(array($this->controller, $this->method), $this->request->getRequestUrl(), $message);
 	}
 
     /**
@@ -362,7 +362,7 @@ class Router{
                 }
                 Edge::app()->logger->err($e->getMessage());
                 if($e instanceof NotFound){
-                    $this->handle404Error();
+                    $this->handle404Error($e->getMessage());
                 }
                 else{
                     $this->handleServerError($e->getMessage());
