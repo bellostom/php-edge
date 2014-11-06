@@ -19,13 +19,16 @@ class Layout extends BaseTemplate{
     protected $bundler;
 
     /**
+     *
      * @param $tpl
      * @param array $js
      * @param array $css
      */
-    public function __construct($tpl, array $js, array $css, $minify=true){
-        static::addJs($js);
-        static::addCss($css);
+    public function __construct($tpl, array $js, array $css, $minify=false){
+        //We do not call addJs/addCss here, as we want the files
+        //coming from the controllers to be loaded first
+        static::$js = array_merge($js, static::$js);
+        static::$css = array_merge($css, static::$css);
         $this->minify = $minify;
         parent::__construct($tpl);
 	}
@@ -57,7 +60,7 @@ class Layout extends BaseTemplate{
      * @param array $files
      */
     public static function addJs(array $files){
-        static::$js = array_merge($files, static::$js);
+        static::$js = array_merge(static::$js, $files);
     }
 
     /**
