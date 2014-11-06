@@ -136,7 +136,16 @@ class Template extends InternalCache{
     }
 
     public function addJsFiles(array $files){
-        Layout::addJs($files);
+        if(!Edge::app()->request->isAjax()){
+            Layout::addJs($files);
+        }
+        else{
+            $ret = [];
+            foreach($files as $file){
+                $ret[] = sprintf('<script src="/%s"></script>', $file);
+            }
+            return implode("\n", $ret);
+        }
     }
 
     public function addCssFiles(array $files){
@@ -144,21 +153,29 @@ class Template extends InternalCache{
     }
 
     public function startInlineJs(){
-        static::startOutputBuffering();
+        if(!Edge::app()->request->isAjax()){
+            static::startOutputBuffering();
+        }
     }
 
     public function endInLineJs(){
-        $content = ob_get_clean();
-        Layout::addInlineJs($content);
+        if(!Edge::app()->request->isAjax()){
+            $content = ob_get_clean();
+            Layout::addInlineJs($content);
+        }
     }
 
     public function startInlineCss(){
-        static::startOutputBuffering();
+        if(!Edge::app()->request->isAjax()){
+            static::startOutputBuffering();
+        }
     }
 
     public function endInLineCss(){
-        $content = ob_get_clean();
-        Layout::addInlineCss($content);
+        if(!Edge::app()->request->isAjax()){
+            $content = ob_get_clean();
+            Layout::addInlineCss($content);
+        }
     }
 
     protected function getExtraParams(){
