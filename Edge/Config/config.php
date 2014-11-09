@@ -115,12 +115,7 @@ return array(
          */
         'logger' => array(
             'invokable' => function($c){
-                $attrs = array(
-                    "file" => "../app.log",
-                    "dateFormat" => "j/n/Y G:i:s",
-                    "logLevel" => 'DEBUG'
-                );
-                return Edge\Core\Logger\Monolog\EdgeLogger::factory($attrs);
+                return new Edge\Core\Logger\FileLogger("../app.log", "j/n/Y G:i:s", "DEBUG");
             },
             'shared' => true
         ),
