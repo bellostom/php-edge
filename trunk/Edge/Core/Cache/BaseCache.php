@@ -141,7 +141,6 @@ abstract class BaseCache {
                     return false;
                 }
             }
-            Edge::app()->logger->debug("Loading from cache");
             return $data;
         }
         return false;

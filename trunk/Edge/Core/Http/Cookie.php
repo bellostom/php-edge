@@ -71,7 +71,7 @@ class Cookie {
     protected function decodeCookie($signature, $name, $value){
         $hash = hash_hmac('sha1', $value, $this->secret );
         if ($signature != $hash ){
-            Edge::app()->logger->crit("Cookie signature mismatch. Possible tampering. Deleting it");
+            Edge::app()->logger->err("Cookie signature mismatch. Possible tampering. Deleting it");
             $this->delete($name);
             return false;
         }
