@@ -10,4 +10,3 @@ class BadRequest extends EdgeException {
         Edge::app()->response->httpCode = 400;
     }
 }
-?>

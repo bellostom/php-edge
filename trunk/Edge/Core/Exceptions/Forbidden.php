@@ -9,4 +9,3 @@ class Forbidden extends EdgeException {
         Edge::app()->response->httpCode = 403;
     }
 }
-?>

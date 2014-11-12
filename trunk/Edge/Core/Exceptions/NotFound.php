@@ -10,4 +10,3 @@ class NotFound extends EdgeException {
         Edge::app()->response->httpCode = 404;
     }
 }
-?>

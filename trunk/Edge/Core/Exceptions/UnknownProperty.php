@@ -8,4 +8,3 @@ class UnknownProperty extends ThrowError {
         parent::__construct($msg);
     }
 }
-?>

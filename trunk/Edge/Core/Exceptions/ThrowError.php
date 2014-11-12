@@ -7,4 +7,3 @@ class ThrowError extends EdgeException {
         trigger_error($message, E_USER_ERROR);
     }
 }
-?>
