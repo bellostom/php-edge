@@ -1,8 +1,7 @@
 <?php
 namespace Edge\Core\Filters;
 
-use Edge\Core\Edge,
-    Edge\Core\Http;
+use Edge\Core\Http;
 
 /**
  * Class DynamicOutput

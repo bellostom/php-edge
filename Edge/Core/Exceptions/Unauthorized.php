@@ -9,4 +9,3 @@ class Unauthorized extends EdgeException {
         Edge::app()->response->httpCode = 401;
     }
 }
-?>
