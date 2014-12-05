@@ -93,7 +93,7 @@ class StaticBundler {
                 $content .= file_get_contents($file)."\n";
             }
             if($this->minify){
-                static::minify($type, $content);
+                $content = static::minify($type, $content);
             }
             Edge::app()->cache->add($key, $content);
         }
