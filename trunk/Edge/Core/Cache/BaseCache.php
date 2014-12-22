@@ -34,6 +34,13 @@ abstract class BaseCache {
      */
     CONST LOCK_KEY_TIMEOUT = 60; //secs
 
+    /**
+     * Store a list of locks in order
+     * to release them in the desctructor
+     * @var array
+     */
+    protected $locks = [];
+
     public function __construct($namespace){
         $this->namespace = $namespace;
     }
@@ -77,7 +84,7 @@ abstract class BaseCache {
      * @return boolean
      */
     public function add($key, $value, $ttl=0, $cacheValidator=null){
-        $key = $this->getNsKey($key);
+        $nsKey = $this->getNsKey($key);
         if(!is_null($cacheValidator)){
             $cacheValidator->execute();
         }
@@ -88,7 +95,11 @@ abstract class BaseCache {
         }
 
         $value = static::serialize(array($value, $realTtl, $cacheValidator));
-        return $this->setValue($key, $value, $ttl);
+        $retVal = $this->setValue($nsKey, $value, $ttl);
+        if(in_array("$key.lock", $this->locks)){
+            $this->delete("$key.lock");
+        }
+        return $retVal;
     }
 
     /**
@@ -132,12 +143,13 @@ abstract class BaseCache {
                         Edge::app()->logger->debug("Could not acquire lock. Serving stale");
                         return $data;
                     }
-                    Edge::app()->logger->debug("Acquired lock");
+                    Edge::app()->logger->debug("Acquired lock $key");
                     //increase the expiration until we calculate the value
                     //so that other threads can serve the old value and
                     //increase concurrency
                     $expires = 5*60;
                     $this->add($key, $data, $expires, $validator);
+                    $this->locks[] = "$key.lock";
                     return false;
                 }
             }
@@ -156,7 +168,7 @@ abstract class BaseCache {
      * @param string $key
      */
     public function delete($key){
-        $this->deleteValue($this->getNsKey($key));
+        return $this->deleteValue($this->getNsKey($key));
     }
 
     abstract public function setValue($key, $value, $ttl);
