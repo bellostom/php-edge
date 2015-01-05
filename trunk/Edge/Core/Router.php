@@ -270,7 +270,10 @@ class Router{
         }
 
         if(!$this->request->is('get')){
-            $this->args[] = $this->request->getParams();
+            $extraArgs = $this->request->getParams();
+            if($extraArgs){
+                $this->args[] = $extraArgs;
+            }
             if($this->request->isJsonRpc()){
                 $this->method = $this->request->getTransformer()->method;
             }
