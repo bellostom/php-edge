@@ -8,6 +8,7 @@ class MysqlMaster extends MysqlSlave {
 
     public function startTransaction()	{
         if(!$this->isTransactional) {
+            $this->dbQuery("SET autocommit=0");
             $this->dbQuery("START TRANSACTION");
             Edge::app()->logger->info("START TRANSACTION");
             $this->isTransactional = true;
