@@ -131,8 +131,8 @@ class Router{
             '/user/view/1' => array("User", "display")
             '/user/edit/:id' => array("User", "edit"),
             '/user/load/*' => array("User", "load"),
-            '/user/display/:id/*' => array("User", "show")
-        ),
+            '/user/display/:id/*' => array("User", "show"),
+            '/user/:id/page/:number => array("Application\Controllers\User", "display"),
         'POST' => array(
             '/rest/api/:id' => array('Home', 'post')
         ),
@@ -144,83 +144,43 @@ class Router{
      * within the array's keys. This is the most quick and efficient way
      * to resolve routes so try to abide to this approach as much as possible.
      *
-     * To define routes that match partially (ie /user/view/:id)
-     * just add some named parameter convention to the url. Note however,
-     * that although the notation is one of named parameters what will end
-     * up as argument in the action will be the actual value and not an array.
-     *
-     * In order for the function to match a partial route it does the following
-     * 1. counts the dashes in the url
-     * 2. initiates the loop and if the dashes in the current url
-     *    are not equal with the url's, it skips the rule
-     * 3. Then it tries to match the partial url by splitting the route url to ":"
-     * 4. It compares the url to the requested url, after it strips out the named params
-     * 5. If there is a match, we found the route and the action's arguments
-     *
-     *
      *
      * @param $url
      * @param $routes
      * @return array|bool
      */
+
     private function uriResolver($url, $routes){
         if(isset($routes[$url])){
             $ret = $routes[$url];
             $ret[] = array();
             return $ret;
         }
-
+        if(substr_count($url, "?") > 0){
+            $url = explode("?", $url)[0];
+        }
         foreach($routes as $requestedUrl => $attrs){
-            $urlDashes = substr_count($url, "/");
-            $greedy = false;
-            $partial = false;
-            $extraArgs = false;
-            //if route is defined to match anything ie /home/article/*
+            $greedy = "";
+            //if route has been marked as greedy, by adding a
+            ///* on the end of the route, remove it and set the greedy pattern
             if(substr($requestedUrl, strlen($requestedUrl)-1) == "*"){
                 $requestedUrl = substr($requestedUrl, 0, strlen($requestedUrl)-2);
-                $greedy = true;
-                //if we also have a partial match as well
-                //is /home/article/:/id/*
-                if(substr_count($requestedUrl, ":") > 0){
-                    $partial = true;
-                }
+                $greedy = "(.*)";
             }
+            //replace any :tokens in the route with a regex
+            $pattern = "@^" . preg_replace('/\\\:[a-zA-Z0-9\_\-]+/', '([a-zA-Z0-9\-\_\.]+)', preg_quote($requestedUrl), -1, $count) . "$greedy$@D";
 
-            if($greedy){
-                if(substr_count($url, "?") > 0){
-                    $url = explode("?", $url)[0];
+            $matches = [];
+            if(preg_match($pattern, $url, $matches)){
+                array_shift($matches);
+                $matches = array_filter($matches);
+                if($greedy && count($matches) > $count){
+                    $extraArgs = explode("/", array_pop($matches));
+                    array_shift($extraArgs);
+                    $matches = array_merge($matches, $extraArgs);
                 }
-                if(!$partial){
-                    if(substr($url, 0, strlen($requestedUrl)) === $requestedUrl){
-                        $args = explode("/", substr($url, strlen($requestedUrl), strlen($url)));
-                        unset($args[0]);
-                        $attrs[] = array_map('htmlspecialchars', $args);
-                        return $attrs;
-                    }
-                }
-                else{
-                    //decrement url dashed in order to match
-                    //the partial URL the rest of the code
-                    $partialParts = explode("/", $requestedUrl);
-                    $urlParts = explode("/", $url);
-                    $extraArgs = array_slice($urlParts, count($partialParts));
-                    $urlDashes -= count($extraArgs);
-                }
-            }
-
-            if(substr_count($requestedUrl, "/") != $urlDashes){
-                continue;
-            }
-            $parts = explode(":", $requestedUrl);
-
-            if(count($parts) > 1){
-                $urlToMatch = substr($parts[0], 0, -1);
-                if(strncmp ($url, $urlToMatch, strlen($urlToMatch)) === 0){
-                    $args = explode("/", substr($url, strlen($urlToMatch), strlen($url)));
-                    unset($args[0]);
-                    $attrs[] = array_map('htmlspecialchars', $args);
-                    return $attrs;
-                }
+                $attrs[] = array_map('htmlspecialchars', $matches);
+                return $attrs;
             }
         }
         return false;
