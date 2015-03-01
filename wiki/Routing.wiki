@@ -19,8 +19,8 @@ return array(
         '/' => array("Home", "index"),
         '/page/action/:name/:id' => array("Home", "index"),
         '/new/test/:id' => array("Home", "test"),
-        '/view/city/:id' => array("Home", "city")
-
+        '/view/city/:id' => array("Home", "city"),
+        '/view/:slug/*  => array("PageController", "display")
     ),
     'POST' => array(
         '/rest/api/:id' => array('Home', 'post')
@@ -84,14 +84,3 @@ public function filters(){
 }}}
 In order for a user to be able to request an action that has an acl defined, this user need to have been granted the appropriate permission.
 You can read details on this [RBAC here]
-
-To better understand the steps *Edge* takes in order to resolve a URL, let's consider that a user made a GET request to /view/city/Athens.
-*Edge* does the following:
-
-  # Based on the requested HTTP method (GET, POST etc) loads the appropriate route array
-  # Checks is the URL can be matched exactly within the associative array (btw this is the fastest way to resolve routes)
-  # If there is no match, it counts the number of dashes in the URL and starts looping the array. 
-  # It compares the number of dashes to the ones of the current key. If they match, it checks to see if the part of the URL excluding the parameters, match with the one of the current key.
-  # If it does, we found the route and the params
-  # If nothing of the above matches, it checks if there is a route defined within the asterisk array, by executing the previous steps
-  # In case nothing is found there also, a 404 error is returned. 
