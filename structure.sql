@@ -1,9 +1,3 @@
-/*
-SQLyog Ultimate - MySQL GUI v8.2 
-MySQL - 5.1.69 : Database - edge
-*********************************************************************
-*/
-
 
 /*!40101 SET NAMES utf8 */;
 
