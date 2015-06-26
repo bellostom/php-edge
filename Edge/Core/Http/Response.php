@@ -10,6 +10,7 @@ class Response{
 	public $httpCode = 200;
 	protected static $httpCodes = array(
 		200 => '200 OK',
+		204 => '204 No Content',
 		304 => '304 Not Modified',
 		400 => '400 Bad Request',
 		401 => '401 Authorization Required',
@@ -39,7 +40,7 @@ class Response{
 	}
 
 	public function write()	{
-		header('HTTP/1.0 '. Response::$httpCodes[$this->httpCode]);
+		header('HTTP/1.1 '. Response::$httpCodes[$this->httpCode]);
         $contentType = ($this->contentType)?$this->contentType:Edge::app()->request->getContentType();
 		$contentType = sprintf("%s; charset=%s", $contentType, $this->charset);
 		header('Content-Type: '.$contentType, true);
