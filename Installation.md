@@ -12,11 +12,11 @@ Additionally,
 
 Going into details on how you can install the above is out of the scope of this document, but a lot of information exists all over the web.
 
-Checkout edge using a svn client
+Checkout edge using a git client
 
 ```
 cd /var/www/
-svn checkout http://php-edge.googlecode.com/svn/trunk/ php-edge
+git clone https://github.com/bellostom/php-edge.git php-edge
 ```
 
 Within the folder you will find 3 folders and 1 SQL file
