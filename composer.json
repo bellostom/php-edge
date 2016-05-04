@@ -10,7 +10,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "Edge\\": ""
+            "Edge\\": "Edge"
         },
         "files": ["Edge/Core/Loader.php"]
     },
