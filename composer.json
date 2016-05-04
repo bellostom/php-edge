@@ -12,7 +12,8 @@
         "psr-4": {
             "Edge\\": "",
             "Application\\": ""
-        }
+        },
+        "files": ["Edge/Core/Loader.php"]
     },
 	"require": {
 		"php": ">=5.4.0"
