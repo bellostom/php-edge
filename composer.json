@@ -1,5 +1,5 @@
 {
-    "name": "bellostom/edge",
+    "name": "bellostom/php-edge",
     "description": "Lightweight MVC for PHP 5.4 or later",
     "license": "MIT",
     "authors": [
