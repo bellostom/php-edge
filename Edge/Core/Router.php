@@ -12,6 +12,7 @@ class Router{
     protected $request;
     protected $routes;
     protected $permissions = null;
+    protected $shutdownCallbacks = [];
 
 	public function __construct(array $routes){
         $this->routes = $routes;
@@ -29,7 +30,7 @@ class Router{
 		}
 	}
 
-	public function getArgs(){
+	public function &getArgs(){
 		return $this->args;
 	}
 
@@ -72,6 +73,8 @@ class Router{
         if(!isset($routes[$method])){
             return null;
         }
+        //merge this method routes with the * (common) routes if they exist
+        $routes[$method] = array_merge($routes[$method], isset($routes["*"]) ? $routes["*"] : array() );
         foreach($routes[$method] as $url=>$options){
             if($options[0] == $controller && $options[1] == $action){
                 $anchor = '';
@@ -94,9 +97,6 @@ class Router{
                 $vals = array_values($attrs);
                 return str_replace($keys, $vals, $url).$anchor;
             }
-        }
-        if($method != '*'){
-            return $this->createLink($controller, $action, $attrs, '*');
         }
         return null;
     }
@@ -149,7 +149,6 @@ class Router{
      * @param $routes
      * @return array|bool
      */
-
     private function uriResolver($url, $routes){
         if(isset($routes[$url])){
             $ret = $routes[$url];
@@ -168,7 +167,7 @@ class Router{
                 $greedy = "(.*)";
             }
             //replace any :tokens in the route with a regex
-            $pattern = "@^" . preg_replace('/\\\:[a-zA-Z0-9\_\-]+/', '([a-zA-Z0-9\-\_\.]+)', preg_quote($requestedUrl), -1, $count) . "$greedy$@D";
+            $pattern = "@^" . preg_replace('/\\\:[a-zA-Z0-9\_\-]+/', '([a-zA-Z0-9\-\_\.%\(\)]+)', preg_quote($requestedUrl), -1, $count) . "$greedy$@D";
 
             $matches = [];
             if(preg_match($pattern, $url, $matches)){
@@ -288,7 +287,7 @@ class Router{
         }
 
         $this->controller = new $class();
-        if(method_exists($this->controller, $this->method)){
+        if(method_exists($this->controller, $this->method) || method_exists($this->controller, '__call')){
             try{
                 $filters = static::getFilters($this->controller);
                 $invokeRequest = $this->runFilters($filters, 'preProcess');
@@ -317,13 +316,14 @@ class Router{
                     }
                 }
                 $this->runFilters($filters, 'postProcess');
+                $this->executeShutDownCallbacks();
             }
             catch(\Exception $e){
                 $db = Edge::app()->db;
                 if($db instanceof MysqlMaster){
                     $db->rollback();
                 }
-                Edge::app()->logger->err($e->getMessage());
+                Edge::app()->logger->err($e->getMessage()."\n".$e->getTraceAsString());
                 if($e instanceof NotFound){
                     $this->handle404Error($e->getMessage());
                 }
@@ -336,5 +336,26 @@ class Router{
             $this->handle404Error();
         }
         $this->response->write();
+    }
+
+    /**
+     * Run any callbacks before sending the response
+     */
+    public function executeShutDownCallbacks(){
+        if($this->shutdownCallbacks){
+            foreach($this->shutdownCallbacks as $fn){
+                $fn();
+            }
+        }
+    }
+
+    /**
+     * Add a shutdown callback to the list
+     * This callback will be run after the controller method and any
+     * filters have run
+     * @param callable $fn
+     */
+    public function addCallBack(callable $fn){
+        $this->shutdownCallbacks[] = $fn;
     }
 }

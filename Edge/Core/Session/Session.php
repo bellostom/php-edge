@@ -7,7 +7,6 @@ class Session{
         ini_set('session.name', $settings['session.name']);
         ini_set('session.cookie_httponly', $settings['session.httponly']);
         ini_set('session.gc_maxlifetime', $settings['session.timeout']);
-
         session_set_save_handler($storage, true);
         session_start();
 

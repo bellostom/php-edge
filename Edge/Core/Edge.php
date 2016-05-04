@@ -1,12 +1,13 @@
 <?php
 namespace Edge\Core;
-use Edge\Core\Pimple,
-    Edge\Core\Exceptions\EdgeException,
+
+use Edge\Core\Exceptions\EdgeException,
     Edge\Models\User;
 
 /**
  * Class responsible for loading configurations options and
  * bootstrapping the application
+ * @property-read string $i18n use for localization
  */
 class Edge implements \ArrayAccess{
 

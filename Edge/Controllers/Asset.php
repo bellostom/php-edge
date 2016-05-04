@@ -12,15 +12,6 @@ use Edge\Core\Edge;
  */
 class Asset extends BaseController{
 
-    /**
-     * Override any filters to speed up
-     * execution
-     * @return array
-     */
-    public function filters(){
-        return array();
-    }
-
     public function js($file){
         return static::load($file, "application/javascript");
     }

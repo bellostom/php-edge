@@ -161,7 +161,6 @@ class MySQLAdapter extends BaseAdapter{
                 return sprintf('%s %s', $k, $v);
             }, array_keys($this->order), array_values($this->order));
 
-
             $sql[] = "ORDER BY ". join(", ", $data);
         }
         if(!is_null($this->limit)){

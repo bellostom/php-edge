@@ -88,7 +88,10 @@ class MysqlSlave {
                 throw new Core\Exceptions\DeadLockException($message);
             }else if ($err_no == 1062) {
                 throw new Core\Exceptions\DuplicateEntry($message);
-            }else{
+            }else if ($err_no == 1451 || $err_no == 1452) {
+                throw new Core\Exceptions\ForeignKeyException($message);
+            }
+            else{
                 throw new Core\Exceptions\EdgeException($message);
             }
         }

@@ -772,7 +772,7 @@ class PHPMailer {
    */
   public function SmtpConnect() {
     if(is_null($this->smtp)) {
-      $this->smtp = new SMTP();
+      $this->smtp = new \SMTP();
     }
 
     $this->smtp->do_debug = $this->SMTPDebug;
@@ -2312,7 +2312,7 @@ class PHPMailer {
   }
 }
 
-class phpmailerException extends Exception {
+class phpmailerException extends \Exception {
   public function errorMessage() {
     $errorMsg = '<strong>' . $this->getMessage() . "</strong><br />\n";
     return $errorMsg;

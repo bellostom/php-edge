@@ -43,16 +43,22 @@ class Layout extends BaseTemplate{
      * @param $script
      */
     public static function addInlineJs($script){
-        static::$inlineJs[] = $script;
+        $key = md5($script);
+        if(!isset(static::$inlineJs[$key])){
+            static::$inlineJs[$key] = $script;
+        }
     }
 
     /**
      * Add a inline style
      * This will be added in the head of the html
-     * @param $script
+     * @param $css
      */
-    public static function addInlineCss($script){
-        static::$inlineCss[] = $script;
+    public static function addInlineCss($css){
+        $key = md5($css);
+        if(!isset(static::$inlineCss[$key])){
+            static::$inlineCss[$key] = $css;
+        }
     }
 
     /**
@@ -94,6 +100,16 @@ class Layout extends BaseTemplate{
             $content = StaticBundler::minify($type, $content);
         }
         return $content;
+    }
+
+    public function getJsFiles(){
+        static::$js = array_values(array_unique(static::$js));
+        return static::$js;
+    }
+
+    public function getCssFiles(){
+        static::$css = array_values(array_unique(static::$css));
+        return static::$css;
     }
 
     public function getJsScript(){

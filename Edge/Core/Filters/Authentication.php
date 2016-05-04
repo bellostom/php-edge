@@ -26,6 +26,7 @@ class Authentication extends BaseFilter{
                 Edge::app()->session->redirectUrl = $request->getRequestUrl();
             }
             if($request->isAjax()){
+                Edge::app()->session->redirectUrl = $request->getRequestUrl();
                 throw new Unauthorized("Unauthorized access");
             }
             $response->redirect($this->url);

@@ -82,8 +82,8 @@ class Cookie {
      * Delete cookie
      * @param $name
      */
-    public function delete($name){
-        setcookie($name, "", time()-3600, "/", $this->secure, $this->httpOnly);
+    public function delete($name, $domain = false){
+        setcookie($name, "", time()-3600, "/", $domain, $this->secure, $this->httpOnly);
     }
 
     /**
@@ -105,10 +105,10 @@ class Cookie {
         return $value;
     }
 
-    public function set($name, $value, $expires){
+    public function set($name, $value, $expires, $domain=false){
         $_COOKIE[$name] = $value;
         $value = $this->getSignedValue($value, $expires);
-        setcookie($name, $value, $expires, "/", false, $this->secure, $this->httpOnly);
+        setcookie($name, $value, $expires, "/", $domain, $this->secure, $this->httpOnly);
     }
 
     public function get($name){

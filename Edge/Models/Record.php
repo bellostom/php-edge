@@ -271,9 +271,10 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
         $keys = static::getPk();
         $v = array();
         foreach($keys as $key){
-            if($this->$key == '')
-                throw new \Exception("The instance's PK's variables must be set
+            if($this->$key == ''){
+                throw new Exceptions\EdgeException("The instance's PK's variables must be set
 										before calling getInstanceIndexKey");
+			}
             $v[] = $this->$key;
         }
         return sprintf("%s:%s", static::getTable(),
@@ -318,7 +319,7 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
         if(!isset($keys['value'])){
             $keys['value'] = $this->id;
         }
-        $key = sprintf("%s:%s", $keys['fk'], $keys['value']);
+        $key = sprintf("%s:%s:%s", $model, $keys['fk'], $keys['value']);
         if(!isset($instances[$key])){
             $instances[$key] = $model::select()
                                 ->where(array($keys['fk'] => $keys['value']))
@@ -393,7 +394,7 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
         if(!isset($keys['value'])){
             $keys['value'] = array($this->id);
         }
-        $key = sprintf("%s:%s", $keys['fk'], md5(serialize($keys['value'])));
+        $key = sprintf("%s:%s:%s", $model, $keys['fk'], md5(serialize($keys['value'])));
         if(!isset($instances[$key])){
             $instances[$key] = $model::select()
                               ->where($keys['fk'])
@@ -418,7 +419,6 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
     /**
      * Execute a select query
      * @param $attrs array of params
-     * @param array $cacheAttrs
      * @return MySQLAdapter
      * @throws \Edge\Core\Exceptions\EdgeException
      */
@@ -455,7 +455,6 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
 
     /**
      * Delete object from the persistence layer
-     * @param array $criteria
      *
      */
     public function delete(){

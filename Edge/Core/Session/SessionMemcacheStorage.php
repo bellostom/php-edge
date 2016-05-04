@@ -11,7 +11,7 @@ class SessionMemcacheStorage extends BaseSessionStorage{
     }
 
     public function read($id){
-        return $this->link->getValue($id);
+        return (string) $this->link->getValue($id);
     }
 
     public function write($id, $data){

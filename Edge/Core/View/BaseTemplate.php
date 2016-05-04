@@ -9,7 +9,7 @@ class BaseTemplate {
     protected $attrs = array();
 
     public function __construct($tpl){
-        $this->tpl = $tpl;
+        $this->tpl = stream_resolve_include_path($tpl);
         $this->attrs['this'] = $this;
         if(isset(Edge::app()['i18n'])){
             $this->attrs['i18n'] = Edge::app()->i18n;
@@ -45,7 +45,7 @@ class BaseTemplate {
         extract($this->attrs);
         ob_start();
         if (is_file($this->tpl)){
-            include($this->tpl);
+            require($this->tpl);
         }
         $parsed = ob_get_contents();
         ob_end_clean();

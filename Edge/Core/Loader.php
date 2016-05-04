@@ -7,3 +7,7 @@ spl_autoload_register(function($class){
         include "../{$file}.php";
     }
 });
+$composerAutoload = __DIR__ . '/../../vendor/autoload.php';
+if (is_file($composerAutoload)) {
+    require_once($composerAutoload);
+}

@@ -52,13 +52,15 @@ class StaticBundler {
         $arr = array_unique($this->$type);
         foreach($arr as $file){
             if(substr($file, -1) == '*'){
-                $files = glob($file);
+                $relativePath = stream_resolve_include_path(substr($file, 0, -2));
+                $files = glob($relativePath."/*");
                 foreach($files as $fname){
                     $memo[$fname] = filemtime($fname);
                 }
             }
             else{
-                $memo[$file] = filemtime($file);
+                $path = stream_resolve_include_path($file);
+                $memo[$path] = filemtime($path);
             }
         }
         $modified = (string) max(array_values($memo));
@@ -90,7 +92,9 @@ class StaticBundler {
             $valName = sprintf("%sFiles", $type);
             $arr = array_unique(array_keys($this->$valName));
             foreach($arr as $file){
+                if($file){
                 $content .= file_get_contents($file)."\n";
+            }
             }
             if($this->minify){
                 $content = static::minify($type, $content);

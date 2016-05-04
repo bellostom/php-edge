@@ -12,6 +12,8 @@ class User extends Identifiable {
         'created', 'is_verified', 'auth_token', 'is_system'
     );
 
+    protected static $roleClass = 'Edge\Models\Role';
+
 	public function __construct(array &$data=array()) {
 		parent::__construct($data);
 		if($this->salt == ''){
@@ -35,7 +37,7 @@ class User extends Identifiable {
      * @return ResultSet
      */
     protected function roles(){
-        return $this->manyToMany('Edge\Models\Role', array(
+        return $this->manyToMany(static::$roleClass, array(
             'linkTable' => 'user_role',
             'fk1' => 'user_id',
             'fk2' => 'role_id',
@@ -141,13 +143,18 @@ class User extends Identifiable {
         $this->assignAttribute('pass', $this->encodePassword($val));
     }
 
+    public function onCreate(){
+        parent::onCreate();
+        $this->created = date('Y-m-d H:i:s', time());
+    }
+
 	/**
 	 *
 	 * SHA1 encode passwd before saving.
 	 * Prepend a random string (unique per user)
 	 * to avoid rainbow attacks.
 	 */
-	private function encodePassword($pass){
+	protected function encodePassword($pass){
 		return sha1($this->salt.$pass);
 	}
 

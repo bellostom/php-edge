@@ -110,8 +110,23 @@ abstract class BaseAdapter{
         if($cacheRecord){
             $value = $this->getCachedRecord();
             if($value){
+                $skip = false;
+                //for some strange reason some keys are not always deleted
+                //from memcached causing issues. If there is no index key in the cache
+                //or the cache key is not present in the list, we delete the cached data
+                if($value instanceof Record){
+                    $key = $value->getInstanceIndexKey();
+                    $cacheKey = $this->getCacheKey();
+                    $indexList = Edge::app()->cache->get($key);
+                    if(!$indexList || !in_array($cacheKey, $indexList)){
+                        Edge::app()->cache->delete($cacheKey);
+                        $skip = true;
+                    }
+                }
+                if(!$skip){
                 return $value;
             }
+        }
         }
 
         $result = $this->executeQuery($this->query);
@@ -266,9 +281,9 @@ abstract class BaseAdapter{
      * @return $this
      */
     public function order(array $args){
-        foreach($args as $k=>$v){
-            $this->order[$k] = $v;
-        }
+        $key = array_keys($args)[0];
+        $val = array_values($args)[0];
+        $this->order[$key] = $val;
         return $this;
     }
 

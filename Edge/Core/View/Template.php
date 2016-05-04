@@ -2,6 +2,7 @@
 namespace Edge\Core\View;
 
 use Edge\Core\TraitCachable,
+    Edge\Utils\StaticBundler,
     Edge\Core\Edge;
 
 /**
@@ -46,6 +47,10 @@ class Template extends InternalCache{
         }
     }
 
+    /**
+     * Return the contents of the template
+     * @return mixed|string
+     */
 	public function parse(){
 	    if(!file_exists($this->tpl)){
 	    	throw new \Exception("Template $this->tpl does not exist");
@@ -120,6 +125,9 @@ class Template extends InternalCache{
         return true;
     }
 
+    /**
+     * Starts output buffering to store any output
+     */
     protected static function startOutputBuffering(){
         ob_start();
         ob_implicit_flush(false);
@@ -135,42 +143,56 @@ class Template extends InternalCache{
         echo $content;
     }
 
+    /**
+     * Adds the ability to include additional js files, to the ones specified
+     * by the controller
+     * @param array $files
+     *
+     * @return string
+     */
     public function addJsFiles(array $files){
-        if(!Edge::app()->request->isAjax()){
+        if($files){
             Layout::addJs($files);
-        }
-        else{
-            $ret = [];
-            foreach($files as $file){
-                $ret[] = sprintf('<script src="/%s"></script>', $file);
-            }
-            return implode("\n", $ret);
         }
     }
 
+    /**
+     * Add additional css files to the ones defined by the controller
+     * @param array $files
+     */
     public function addCssFiles(array $files){
         Layout::addCss($files);
     }
 
+    /**
+     * By wrapping any <script> tags within startInlineJs() and endInLineJs()
+     * the content gets added in the <head> on the HTML and minified
+     */
     public function startInlineJs(){
-        if(!Edge::app()->request->isAjax()){
             static::startOutputBuffering();
         }
-    }
 
+    /**
+     * Ends output buffer for inline scripts and adds the content to the Layout class
+     */
     public function endInLineJs(){
-        if(!Edge::app()->request->isAjax()){
             $content = ob_get_clean();
             Layout::addInlineJs($content);
         }
-    }
 
+    /**
+     * By wrapping any <style> tags within startInlineCss() and endInLineCss()
+     * the content gets added in the <head> on the HTML and minified
+     */
     public function startInlineCss(){
         if(!Edge::app()->request->isAjax()){
             static::startOutputBuffering();
         }
     }
 
+    /**
+     * Ends output buffer for inline styles and adds the content to the Layout class
+     */
     public function endInLineCss(){
         if(!Edge::app()->request->isAjax()){
             $content = ob_get_clean();

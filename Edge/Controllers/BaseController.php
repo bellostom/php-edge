@@ -45,18 +45,21 @@ abstract class BaseController{
 
     /**
      * Render the layout file
-     * @param Core\Template $tpl
+     * @param $tpl (string|Template class)
      * @param array $attrs
      * @return mixed|string
      */
-    protected static function render(Core\View\Template $tpl, $attrs=array()){
+    protected static function render($tpl, $attrs=array()){
         if(!static::$layout){
             throw new Core\Exceptions\EdgeException("Layout template must be defined by class ". get_called_class());
         }
+        if($tpl instanceof Core\View\Template){
+            $tpl = $tpl->parse();
+        }
         $layout = static::getLayout();
         $attrs = array_merge(static::$defaultLayoutAttrs, $attrs);
-        $layout->title = $attrs['title'];
-        $layout->body = $tpl->parse();
+        $layout->attrs = $attrs;
+        $layout->body = $tpl;
         return $layout->parse();
     }
 
@@ -70,7 +73,7 @@ abstract class BaseController{
      * @param $file (ie ui.index.tpl)
      * @return string
      */
-    private static function getTemplateFile($file){
+    protected static function getTemplateFile($file){
         return sprintf("../%s/Views/%s", explode("\\", get_called_class())[0], $file);
     }
 
@@ -119,7 +122,9 @@ abstract class BaseController{
 	 * http codes.
 	 * Should be overwritten by apps
 	 * to provide more details
+	 *
 	 * @param string $url
+     * @return mixed
 	 */
 	public function notFound($url) {
 		return 'URL '.$url.' not found';
@@ -155,7 +160,8 @@ abstract class BaseController{
 	public function logout() {
         $app = Core\Edge::app();
 		$app->session->destroy();
-        $app->user(\Edge\Models\User::getUserByUsername("guest"));
+        $userClass = Core\Edge::app()->getConfig('userClass');
+        $app->user($userClass::getUserByUsername("guest"));
 		return true;
 	}
 }

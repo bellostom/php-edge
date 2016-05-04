@@ -1,8 +1,7 @@
 <?php
 namespace Edge\Core\Session;
 
-use Edge\Core\Edge,
-    Edge\Core\Http\EncryptedCookie;
+use Edge\Core\Http\EncryptedCookie;
 
 /**
  * Class SessionCookieStorage

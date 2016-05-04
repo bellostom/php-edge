@@ -16,7 +16,10 @@ class Response{
 		401 => '401 Authorization Required',
 		403 => '403 Forbidden',
 		404 => '404 Not Found',
-		500 => '500 Internal Server Error'
+		500 => '500 Internal Server Error',
+		502 => '502 Bad Gateway',
+		503 => '503 Service Unavailable',
+		504 => '504 Gateway Timeout'
 	);
 	private $headers = array();
 
@@ -28,11 +31,11 @@ class Response{
 	}
 
 	public function expires($time) {
-		$this->addHeader("Expires", gmdate('D, d M Y H:i:s', $time) . ' GMT');
+		$this->addHeader("Expires", gmdate('D, d M Y H:i:s', (int)$time) . ' GMT');
 	}
 
     public function lastModified($modified){
-        $this->addHeader("Last-Modified", gmdate("D, d M Y H:i:s", $modified)." GMT");
+        $this->addHeader("Last-Modified", gmdate("D, d M Y H:i:s", (int)$modified)." GMT");
     }
 
 	public function setEtag($etag) {
@@ -48,6 +51,16 @@ class Response{
 			header("$key: $val", true);
 		}
 		echo $this->body;
+		exit();
+	}
+
+	public function attachment($filePath, $contentType) {
+		header("Content-Type: {$contentType}");
+		header("Content-Disposition: attachment;filename=".basename($filePath));
+		header("Content-Length: ".filesize($filePath));
+		if(readfile($filePath)){
+			unlink($filePath);
+		}
 		exit();
 	}
 

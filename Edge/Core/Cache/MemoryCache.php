@@ -62,7 +62,7 @@ class MemoryCache extends BaseCache {
 	}
 
 	public function setValue($key, $value, $ttl=0) {
-		return $this->link->set($key, $value, 0, $ttl);
+		return $this->link->set($key, $value, \MEMCACHE_COMPRESSED, $ttl);
 	}
 
 	public function deleteValue($key) {

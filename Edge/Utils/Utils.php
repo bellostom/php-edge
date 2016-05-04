@@ -2,6 +2,7 @@
 namespace Edge\Utils;
 
 class Utils{
+
 	public static function genRandom($length=10){
 		$characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
 		$return = '';
@@ -45,5 +46,34 @@ class Utils{
 		$stamp = $datetime->getTimeStamp();
 		return static::format($stamp, $strings->DATETIME_FORMAT);
 	}
+
+	/**
+     * warning requires `yum -y install php-intl`
+	 * for transliterator to work
+     * @param $text
+     *
+     * @return mixed|string
+     */
+    public static function slugify($text){
+		static $transliteratorExists;
+        if(empty($text)){
+            return 'n-a';
+        }
+		if(is_null($transliteratorExists)){
+			$transliteratorExists = (function_exists('transliterator_transliterate') && $transliterator = \Transliterator::create("Any-Latin; Latin-ASCII; NFD; [:Nonspacing Mark:] Remove; NFC; Lower();") !== null);
+		}
+		if($transliteratorExists === true){
+	        return preg_replace('#[ -]+#', '-',transliterator_transliterate('Any-Latin; Latin-ASCII; [:Nonspacing Mark:] Remove; NFC; [:Punctuation:] Remove; Lower();',$text));
+		}
+        // replace non letter or digits by -
+        $text = preg_replace('~[^\\pL\d]+~u', '-', $text);
+        $text = trim($text, '-');
+        $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
+        $text = strtolower($text);
+        $text = preg_replace('~[^-\w]+~', '', $text);
+        if(empty($text)){
+            return 'n-a';
+        }
+        return $text;
+    }
 }
-?>
