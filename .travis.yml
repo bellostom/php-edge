@@ -14,6 +14,9 @@ services:
 install:
   - tests/scripts/memcache.sh
 
+before_install:
+ - chmod +x tests/scripts/*
+
 # Commands to be run before your environment runs.
 before_script:
   - composer self-update
