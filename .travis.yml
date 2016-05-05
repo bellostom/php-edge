@@ -10,9 +10,11 @@ php:
 
 services:
   - memcached
+  - redis-server
 
 install:
   - tests/scripts/memcache.sh
+  - tests/scripts/redis.sh
 
 before_install:
  - chmod +x tests/scripts/*
