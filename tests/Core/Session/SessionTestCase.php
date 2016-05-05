@@ -46,7 +46,9 @@ abstract class SessionTestCase extends \PHPUnit_Framework_TestCase{
     }
 
     public static function tearDownAfterClass(){
-        session_unset();
-        session_destroy();
+        if(session_status() == \PHP_SESSION_ACTIVE){
+            session_unset();
+            session_destroy();
+        }
     }
 }
