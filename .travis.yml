@@ -11,6 +11,7 @@ php:
 services:
   - memcached
   - redis-server
+  - mysql
 
 install:
   - tests/scripts/memcache.sh
@@ -25,6 +26,7 @@ before_script:
   - composer self-update
   - composer install --prefer-source --no-interaction --dev
   - mkdir -p build/logs
+  - mysql -u root < Edge/structure.sql
 
 # Commands you want to run that will verify your build.
 script: phpunit --coverage-clover build/logs/clover.xml
