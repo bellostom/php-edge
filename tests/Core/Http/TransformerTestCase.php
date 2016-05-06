@@ -16,7 +16,7 @@ abstract class TransformerTestCase extends EdgeTestCase{
     abstract protected function decodedData();
     abstract protected function encodedData();
 
-    public function ertestEncode(){
+    public function testEncode(){
         $this->assertEquals($this->encodedData(), $this->transformer->encode($this->decodedData()));
     }
 
