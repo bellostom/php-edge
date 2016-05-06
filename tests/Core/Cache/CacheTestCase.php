@@ -1,8 +1,9 @@
 <?php
 namespace Edge\Tests\Core\Cache;
 
+use Edge\Tests\EdgeTestCase;
 
-abstract class CacheTestCase extends \PHPUnit_Framework_TestCase{
+abstract class CacheTestCase extends EdgeTestCase{
 
     abstract protected function getCacheEngine();
 

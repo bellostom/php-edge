@@ -2,8 +2,10 @@
 namespace Edge\Tests\Core\Session;
 
 use Edge\Core\Session\Session;
+use Edge\Tests\EdgeTestCase,
+    Edge\Core\Edge;
 
-abstract class SessionTestCase extends \PHPUnit_Framework_TestCase{
+abstract class SessionTestCase extends EdgeTestCase{
 
     abstract protected function getSessionEngine();
 

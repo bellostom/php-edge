@@ -15,6 +15,7 @@ class Session{
         }
         if (isset($_SESSION['acc']) && (time() - $_SESSION['acc'] > $settings['session.timeout'])) {
             $this->destroy();
+            session_start();
             $_SESSION = array();
             $_SESSION['initiated'] = true;
         }
@@ -33,7 +34,6 @@ class Session{
     public function destroy(){
         session_unset();
         session_destroy();
-        session_start();
     }
 
     public function __get($key) {

@@ -18,7 +18,7 @@ class Edge implements \ArrayAccess{
     public $router;
 
     public function __construct($config){
-        if(!is_null(static::$__instance)){
+        if(!is_null(self::$__instance)){
             throw new EdgeException("Only one instance of the Web App can exist");
         }
         $defaults = include(__DIR__.'/../Config/config.php');
@@ -116,6 +116,10 @@ class Edge implements \ArrayAccess{
         return $this->container[$service];
     }
 
+    public function __set($service, $value){
+        $this->container[$service] = $value;
+    }
+
     /**
      * Return the routes
      * @return array
@@ -156,5 +160,9 @@ class Edge implements \ArrayAccess{
 
     public function offsetUnset($offset){
         throw new EdgeException("Services cannot be unset");
+    }
+
+    public function destroy(){
+        self::$__instance = null;
     }
 }

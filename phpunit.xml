@@ -4,6 +4,7 @@
          bootstrap="vendor/autoload.php"
          colors="true"
          stderr="true"
+         beStrictAboutTestsThatDoNotTestAnything="true"
          convertErrorsToExceptions="true"
          convertNoticesToExceptions="true"
          convertWarningsToExceptions="true"
