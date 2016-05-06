@@ -55,5 +55,9 @@ class CsrfProtectionTest extends EdgeWebTestCase{
         $this->assertTrue($this->filter->preProcess(Edge::app()->response, $request));
     }
 
-
+    public function testGetMethod(){
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $request = $this->mockRequest(["username" => "test", "token" => "someTokenValue"]);
+        $this->assertNull($this->filter->preProcess(Edge::app()->response, $request));
+    }
 }
