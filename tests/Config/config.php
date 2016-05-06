@@ -107,7 +107,7 @@ return array(
          */
         'sessionStorage' => array(
             'invokable' => function($c){
-                return new Edge\Core\Session\SessionMemcacheStorage($c['cache']);
+                return new Edge\Core\Session\SessionFileStorage("/tmp/sessions");
             },
             'shared' => true
         ),
