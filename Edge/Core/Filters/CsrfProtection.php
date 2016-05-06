@@ -1,8 +1,7 @@
 <?php
 namespace Edge\Core\Filters;
 
-use Edge\Core\Edge,
-    Edge\Core\Exceptions\BadRequest,
+use Edge\Core\Exceptions\BadRequest,
     Edge\Core\Http;
 
 /**
