@@ -19,23 +19,6 @@ class FileCache extends BaseCache{
         return sprintf("%s/%s.cache", $this->cache_dir, $f);
     }
 
-	public static function clearCache(){
-		Cache::removeFromCacheByPattern('*');
-	}
-
-	public static function removeFromCacheByPattern($pattern){
-		$settings = Settings::getInstance();
-		$cache_dir = $settings->cache_dir;
-		chdir($cache_dir);
-		if ($pattern != '*') {
-			$pattern = sprintf("*%s*", $pattern);
-		}
-		$res = glob($pattern);
-		foreach($res as $file) {
-			unlink($cache_dir ."/". $file);
-		}
-	}
-
     public function deleteValue($key){
         unlink($this->getCacheFile($key));
     }

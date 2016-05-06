@@ -42,10 +42,9 @@ class Cookie {
      * @return bool
      */
     protected function validateCookie($name){
-        if (empty($_COOKIE[$name]) ){
+        if(empty($_COOKIE[$name])){
             return false;
         }
-
         $decoded = base64_decode($_COOKIE[$name]);
         if($decoded === false){
             Edge::app()->logger->warn("Could not base64 decode cookie. Possible cookie tampering. Deleting it");
@@ -69,7 +68,7 @@ class Cookie {
      * @return bool
      */
     protected function decodeCookie($signature, $name, $value){
-        $hash = hash_hmac('sha1', $value, $this->secret );
+        $hash = hash_hmac('sha1', $value, $this->secret);
         if ($signature != $hash ){
             Edge::app()->logger->err("Cookie signature mismatch. Possible tampering. Deleting it");
             $this->delete($name);
@@ -84,6 +83,9 @@ class Cookie {
      */
     public function delete($name, $domain = false){
         setcookie($name, "", time()-3600, "/", $domain, $this->secure, $this->httpOnly);
+        if(isset($_COOKIE[$name])){
+            unset($_COOKIE[$name]);
+        }
     }
 
     /**
