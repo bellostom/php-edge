@@ -8,14 +8,16 @@ class Session{
         ini_set('session.cookie_httponly', $settings['session.httponly']);
         ini_set('session.gc_maxlifetime', $settings['session.timeout']);
         session_set_save_handler($storage, true);
-        session_start();
+        if(session_status() != \PHP_SESSION_ACTIVE){
+            @session_start();
+        }
 
         if (!isset($_SESSION['initiated'])) {
             $this->regenerate();
         }
         if (isset($_SESSION['acc']) && (time() - $_SESSION['acc'] > $settings['session.timeout'])) {
             $this->destroy();
-            session_start();
+            @session_start();
             $_SESSION = array();
             $_SESSION['initiated'] = true;
         }
@@ -23,7 +25,7 @@ class Session{
     }
 
     public function regenerate(){
-        session_regenerate_id(true);
+        @session_regenerate_id(true);
         $_SESSION['initiated'] = true;
     }
 
@@ -37,8 +39,9 @@ class Session{
     }
 
     public function __get($key) {
-        if(array_key_exists($key, $_SESSION))
+        if(array_key_exists($key, $_SESSION)){
             return $_SESSION[$key];
+        }
     }
 
     public function __isset($key) {

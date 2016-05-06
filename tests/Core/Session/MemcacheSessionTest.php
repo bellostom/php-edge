@@ -6,8 +6,6 @@ use Edge\Core\Session\SessionMemcacheStorage,
 
 class MemcacheSessionTest extends SessionTestCase{
 
-    protected static $dir = '/tmp/edgeCache';
-
     protected function getSessionEngine(){
         if (!extension_loaded("memcache")) {
             $this->markTestSkipped("memcache not installed. Skipping.");

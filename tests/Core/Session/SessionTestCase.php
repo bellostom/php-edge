@@ -2,25 +2,34 @@
 namespace Edge\Tests\Core\Session;
 
 use Edge\Core\Session\Session;
-use Edge\Tests\EdgeTestCase,
-    Edge\Core\Edge;
+use Edge\Tests\EdgeTestCase;
 
 abstract class SessionTestCase extends EdgeTestCase{
 
+    protected $session;
+
     abstract protected function getSessionEngine();
 
-    protected function getSession(){
-        static $_session = null;
-        if($_session == null){
-            $_SESSION = [];
-            $settings = [
-                'session.name' => 'edge',
-                'session.timeout' => 20*60,
-                'session.httponly' => true
-            ];
-            $_session = new Session($this->getSessionEngine(), $settings);
+    public function tearDown(){
+        parent::tearDown();
+        if(session_status() == \PHP_SESSION_ACTIVE && $this->session){
+            $this->session->destroy();
         }
-        return $_session;
+        $this->session = null;
+    }
+
+    public function setUp(){
+        parent::setUp();
+        $settings = [
+            'session.name' => 'edge',
+            'session.timeout' => 20*60,
+            'session.httponly' => true
+        ];
+        $this->session = new Session($this->getSessionEngine(), $settings);
+    }
+
+    public function getSession(){
+        return $this->session;
     }
 
     public function testAdd(){
@@ -31,6 +40,7 @@ abstract class SessionTestCase extends EdgeTestCase{
 
     public function testGet(){
         $session = $this->getSession();
+        $session->key = "edge";
         $this->assertEquals("edge", $session->key);
     }
 
@@ -40,17 +50,16 @@ abstract class SessionTestCase extends EdgeTestCase{
         $this->assertNull($session->key);
     }
 
+    public function testIsset(){
+        $session = $this->getSession();
+        $session->key = 'edge';
+        $this->assertTrue(isset($session->key));
+    }
+
     public function testDestroy(){
         $session = $this->getSession();
         $id = $session->getSessionId();
         $session->destroy();
         $this->assertNotEquals($id, $session->getSessionId());
-    }
-
-    public static function tearDownAfterClass(){
-        if(session_status() == \PHP_SESSION_ACTIVE){
-            session_unset();
-            session_destroy();
-        }
     }
 }
