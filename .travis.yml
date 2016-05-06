@@ -15,6 +15,7 @@ services:
 install:
   - tests/scripts/memcache.sh
   - tests/scripts/redis.sh
+  - composer require satooshi/php-coveralls:~0.6@stable
 
 before_install:
  - chmod +x tests/scripts/*
@@ -23,9 +24,10 @@ before_install:
 before_script:
   - composer self-update
   - composer install --prefer-source --no-interaction --dev
+  - mkdir -p build/logs
 
 # Commands you want to run that will verify your build.
-script: phpunit
+script: phpunit --coverage-clover build/logs/clover.xml
 
 # allow_failures: Allow this build to fail under the specified environments.
 # fast_finish: If your build fails do not continue trying to build, just stop.
@@ -38,3 +40,6 @@ matrix:
 notifications:
     on_success: never
     on_failure: always
+
+after_success:
+  - sh -c 'if [ "$TRAVIS_PHP_VERSION" != "hhvm" ]; then php vendor/bin/coveralls -v; fi;'
