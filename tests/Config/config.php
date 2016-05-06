@@ -9,7 +9,7 @@ return array(
         'cache' => array(
             'invokable' => 'Edge\Core\Cache\MemoryCache',
             'args' => array(
-                "servers" => array('master:11211:1'),
+                "servers" => array('127.0.0.1:11211:1'),
                 'namespace' => "edge"
             ),
             'shared' => true
