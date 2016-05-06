@@ -17,4 +17,8 @@ class JsonRpcRequestTest extends RequestTestCase{
         return '{"jsonrpc": "2.0", "method": "sum", "params": [3, 4], "id": "1"}';
     }
 
+    public function testIsJsonRpc(){
+        $this->assertTrue($this->request->isJsonRpc());
+    }
+
 }

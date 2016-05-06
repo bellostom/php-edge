@@ -49,4 +49,8 @@ abstract class RequestTestCase extends EdgeTestCase{
         $this->assertEquals($this->getRequestBody(), $this->request->getBody());
     }
 
+    public function testGetHttpMethod(){
+        $this->assertEquals($_SERVER['REQUEST_METHOD'], $this->request->getHttpMethod());
+    }
+
 }
