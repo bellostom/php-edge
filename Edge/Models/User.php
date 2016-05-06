@@ -14,7 +14,7 @@ class User extends Identifiable {
 
     protected static $roleClass = 'Edge\Models\Role';
 
-	public function __construct(array &$data=array()) {
+	public function __construct(array $data=array()) {
 		parent::__construct($data);
 		if($this->salt == ''){
 			$this->salt = Utils::genRandom();

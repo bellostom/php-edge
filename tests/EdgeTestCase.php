@@ -11,8 +11,7 @@ abstract class EdgeTestCase extends \PHPUnit_Framework_TestCase{
                      ->setConstructorArgs([include(__DIR__."/Config/config.php")])
                      ->getMock();
 
-        $stub->method('user')
-             ->willReturn($this->getGuestUser());
+        $stub->method('user')->willReturn($this->getUser());
     }
 
     protected function destroyApp(){
@@ -20,12 +19,24 @@ abstract class EdgeTestCase extends \PHPUnit_Framework_TestCase{
         Edge::app()->destroy();
     }
 
-    protected function getGuestUser(){
-        $attrs = [
-            'id' => 1,
-            'username' => 'guest'
-        ];
+    /**
+     * Mock user object
+     * @param array $attrs
+     * @param null $methods
+     *
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    protected function getUser($attrs = [], $methods = null){
+        if(!$attrs){
+            $attrs = [
+                'id' => 1,
+                'username' => 'guest'
+            ];
+        }
         $class = Edge::app()->getConfig('userClass');
-        return new $class($attrs);
+        return $this->getMockBuilder($class)
+                    ->setMethods($methods)
+                    ->setConstructorArgs([$attrs])
+                    ->getMock();
     }
 }

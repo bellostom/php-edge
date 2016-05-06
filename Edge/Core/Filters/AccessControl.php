@@ -34,15 +34,17 @@ use Edge\Core\Edge,
  */
 class AccessControl extends BaseFilter{
 
-    private $permissions;
+    protected $permissions;
+    protected $user;
 
     public function __construct(array $attrs){
         parent::__construct($attrs);
         $this->permissions = $attrs['permissions'];
+        $this->user = $attrs['user'];
     }
 
-    public function preProcess(Http\Response $response, Http\Request $request){
-        if(Edge::app()->user()->isAdmin()){
+    public function preProcess(Http\Response $response, Http\Request $request){;
+        if($this->user->isAdmin()){
             if(!$this->permissions){
                 Edge::app()->logger->warn("No permissions defined for URL ". Edge::app()->request->getRequestUrl());
             }
@@ -52,7 +54,7 @@ class AccessControl extends BaseFilter{
             throw new EdgeException("No permissions defined for URL ". Edge::app()->request->getRequestUrl());
         }
         foreach($this->permissions as $perm){
-            if(Edge::app()->user()->hasPrivilege($perm)){
+            if($this->user->hasPrivilege($perm)){
                 return true;
             }
         }
