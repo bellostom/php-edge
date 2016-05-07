@@ -131,7 +131,19 @@ return array(
     /**
      * The below are configuration options
      */
-    'routes' => [],
+    'routes' => [
+        'POST' => [
+            '/test/json' => ['\Edge\Tests\Controllers\TestController', 'testJson'],
+            '/form/post' => ['\Edge\Tests\Controllers\TestController', 'formPost'],
+            '/form/post/:name' => ['\Edge\Tests\Controllers\TestController', 'formPostParams']
+        ],
+        'GET' => [
+            '/test/get' => ['\Edge\Tests\Controllers\TestController', 'get'],
+            '/test/:param1/:param2' => ['\Edge\Tests\Controllers\TestController', 'getWithParams']
+        ]
+    ],
+    'notFound' => array("\Edge\Tests\Controllers\TestController", "notFound"),
+    'serverError' => array("\Edge\Tests\Controllers\TestController", "serverError"),
     'routerClass' => 'Edge\Core\Router',
     'userClass' => 'Edge\Models\User',
     'timezone' => 'Europe/Athens',

@@ -12,6 +12,7 @@ abstract class EdgeTestCase extends \PHPUnit_Framework_TestCase{
                      ->getMock();
 
         $stub->method('user')->willReturn($this->getUser());
+        return $stub;
     }
 
     protected function destroyApp(){
