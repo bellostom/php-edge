@@ -1,7 +1,5 @@
 <?php
-namespace Edge\Tests\Controllers;
-
-use Edge\Controllers\BaseController;
+namespace Edge\Controllers;
 
 class TestController extends BaseController{
 
