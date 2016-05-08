@@ -25,6 +25,9 @@ class ControllerTest extends EdgeControllerTestCase{
         $this->assertEquals("Test get", $response->body);
         $link = TestController::createLink('\Edge\Controllers\TestController', 'get');
         $this->assertEquals("/test/get", $link);
+        $this->assertEquals("get", Edge::app()->router->getAction());
+        $this->assertEquals(null, Edge::app()->router->getPermissions());
+        $this->assertInstanceOf('\Edge\Controllers\TestController', Edge::app()->router->getController());
     }
 
     public function testGetWithParams(){
@@ -42,6 +45,7 @@ class ControllerTest extends EdgeControllerTestCase{
         $response = Edge::app()->response;
         $this->assertEquals(200, $response->httpCode);
         $this->assertEquals("user", $response->body);
+        $this->assertEquals([["username" => "user", "password" => "test"]], Edge::app()->router->getArgs());
     }
 
     public function testPostWithUrlParams(){
