@@ -17,7 +17,7 @@
             <directory suffix=".php">./tests/</directory>
         </testsuite>
     </testsuites>
-    <!-- Add a filter to make sure we don't count venders and Tests in the coverage report -->
+    <!-- Add a filter to make sure we don't count vendors and Tests in the coverage report -->
     <filter>
         <whitelist>
             <directory suffix=".php">./Edge</directory>
