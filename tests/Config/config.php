@@ -135,11 +135,15 @@ return array(
         'POST' => [
             '/test/json' => ['\Edge\Controllers\TestController', 'testJson'],
             '/form/post' => ['\Edge\Controllers\TestController', 'formPost'],
-            '/form/post/:name' => ['\Edge\Controllers\TestController', 'formPostParams']
+            '/form/post/:name' => ['\Edge\Controllers\TestController', 'formPostParams'],
+            '/test/csrf' => ['\Edge\Controllers\TestController', 'testCsrf'],
         ],
         'GET' => [
             '/test/get' => ['\Edge\Controllers\TestController', 'get'],
             '/test/:param1/:param2' => ['\Edge\Controllers\TestController', 'getWithParams']
+        ],
+        '*' => [
+            '/form/login/:name' => ['\Edge\Controllers\TestController', 'formLogin']
         ]
     ],
     'notFound' => array("\Edge\Controllers\TestController", "notFound"),

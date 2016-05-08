@@ -3,6 +3,19 @@ namespace Edge\Controllers;
 
 class TestController extends BaseController{
 
+    public function filters(){
+        return array_merge(parent::filters(), [
+            array(
+                'Edge\Core\Filters\CsrfProtection',
+                'applyTo' => ['testCsrf']
+            )
+        ]);
+    }
+
+    public function testCsrf(array $params){
+        return $params;
+    }
+
     public function testJson(array $params){
         return $params;
     }
@@ -21,5 +34,12 @@ class TestController extends BaseController{
 
     public function formPostParams($name, array $attrs){
         return $name . $attrs['username'];
+    }
+
+    public function formLogin($param, $attrs=null){
+        if($attrs && is_array($attrs)){
+            return $attrs['username'];
+        }
+        return $param;
     }
 }

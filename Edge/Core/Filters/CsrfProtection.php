@@ -12,7 +12,7 @@ class CsrfProtection extends BaseFilter{
 
     protected $tokenName = 'csrfToken';
 
-    public function __construct(array $attrs){
+    public function __construct(array $attrs=[]){
         if(isset($attrs['tokenName'])){
             $this->tokenName = $attrs['tokenName'];
         }

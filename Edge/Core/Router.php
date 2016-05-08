@@ -279,13 +279,7 @@ class Router{
     }
 
     public function invoke(){
-        if(strstr($this->controller, "\\")){
-            $class = $this->controller;
-        }
-        else{
-            $class = sprintf('Application\Controllers\%s', $this->controller);
-        }
-
+        $class = $this->controller;
         $this->controller = new $class();
         if(method_exists($this->controller, $this->method) || method_exists($this->controller, '__call')){
             try{
