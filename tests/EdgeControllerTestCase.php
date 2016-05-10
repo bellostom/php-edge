@@ -1,7 +1,8 @@
 <?php
 namespace Edge\Tests;
 
-use Edge\Core\Edge;
+use Edge\Core\Edge,
+    Symfony\Component\DomCrawler\Crawler;
 
 /**
  * Base class for testing Controllers
@@ -28,13 +29,13 @@ abstract class EdgeControllerTestCase extends EdgeWebTestCase{
 
     protected function mockRequest($params){
         $request = $this->getMockBuilder('Edge\Core\Http\Request')
-                         ->disableOriginalConstructor()
-                         ->setMethods(['getBody'])
-                         ->getMock();
+                        ->disableOriginalConstructor()
+                        ->setMethods(['getBody'])
+                        ->getMock();
 
         $request->expects($this->any())
-                      ->method('getBody')
-                      ->willReturn($params);
+                ->method('getBody')
+                ->willReturn($params);
         $request->__construct();
         Edge::app()->request = $request;
     }
@@ -54,5 +55,17 @@ abstract class EdgeControllerTestCase extends EdgeWebTestCase{
         $_SERVER['REQUEST_URI'] = $url;
         $_SERVER['CONTENT_TYPE'] = $contentType;
         $this->invokeRouter();
+        if(in_array($contentType, ["text/html", "text/xml"])){
+            return $this->getCrawler();
+        }
+    }
+
+    /**
+     * Return a Crawler instance with the content to be served to the client
+     * @see https://symfony.com/doc/current/components/dom_crawler.html
+     * @return Crawler
+     */
+    protected function getCrawler(){
+        return new Crawler(Edge::app()->response->body);
     }
 }
