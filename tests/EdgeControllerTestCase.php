@@ -3,6 +3,11 @@ namespace Edge\Tests;
 
 use Edge\Core\Edge;
 
+/**
+ * Base class for testing Controllers
+ * Class EdgeControllerTestCase
+ * @package Edge\Tests
+ */
 abstract class EdgeControllerTestCase extends EdgeWebTestCase{
 
     protected function invokeRouter(){
