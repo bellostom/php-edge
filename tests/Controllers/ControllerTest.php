@@ -3,7 +3,7 @@ namespace Edge\Tests\Controllers;
 
 use Edge\Controllers\TestController;
 use Edge\Core\Edge,
-    Edge\Tests\EdgeControllerTestCase;
+    Edge\Core\Tests\EdgeControllerTestCase;
 
 class ControllerTest extends EdgeControllerTestCase{
 

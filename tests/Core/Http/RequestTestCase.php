@@ -1,7 +1,7 @@
 <?php
 namespace Edge\Tests\Core\Http;
 
-use Edge\Tests\EdgeTestCase;
+use Edge\Core\Tests\EdgeTestCase;
 
 abstract class RequestTestCase extends EdgeTestCase{
 

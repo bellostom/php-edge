@@ -1,8 +1,8 @@
 <?php
 namespace Edge\Tests\Models;
 
-use Edge\Models\User;
-use Edge\Tests\EdgeWebTestCase;
+use Edge\Models\User,
+    Edge\Core\Tests\EdgeWebTestCase;
 
 class UserTest extends EdgeWebTestCase{
 

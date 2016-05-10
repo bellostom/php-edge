@@ -1,5 +1,5 @@
 <?php
-namespace Edge\Tests;
+namespace Edge\Core\Tests;
 
 use Edge\Core\Edge,
     Symfony\Component\DomCrawler\Crawler;
@@ -63,7 +63,7 @@ abstract class EdgeControllerTestCase extends EdgeWebTestCase{
     /**
      * Return a Crawler instance with the content to be served to the client
      * @see https://symfony.com/doc/current/components/dom_crawler.html
-     * @return Crawler
+     * @return \Symfony\Component\DomCrawler\Crawler
      */
     protected function getCrawler(){
         return new Crawler(Edge::app()->response->body);

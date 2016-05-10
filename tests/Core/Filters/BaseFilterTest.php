@@ -1,7 +1,7 @@
 <?php
 namespace Edge\Tests\Core\Filters;
 
-use Edge\Tests\EdgeTestCase,
+use Edge\Core\Tests\EdgeTestCase,
     Edge\Core\Filters\Authentication;
 
 class BaseFilterTest extends EdgeTestCase{

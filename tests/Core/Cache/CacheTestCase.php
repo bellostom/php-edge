@@ -1,7 +1,7 @@
 <?php
 namespace Edge\Tests\Core\Cache;
 
-use Edge\Tests\EdgeTestCase;
+use Edge\Core\Tests\EdgeTestCase;
 
 abstract class CacheTestCase extends EdgeTestCase{
 

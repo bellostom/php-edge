@@ -1,8 +1,8 @@
 <?php
 namespace Edge\Tests\Core\Session;
 
-use Edge\Core\Session\Session;
-use Edge\Tests\EdgeTestCase;
+use Edge\Core\Session\Session,
+    Edge\Core\Tests\EdgeTestCase;
 
 abstract class SessionTestCase extends EdgeTestCase{
 

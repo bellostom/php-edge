@@ -1,7 +1,7 @@
 <?php
 namespace Edge\Tests\Core\Filters;
 
-use Edge\Tests\EdgeWebTestCase,
+use Edge\Core\Tests\EdgeWebTestCase,
     Edge\Core\Edge,
     Edge\Core\Filters\AccessControl;
 

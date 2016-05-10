@@ -1,5 +1,5 @@
 <?php
-namespace Edge\Tests;
+namespace Edge\Core\Tests;
 
 use Edge\Core\Edge;
 
@@ -31,7 +31,7 @@ abstract class EdgeWebTestCase extends EdgeTestCase{
     }
 
     protected function getConfigFile(){
-        return include(__DIR__."/Config/config.php");
+        return include("config.php");
     }
 
     protected function destroyApp(){

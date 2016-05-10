@@ -2,7 +2,7 @@
 namespace Edge\Tests\Core\Http;
 
 use Edge\Core\Http\Cookie,
-    Edge\Tests\EdgeWebTestCase;
+    Edge\Core\Tests\EdgeWebTestCase;
 
 class SignedCookieTest extends EdgeWebTestCase{
 

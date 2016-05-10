@@ -1,8 +1,8 @@
 <?php
 namespace Edge\Tests\Core\Http;
 
-use Edge\Core\Http\Transformer;
-use Edge\Tests\EdgeTestCase;
+use Edge\Core\Http\Transformer,
+    Edge\Core\Tests\EdgeTestCase;
 
 abstract class TransformerTestCase extends EdgeTestCase{
 
