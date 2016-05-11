@@ -102,4 +102,27 @@ JS;
         Layout::addJs([$file]);
         $this->assertCount(1, $layout->getJsFiles());
     }
+
+    public function testaddCss(){
+        $css = <<<JS
+<style>
+body {
+  font-size: 100%;
+}
+
+a:focus {
+  outline-offset: -2px;
+}
+</style>
+JS;
+        $file = "/tmp/file1.css";
+        file_put_contents($file, $css);
+
+        Layout::addCss([$file]);
+        $layout = new Layout(null, [], [$file]);
+        $this->assertCount(1, $layout->getCssFiles());
+
+        Layout::addCss([$file]);
+        $this->assertCount(1, $layout->getCssFiles());
+    }
 }
