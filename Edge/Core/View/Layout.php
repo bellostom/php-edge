@@ -24,7 +24,7 @@ class Layout extends BaseTemplate{
      * @param array $js
      * @param array $css
      */
-    public function __construct($tpl, array $js, array $css, $minify=false){
+    public function __construct($tpl, array $js, array $css, $minify=true){
         //We do not call addJs/addCss here, as we want the files
         //coming from the controllers to be loaded first
         static::$js = array_merge($js, static::$js);
