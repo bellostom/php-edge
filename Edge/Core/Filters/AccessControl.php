@@ -43,7 +43,7 @@ class AccessControl extends BaseFilter{
         $this->user = $attrs['user'];
     }
 
-    public function preProcess(Http\Response $response, Http\Request $request){;
+    public function preProcess(Http\Response $response, Http\Request $request){
         if($this->user->isAdmin()){
             if(!$this->permissions){
                 Edge::app()->logger->warn("No permissions defined for URL ". Edge::app()->request->getRequestUrl());
