@@ -7,9 +7,9 @@ return array(
          * The order is host:port:weight
          */
         'cache' => array(
-            'invokable' => 'Edge\Core\Cache\MemoryCache',
+            'invokable' => 'Edge\Core\Cache\FileCache',
             'args' => array(
-                "servers" => array('127.0.0.1:11211:1'),
+                "cacheDir" => "/tmp/edgeSessions",
                 'namespace' => "edge"
             ),
             'shared' => true

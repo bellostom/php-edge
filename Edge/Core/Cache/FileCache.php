@@ -6,9 +6,9 @@ use Edge\Core\Exceptions\EdgeException;
 class FileCache extends BaseCache{
 	private $cache_dir;
 
-	public function __construct($cacheDir, $namespace){
-        parent::__construct($namespace);
-		$this->cache_dir = $cacheDir;
+	public function __construct(array $settings){
+        parent::__construct($settings['namespace']);
+		$this->cache_dir = $settings['cacheDir'];
 		if(!is_dir($this->cache_dir)) {
 			mkdir($this->cache_dir);
 		}
@@ -20,7 +20,7 @@ class FileCache extends BaseCache{
     }
 
     public function deleteValue($key){
-        unlink($this->getCacheFile($key));
+        @unlink($this->getCacheFile($key));
     }
 
     public function setValue($key, $value, $ttl){

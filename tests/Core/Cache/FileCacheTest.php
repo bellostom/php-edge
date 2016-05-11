@@ -10,7 +10,10 @@ class FileCacheTest extends CacheTestCase{
     protected function getCacheEngine(){
         static $cache = null;
         if(is_null($cache)){
-            $cache = new FileCache(static::$dir, "edge");
+            $cache = new FileCache([
+               "cacheDir" => static::$dir,
+               "namespace" => "edge"]
+            );
         }
         return $cache;
     }
