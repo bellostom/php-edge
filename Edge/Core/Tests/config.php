@@ -97,7 +97,7 @@ return array(
          */
         'logger' => array(
             'invokable' => function($c){
-                return new Edge\Core\Logger\FileLogger("../app.log", "j/n/Y G:i:s", "DEBUG");
+                return new Edge\Core\Logger\FileLogger(__DIR__. "/../../../app.log", "j/n/Y G:i:s", "DEBUG");
             },
             'shared' => true
         ),
