@@ -2,7 +2,7 @@
 Edge is a high performance, lightweight MVC framework, based on PHP 5.4 
 
 [![Build Status](https://travis-ci.org/bellostom/php-edge.svg?branch=composer)](https://travis-ci.org/bellostom/php-edge)
-[![Coverage Status](https://coveralls.io/repos/github/bellostom/php-edge/badge.svg?branch=composer)](https://coveralls.io/github/bellostom/php-edge?branch=composer)
+[![Coverage Status](https://coveralls.io/repos/github/bellostom/php-edge/badge.svg?branch=master)](https://coveralls.io/github/bellostom/php-edge?branch=master)
 
 To install Edge with composer, run
 
