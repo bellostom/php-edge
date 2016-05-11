@@ -9,7 +9,8 @@ namespace Edge\Models;
  */
 class Role extends Identifiable{
 
-    protected $perms = array();
+    protected $perms = [];
+    protected static $permissionClass = 'Edge\Models\Permission';
 
     public function __construct(array $attrs=array()){
         parent::__construct($attrs);
@@ -40,12 +41,12 @@ class Role extends Identifiable{
      * @return ResultSet
      */
     protected function permissions(){
-        return $this->manyToMany('Edge\Models\Permission', array(
+        return $this->manyToMany(static::$permissionClass, [
             'linkTable' => 'role_perm',
             'fk1' => 'role_id',
             'fk2' => 'perm_id',
             'value' => $this->id
-        ));
+        ]);
     }
 
     protected function initPermissions() {
