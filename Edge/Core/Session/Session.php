@@ -9,7 +9,7 @@ class Session{
         ini_set('session.gc_maxlifetime', $settings['session.timeout']);
         session_set_save_handler($storage, true);
         if(session_status() != \PHP_SESSION_ACTIVE){
-            @session_start();
+            session_start();
         }
 
         if (!isset($_SESSION['initiated'])) {
@@ -17,7 +17,7 @@ class Session{
         }
         if (isset($_SESSION['acc']) && (time() - $_SESSION['acc'] > $settings['session.timeout'])) {
             $this->destroy();
-            @session_start();
+            session_start();
             $_SESSION = array();
             $_SESSION['initiated'] = true;
         }
@@ -25,7 +25,7 @@ class Session{
     }
 
     public function regenerate(){
-        @session_regenerate_id(true);
+        session_regenerate_id(true);
         $_SESSION['initiated'] = true;
     }
 
