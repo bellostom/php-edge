@@ -2,9 +2,13 @@
 namespace Edge\Tests\Core\View;
 
 use Edge\Core\Tests\EdgeWebTestCase,
-    Edge\Core\Edge,
     Edge\Core\View\Layout;
 
+/**
+ * @runTestsInSeparateProcesses
+ * Since there are static variables involved,
+ * run tests in different processes
+ */
 class LayoutTest extends EdgeWebTestCase{
 
     public function setUp(){
@@ -12,12 +16,20 @@ class LayoutTest extends EdgeWebTestCase{
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $_SERVER['REQUEST_URI'] = '/test/get';
         parent::initRouter();
-
     }
 
     public function tearDown(){
         parent::tearDown();
+        $dir = "/tmp/edge_files";
         @unlink("/tmp/file1.js");
+        @unlink("/tmp/file1.css");
+        if(is_dir($dir)){
+            $files = glob("$dir/*");
+            foreach($files as $file){
+                unlink($file);
+            }
+            rmdir($dir);
+        }
     }
 
     public function testInlineCss(){
@@ -112,6 +124,36 @@ JS;
         Layout::addJs([$file]);
         $this->assertCount(1, $layout->getJsFiles());
         $this->assertEquals("/js/5000_645496fb76e116df583fc76b757cd1ef.js", $layout->getjsScript());
+    }
+
+    public function testaddJsWithAsterisk(){
+        mkdir("/tmp/edge_files");
+        $js = <<<JS
+<script>
+    function alert(){
+        alert("edge");
+    }
+</script>
+JS;
+        $file = "/tmp/edge_files/file.js";
+        file_put_contents($file, $js);
+        touch($file, 5000);
+
+        $js = <<<JS
+<script>
+    function alertAgain(){
+        alert("edge");
+    }
+</script>
+JS;
+
+        $file1 = "/tmp/edge_files/file1.js";
+        file_put_contents($file1, $js);
+        touch($file1, 5000);
+
+        $layout = new Layout(null, ["/tmp/edge_files/*"], []);
+        $this->assertCount(1, $layout->getJsFiles());
+        $this->assertEquals("/js/5000_d7cf2916fd9287fb6db2affddd59bce0.js", $layout->getjsScript());
     }
 
     public function testaddCss(){
