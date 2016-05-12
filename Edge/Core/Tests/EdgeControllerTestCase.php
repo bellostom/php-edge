@@ -13,8 +13,7 @@ abstract class EdgeControllerTestCase extends EdgeWebTestCase{
 
     protected function invokeRouter(){
         $this->mockResponse();
-        $router = Edge::app()->getConfig('routerClass');
-        $router = new $router(Edge::app()->getRoutes());
+        $router = parent::initRouter();
         $router->invoke();
     }
 

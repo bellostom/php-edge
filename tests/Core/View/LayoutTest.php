@@ -2,9 +2,18 @@
 namespace Edge\Tests\Core\View;
 
 use Edge\Core\Tests\EdgeWebTestCase,
+    Edge\Core\Edge,
     Edge\Core\View\Layout;
 
 class LayoutTest extends EdgeWebTestCase{
+
+    public function setUp(){
+        parent::setUp();
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/test/get';
+        parent::initRouter();
+
+    }
 
     public function tearDown(){
         parent::tearDown();
@@ -94,6 +103,7 @@ JS;
 JS;
         $file = "/tmp/file1.js";
         file_put_contents($file, $js);
+        touch($file, 5000);
 
         Layout::addJs([$file]);
         $layout = new Layout(null, [$file], []);
@@ -101,10 +111,11 @@ JS;
 
         Layout::addJs([$file]);
         $this->assertCount(1, $layout->getJsFiles());
+        $this->assertEquals("/js/5000_645496fb76e116df583fc76b757cd1ef.js", $layout->getjsScript());
     }
 
     public function testaddCss(){
-        $css = <<<JS
+        $css = <<<CSS
 <style>
 body {
   font-size: 100%;
@@ -114,9 +125,11 @@ a:focus {
   outline-offset: -2px;
 }
 </style>
-JS;
+CSS;
         $file = "/tmp/file1.css";
         file_put_contents($file, $css);
+        //set modification time to a known value
+        touch($file, 5000);
 
         Layout::addCss([$file]);
         $layout = new Layout(null, [], [$file]);
@@ -124,5 +137,6 @@ JS;
 
         Layout::addCss([$file]);
         $this->assertCount(1, $layout->getCssFiles());
+        $this->assertEquals("/css/5000_541e754eec404b8f7e5659038f70bb31.css", $layout->getCssScript());
     }
 }
