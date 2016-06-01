@@ -13,7 +13,7 @@ class EdgeException extends \Exception{
             Edge::app()->db->rollback();
         }
         if($logBackTrace) {
-            Edge::app()->logger->err($this->getTraceAsString());
+            Edge::app()->logger->err($message. "\\n". $this->getTraceAsString());
         }
         elseif($logError){
             Edge::app()->logger->err($this->message);
