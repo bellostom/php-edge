@@ -53,7 +53,7 @@ class Template extends InternalCache{
      */
 	public function parse(){
 	    if(!file_exists($this->tpl)){
-	    	throw new \Exception("Template $this->tpl does not exist");
+	    	throw new \Exception("Template $this->originalTpl does not exist");
 	    }
         if($this->isCachable){
             $val = $this->get();

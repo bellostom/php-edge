@@ -3,13 +3,21 @@ namespace Edge\Core\View;
 
 use Edge\Core\Edge;
 
-
+/**
+ * Class BaseTemplate
+ * Loads and parses a template file.
+ * Use stream_resolve_include_path so that the include_path is searched
+ * as well
+ * @package Edge\Core\View
+ */
 class BaseTemplate {
     protected $tpl;
-    protected $attrs = array();
+    protected $originalTpl;
+    protected $attrs = [];
 
     public function __construct($tpl){
         $this->tpl = stream_resolve_include_path($tpl);
+        $this->originalTpl = $tpl;
         $this->attrs['this'] = $this;
         if(isset(Edge::app()['i18n'])){
             $this->attrs['i18n'] = Edge::app()->i18n;
@@ -26,7 +34,7 @@ class BaseTemplate {
 
     public function parse(){
         if(!file_exists($this->tpl)){
-            throw new \Exception("Template $this->tpl does not exist");
+            throw new \Exception("Template $this->originalTpl does not exist");
         }
         return $this->readTemplate();
     }
