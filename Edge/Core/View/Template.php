@@ -151,8 +151,14 @@ class Template extends InternalCache{
      * @return string
      */
     public function addJsFiles(array $files){
-        if($files){
+        if(!Edge::app()->request->isAjax()){
             Layout::addJs($files);
+        }
+        else{
+            $ret = array_map(function($file){
+                return sprintf('<script src="/%s"></script>', $file);
+            }, $files);
+            return implode("\n", $ret);
         }
     }
 
@@ -161,7 +167,15 @@ class Template extends InternalCache{
      * @param array $files
      */
     public function addCssFiles(array $files){
-        Layout::addCss($files);
+        if(!Edge::app()->request->isAjax()){
+            Layout::addCss($files);
+        }
+        else{
+            $ret = array_map(function($file){
+                return sprintf('<link rel="stylesheet" type="text/css" href="%s" />', $file);
+            }, $files);
+            return implode("\n", $ret);
+        }
     }
 
     /**
