@@ -169,16 +169,20 @@ class Template extends InternalCache{
      * the content gets added in the <head> on the HTML and minified
      */
     public function startInlineJs(){
+        if(!Edge::app()->request->isAjax()){
             static::startOutputBuffering();
         }
+    }
 
     /**
      * Ends output buffer for inline scripts and adds the content to the Layout class
      */
     public function endInLineJs(){
+        if(!Edge::app()->request->isAjax()){
             $content = ob_get_clean();
             Layout::addInlineJs($content);
         }
+    }
 
     /**
      * By wrapping any <style> tags within startInlineCss() and endInLineCss()
