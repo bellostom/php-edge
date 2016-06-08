@@ -151,14 +151,8 @@ class Template extends InternalCache{
      * @return string
      */
     public function addJsFiles(array $files){
-        if(!Edge::app()->request->isAjax()){
+        if($files){
             Layout::addJs($files);
-        }
-        else{
-            $ret = array_map(function($file){
-                return sprintf('<script src="/%s"></script>', $file);
-            }, $files);
-            return implode("\n", $ret);
         }
     }
 
@@ -167,14 +161,8 @@ class Template extends InternalCache{
      * @param array $files
      */
     public function addCssFiles(array $files){
-        if(!Edge::app()->request->isAjax()){
+        if($files){
             Layout::addCss($files);
-        }
-        else{
-            $ret = array_map(function($file){
-                return sprintf('<link rel="stylesheet" type="text/css" href="%s" />', $file);
-            }, $files);
-            return implode("\n", $ret);
         }
     }
 
@@ -183,19 +171,15 @@ class Template extends InternalCache{
      * the content gets added in the <head> on the HTML and minified
      */
     public function startInlineJs(){
-        if(!Edge::app()->request->isAjax()){
-            static::startOutputBuffering();
-        }
+        static::startOutputBuffering();
     }
 
     /**
      * Ends output buffer for inline scripts and adds the content to the Layout class
      */
     public function endInLineJs(){
-        if(!Edge::app()->request->isAjax()){
-            $content = ob_get_clean();
-            Layout::addInlineJs($content);
-        }
+        $content = ob_get_clean();
+        Layout::addInlineJs($content);
     }
 
     /**
