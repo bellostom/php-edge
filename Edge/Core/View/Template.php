@@ -171,19 +171,15 @@ class Template extends InternalCache{
      * the content gets added in the <head> on the HTML and minified
      */
     public function startInlineJs(){
-        if(!Edge::app()->request->isAjax()){
-            static::startOutputBuffering();
-        }
+        static::startOutputBuffering();
     }
 
     /**
      * Ends output buffer for inline scripts and adds the content to the Layout class
      */
     public function endInLineJs(){
-        if(!Edge::app()->request->isAjax()){
-            $content = ob_get_clean();
-            Layout::addInlineJs($content);
-        }
+        $content = ob_get_clean();
+        Layout::addInlineJs($content);
     }
 
     /**
@@ -191,19 +187,15 @@ class Template extends InternalCache{
      * the content gets added in the <head> on the HTML and minified
      */
     public function startInlineCss(){
-        if(!Edge::app()->request->isAjax()){
-            static::startOutputBuffering();
-        }
+        static::startOutputBuffering();
     }
 
     /**
      * Ends output buffer for inline styles and adds the content to the Layout class
      */
     public function endInLineCss(){
-        if(!Edge::app()->request->isAjax()){
-            $content = ob_get_clean();
-            Layout::addInlineCss($content);
-        }
+        $content = ob_get_clean();
+        Layout::addInlineCss($content);
     }
 
     protected function getExtraParams(){

@@ -53,14 +53,18 @@ class StaticBundler {
         foreach($arr as $file){
             if(substr($file, -1) == '*'){
                 $relativePath = stream_resolve_include_path(substr($file, 0, -2));
-                $files = glob($relativePath."/*");
-                foreach($files as $fname){
-                    $memo[$fname] = filemtime($fname);
+                if($relativePath){
+                    $files = glob($relativePath . "/*");
+                    foreach($files as $fname){
+                        $memo[$fname] = filemtime($fname);
+                    }
                 }
             }
             else{
                 $path = stream_resolve_include_path($file);
-                $memo[$path] = filemtime($path);
+                if($path){
+                    $memo[$path] = filemtime($path);
+                }
             }
         }
         $modified = (string) max(array_values($memo));
