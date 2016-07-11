@@ -3,11 +3,17 @@ namespace Edge\Core\View;
 
 use Edge\Core\Edge;
 
-
+/**
+ * Class BaseTemplate
+ * Loads and parses a template file.
+ * Use stream_resolve_include_path so that the include_path is searched
+ * as well
+ * @package Edge\Core\View
+ */
 class BaseTemplate {
     protected $tpl;
-    protected $attrs = array();
     protected $originalTpl;
+    protected $attrs = [];
 
     public function __construct($tpl){
         $this->tpl = stream_resolve_include_path($tpl);
@@ -53,4 +59,4 @@ class BaseTemplate {
         ob_end_clean();
         return $parsed;
     }
-}
+} 

@@ -2,6 +2,7 @@
 namespace Edge\Core\View;
 
 use Edge\Core\TraitCachable,
+    Edge\Utils\StaticBundler,
     Edge\Core\Edge;
 
 /**
@@ -52,7 +53,7 @@ class Template extends InternalCache{
      */
 	public function parse(){
 	    if(!file_exists($this->tpl)){
-            throw new \Exception("Template $this->originalTpl does not exist");
+	    	throw new \Exception("Template $this->originalTpl does not exist");
 	    }
         if($this->isCachable){
             $val = $this->get();
@@ -160,7 +161,9 @@ class Template extends InternalCache{
      * @param array $files
      */
     public function addCssFiles(array $files){
-        Layout::addCss($files);
+        if($files){
+            Layout::addCss($files);
+        }
     }
 
     /**
@@ -168,35 +171,31 @@ class Template extends InternalCache{
      * the content gets added in the <head> on the HTML and minified
      */
     public function startInlineJs(){
-            static::startOutputBuffering();
-        }
+        static::startOutputBuffering();
+    }
 
     /**
      * Ends output buffer for inline scripts and adds the content to the Layout class
      */
     public function endInLineJs(){
-            $content = ob_get_clean();
-            Layout::addInlineJs($content);
-        }
+        $content = ob_get_clean();
+        Layout::addInlineJs($content);
+    }
 
     /**
      * By wrapping any <style> tags within startInlineCss() and endInLineCss()
      * the content gets added in the <head> on the HTML and minified
      */
     public function startInlineCss(){
-        if(!Edge::app()->request->isAjax()){
-            static::startOutputBuffering();
-        }
+        static::startOutputBuffering();
     }
 
     /**
      * Ends output buffer for inline styles and adds the content to the Layout class
      */
     public function endInLineCss(){
-        if(!Edge::app()->request->isAjax()){
-            $content = ob_get_clean();
-            Layout::addInlineCss($content);
-        }
+        $content = ob_get_clean();
+        Layout::addInlineCss($content);
     }
 
     protected function getExtraParams(){

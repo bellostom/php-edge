@@ -9,4 +9,11 @@ abstract class EdgeTestCase extends \PHPUnit_Framework_TestCase{
         $router = Edge::app()->getConfig('routerClass');
         return new $router(Edge::app()->getRoutes());
     }
+
+    protected function setAccessible($class, $method){
+        $class = new \ReflectionClass($class);
+        $method = $class->getMethod($method);
+        $method->setAccessible(true);
+        return $method;
+    }
 }
