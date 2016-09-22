@@ -1,7 +1,8 @@
 <?php
 namespace Edge\Core\View;
 
-use Edge\Utils\StaticBundler;
+use Edge\Core\Edge;
+
 /**
  * Class Layout
  * Manages the layout template file
@@ -34,7 +35,8 @@ class Layout extends BaseTemplate{
 	}
 
     protected function initBundler(){
-        $this->bundler = new StaticBundler(static::$js, static::$css, $this->minify);
+        $cls = Edge::app()->getConfig("staticBundler");
+        $this->bundler = new $cls(static::$js, static::$css, $this->minify);
     }
 
     /**
@@ -97,7 +99,8 @@ class Layout extends BaseTemplate{
 
     protected function getInlineFragment($content, $type){
         if($this->minify){
-            $content = StaticBundler::minify($type, $content);
+            $cls = Edge::app()->getConfig("staticBundler");
+            $content = $cls::minify($type, $content);
         }
         return $content;
     }

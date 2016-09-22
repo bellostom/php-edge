@@ -145,6 +145,7 @@ return array(
      */
     'routerClass' => 'Edge\Core\Router',
     'userClass' => 'Edge\Models\User',
+    'staticBundler' => 'Edge\Utils\StaticBundler',
     'timezone' => 'Europe/Athens',
     'env' => 'production'
 );

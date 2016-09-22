@@ -2,7 +2,6 @@
 namespace Edge\Core\View;
 
 use Edge\Core\TraitCachable,
-    Edge\Utils\StaticBundler,
     Edge\Core\Edge;
 
 /**
