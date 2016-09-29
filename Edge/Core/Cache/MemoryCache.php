@@ -44,6 +44,13 @@ class MemoryCache extends BaseCache {
         $key = parent::getNsKey($key);
         return $this->link->increment($key, $value);
     }
+	
+	/**
+     * Flush all cached items
+     */
+	public function flush(){
+		return $this->link->flush();
+	}
 
     /**
      * Decrement the value of an item in the cache.
