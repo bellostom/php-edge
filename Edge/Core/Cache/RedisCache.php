@@ -13,6 +13,17 @@ class RedisCache extends BaseCache {
 	}
 
     /**
+     * Proxy any method invokations to the underlying API
+     * @param $method
+     * @param $arguments
+     *
+     * @return mixed
+     */
+    public function __call($method, $arguments){
+        return call_user_func_array([$this->link, $method], $arguments);
+    }
+
+    /**
      * Override default serialize method of parent since
      * Memcached client library takes care of it
      * @param mixed $data
