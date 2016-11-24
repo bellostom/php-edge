@@ -72,7 +72,14 @@ class RedisCache extends BaseCache {
         return $this->link->decrby($key, $value);
     }
 
-	public function getValue($key) {
+    /**
+     * Flush all db cached items
+     */
+    public function flush(){
+        return $this->link->flushDB();
+    }
+
+    public function getValue($key) {
 		return $this->link->get($key);
 	}
 
