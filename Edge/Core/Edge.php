@@ -104,6 +104,9 @@ class Edge implements \ArrayAccess{
      * @return mixed
      */
     public function getConfig($name){
+        if(!array_key_exists($name, $this->config)){
+            return null;
+        }
         return $this->config[$name];
     }
 
