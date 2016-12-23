@@ -18,7 +18,6 @@ class BaseTemplate {
     public function __construct($tpl){
         $this->tpl = stream_resolve_include_path($tpl);
         $this->originalTpl = $tpl;
-        $this->attrs['this'] = $this;
         if(isset(Edge::app()['i18n'])){
             $this->attrs['i18n'] = Edge::app()->i18n;
         }
