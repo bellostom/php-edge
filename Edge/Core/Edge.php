@@ -21,8 +21,8 @@ class Edge implements \ArrayAccess{
         if(!is_null(self::$__instance)){
             throw new EdgeException("Only one instance of the Web App can exist");
         }
-        $defaults = include(__DIR__.'/../Config/config.php');
-        $defaultRoutes = include(__DIR__.'/../Config/routes.php');
+        $defaults = include(__DIR__ . '/../Config/config.php');
+        $defaultRoutes = include(__DIR__ . '/../Config/routes.php');
         if(is_string($config)){
             $config = include($config);
         }
@@ -47,16 +47,17 @@ class Edge implements \ArrayAccess{
      * If no userID variable exists in the session
      * load the Guest user
      * This method caches the object once it loads the first time
+     *
      * @param User $user
+     *
      * @return User
      */
-    public function user(User $user=null){
+    public function user(User $user = null){
         static $instance;
         if($user){
             $this->session->userID = $user->id;
             $instance = $user;
-        }
-        elseif(is_null($instance)){
+        }elseif(is_null($instance)){
             $userID = $this->session->userID;
             $class = $this->getConfig('userClass');
             if(!isset($userID)){
@@ -72,21 +73,21 @@ class Edge implements \ArrayAccess{
      * Register the services specified in the config
      * file. These services reside in an IoC object
      * and are not initialized until they are invoked
+     *
      * @param array $services
      */
     protected function registerServices(array $services){
-        foreach($services as $name=>$params){
+        foreach($services as $name => $params){
             if(is_array($params) && array_key_exists('invokable', $params)){
                 $shared = array_key_exists('shared', $params)?$params['shared']:false;
                 if(array_key_exists('invokable', $params) && is_callable($params['invokable'])){
                     $value = $params['invokable'];
                 }else{
-                    $value = function($c) use ($params){
+                    $value = function ($c) use ($params){
                         return new $params['invokable']($params['args']);
                     };
                 }
-            }
-            else{
+            }else{
                 $shared = false;
                 $value = $params;
             }
@@ -99,11 +100,19 @@ class Edge implements \ArrayAccess{
     }
 
     /**
-     * Return a configuration variable
+     * Return a configuration variable.
+     * If key not found return default
+     * If key not found and default not set retun null
+     *
      * @param $name
+     * @param #default
+     *
      * @return mixed
      */
-    public function getConfig($name){
+    public function getConfig($name, $default = null){
+        if(!array_key_exists($name, $this->config) && $default){
+            return $default;
+        }
         if(!array_key_exists($name, $this->config)){
             return null;
         }
@@ -112,7 +121,9 @@ class Edge implements \ArrayAccess{
 
     /**
      * Return a registered service or variable
+     *
      * @param $service
+     *
      * @return mixed
      */
     public function __get($service){
@@ -141,7 +152,9 @@ class Edge implements \ArrayAccess{
 
     /**
      * Proxy to Pimple
+     *
      * @param mixed $offset
+     *
      * @return bool
      */
     public function offsetExists($offset){
@@ -150,7 +163,9 @@ class Edge implements \ArrayAccess{
 
     /**
      * Proxy array access to Pimple
+     *
      * @param mixed $offset
+     *
      * @return mixed
      */
     public function offsetGet($offset){
