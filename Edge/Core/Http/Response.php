@@ -64,10 +64,15 @@ class Response{
 		exit();
 	}
 
-	public function redirect($url) {
-		header("Location: $url");
-		exit();
-	}
+    public function redirect($url, $httpCode=null) {
+        if(is_null($httpCode)){
+            header("Location: $url");
+        }
+        else{
+            header("Location: $url", true, $httpCode);
+        }
+        exit();
+    }
 
 	public function addHeader($name, $value) {
 		$this->headers[$name] = $value;
