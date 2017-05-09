@@ -76,11 +76,23 @@ class StaticBundler {
         return $link;
     }
 
+    /**Minify js or css files.
+     * if error found then returned content unminified
+     * @param string $type
+     * @param string $content
+     *
+     * @return string
+     */
     public static function minify($type, $content){
-        if($type == 'js') {
-            $content = JSMin::minify($content);
-        }else{
-            $content = Css::minify($content);
+        try{
+            if($type == 'js') {
+                $content = JSMin::minify($content);
+            }else{
+                $content = Css::minify($content);
+            }
+        } catch(JSMinException $e){
+            //log warn and return the unminified content
+            Edge::app()->logger->warn("Could not minify $type ");
         }
         return $content;
     }
