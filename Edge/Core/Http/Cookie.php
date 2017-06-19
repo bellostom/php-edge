@@ -108,8 +108,8 @@ class Cookie {
     }
 
     public function set($name, $value, $expires, $domain=false){
-        $_COOKIE[$name] = $value;
         $value = $this->getSignedValue($value, $expires);
+        $_COOKIE[$name] = $value;
         setcookie($name, $value, $expires, "/", $domain, $this->secure, $this->httpOnly);
     }
 
