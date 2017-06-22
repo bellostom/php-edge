@@ -1,11 +1,8 @@
 <?php
+
 namespace Edge\Models;
 
-use Edge\Core\Exceptions,
-    Edge\Core\Edge,
-    Edge\Models\Adapters\MySQLAdapter,
-    Edge\Core\Interfaces\EventHandler,
-    Edge\Core\Interfaces\CachableRecord;
+use Edge\Core\Exceptions, Edge\Core\Edge, Edge\Models\Adapters\MySQLAdapter, Edge\Core\Interfaces\EventHandler, Edge\Core\Interfaces\CachableRecord;
 
 /**
  * Base class for all models that require persistence and
@@ -67,7 +64,7 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
      * Initialize an Record instance. Either supply an associative
      * array or the object will be initialized with default values.
      */
-    public function __construct(array $attrs=array()){
+    public function __construct(array $attrs = array()){
         $this->setAttributes($attrs);
     }
 
@@ -106,7 +103,7 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
     }
 
     public function updateAttributes(array $attrs){
-        foreach($attrs as $k=>$v){
+        foreach($attrs as $k => $v){
             if(isset($this->attributes[$k])){
                 $this->$k = $v;
             }
@@ -134,18 +131,20 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
     /**
      * php's sprintf does not support named params
      * $values = array(
-            ':table' => 'users',
-            ':linkTable' => 'user_role',
-            ':fk2' => 'user_id',
-            ':fk1' => 'role_id',
-            ':value' => 1
-        );
-        $q = $model::sprintf("SELECT :table.* FROM :table
-                INNER JOIN :linkTable u
-                ON :table.id = u.:fk2
-                AND u.:fk1 = ':value'", $values);
+     * ':table' => 'users',
+     * ':linkTable' => 'user_role',
+     * ':fk2' => 'user_id',
+     * ':fk1' => 'role_id',
+     * ':value' => 1
+     * );
+     * $q = $model::sprintf("SELECT :table.* FROM :table
+     * INNER JOIN :linkTable u
+     * ON :table.id = u.:fk2
+     * AND u.:fk1 = ':value'", $values);
+     *
      * @param $subject
      * @param array $values
+     *
      * @return mixed
      */
     public static function sprintf($subject, array $values){
@@ -161,7 +160,7 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
      */
     protected static function getAdapter(){
         $className = static::$adapterClass;
-        if (!isset(static::$adapterInstances[$className])){
+        if(!isset(static::$adapterInstances[$className])){
             static::$adapterInstances[$className] = new $className();
         }
         return static::$adapterInstances[$className];
@@ -183,7 +182,7 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
             $staticAttrs = $class->getStaticProperties();
             $lineage = $staticAttrs['_members'];
 
-            while ($class = $class->getParentClass()) {
+            while($class = $class->getParentClass()){
                 $staticAttrs = $class->getStaticProperties();
                 $lineage = array_merge($lineage, $staticAttrs['_members']);
             }
@@ -200,14 +199,14 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
      * moreover no warning or error is thrown.
      * This is due to PHP's default behavior
      * @see http://www.php.net/manual/en/language.oop5.overloading.php#76622
+     *
      * @param $attr
      * @param $val
      */
     public function assignAttribute($attr, $val){
         if(array_key_exists($attr, $this->attributes)){
             $this->attributes[$attr] = $val;
-        }
-        else{
+        }else{
             throw new \Edge\Core\Exceptions\UnknownProperty($attr, get_called_class());
         }
     }
@@ -217,6 +216,7 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
      * If there is a setter defined (denoted by setAttr, ie setName)
      * call it. Otherwise, set the value within the $attributes array, if the attr
      * exists.
+     *
      * @param $attr String, The attribute to be set
      * @param $val Mixed, The value of the attribute
      */
@@ -234,7 +234,9 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
      * If there is a getter defined (denoted by getAttr, ie getName)
      * call it. Otherwise, get the value from the $attributes array, if the attr
      * exists.
+     *
      * @param $attr
+     *
      * @return mixed
      * @throws \Edge\Core\Exceptions\UnknownProperty
      */
@@ -245,9 +247,10 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
         $getter = sprintf("get%s", ucfirst($attr));
         if(method_exists($this, $getter)){
             return $this->$getter();
-        }
-        else if(array_key_exists($attr, $this->attributes)){
-            return $this->attributes[$attr];
+        }else{
+            if(array_key_exists($attr, $this->attributes)){
+                return $this->attributes[$attr];
+            }
         }
         throw new Exceptions\UnknownProperty($attr, get_called_class());
     }
@@ -274,16 +277,16 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
             if($this->$key == ''){
                 throw new Exceptions\EdgeException("The instance's PK's variables must be set
 										before calling getInstanceIndexKey");
-			}
+            }
             $v[] = $this->$key;
         }
-        return sprintf("%s:%s", static::getTable(),
-            implode(':', $v));
+        return sprintf("%s:%s", static::getTable(), implode(':', $v));
     }
 
     /**
      * Store the cached key in a per instance index
      * so that we can easily invalidate the cached instances
+     *
      * @param $cached_key
      */
     public function addKeyToIndex($cached_key){
@@ -306,12 +309,14 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
      * If not fk value specified, the default is to
      * construct it by taking the table name and concatenate it
      * with an '_' (city_id)
+     *
      * @param $model
      * @param array $keys optional (array("fk" => "city_id", "value" => 1))
+     *
      * @return mixed
      */
-    protected function hasOne($model, $keys=array()){
-        static $instances= [];
+    protected function hasOne($model, $keys = array()){
+        static $instances = [];
 
         if(!isset($keys['fk'])){
             $keys['fk'] = sprintf("%s_id", static::getTable());
@@ -321,9 +326,7 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
         }
         $key = sprintf("%s:%s:%s", $model, $keys['fk'], $keys['value']);
         if(!isset($instances[$key])){
-            $instances[$key] = $model::select()
-                                ->where(array($keys['fk'] => $keys['value']))
-                                ->fetch();
+            $instances[$key] = $model::select()->where(array($keys['fk'] => $keys['value']))->fetch();
         }
         return $instances[$key];
     }
@@ -337,11 +340,13 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
      * By defining a method source() in the Article model
      * and accessing it by $article->source we get a reference
      * to the Source model
+     *
      * @param $model
      * @param array $keys optional (array("fk" => "source_id", "value" => 1))
+     *
      * @return mixed
      */
-    protected function belongsTo($model, $keys=array()){
+    protected function belongsTo($model, $keys = array()){
         if(!isset($keys['fk'])){
             $keys['fk'] = 'id';
         }
@@ -354,16 +359,18 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
 
     /**
      * $this->manyToMany('Application\Models\City', array(
-        'linkTable' => 'country2city',
-        'fk1' => 'country_id',
-        'fk2' => 'city_id',
-        'value' => $this->id
-      ));
+     * 'linkTable' => 'country2city',
+     * 'fk1' => 'country_id',
+     * 'fk2' => 'city_id',
+     * 'value' => $this->id
+     * ));
+     *
      * @param $model
      * @param array $attrs
+     *
      * @return ResultSet
      */
-    protected function manyToMany($model, $attrs=array()){
+    protected function manyToMany($model, $attrs = array()){
         static $instances = [];
         if(!isset($attrs['value'])){
             $attrs['value'] = $this->id;
@@ -381,11 +388,13 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
      * If not fk value specified, the default is to
      * construct it by taking the table name and concatenate it
      * with an '_' (city_id)
+     *
      * @param $model
      * @param array $keys optional (array("fk" => "city_id", "value" => 1))
+     *
      * @return mixed
      */
-    protected function hasMany($model, $keys=array()){
+    protected function hasMany($model, $keys = array()){
         static $instances = [];
 
         if(!isset($keys['fk'])){
@@ -396,10 +405,7 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
         }
         $key = sprintf("%s:%s:%s", $model, $keys['fk'], md5(serialize($keys['value'])));
         if(!isset($instances[$key])){
-            $instances[$key] = $model::select()
-                              ->where($keys['fk'])
-                              ->in($keys['value'])
-                              ->fetch(Record::FETCH_RESULTSET);
+            $instances[$key] = $model::select()->where($keys['fk'])->in($keys['value'])->fetch(Record::FETCH_RESULTSET);
         }
         return $instances[$key];
     }
@@ -410,7 +416,7 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
         return $adapter;
     }
 
-    public static function select($args=array("*")){
+    public static function select($args = array("*")){
         $adapter = static::selectCommon();
         $adapter->select($args);
         return $adapter;
@@ -418,7 +424,9 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
 
     /**
      * Execute a select query
+     *
      * @param $attrs array of params
+     *
      * @return MySQLAdapter
      * @throws \Edge\Core\Exceptions\EdgeException
      */
@@ -504,10 +512,10 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
         if($list && count($list) > 0){
             foreach($list as $item){
                 $mem->delete($item);
-                $logger->info('deleting from cache item '.$item);
+                $logger->info('deleting from cache item ' . $item);
             }
             $mem->delete($index);
-            $logger->info('deleting from cache index '.$index);
+            $logger->info('deleting from cache index ' . $index);
         }
     }
 
@@ -516,9 +524,7 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
      * Update any cached versions of the instance
      */
     public function onAfterUpdate(){
-        if(static::cacheRecord()){
-            $this->clearInstanceCache();
-        }
+        $this->clearInstanceCache();
     }
 
     /**
@@ -533,8 +539,6 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
      * Delete any cached versions of the instance
      */
     public function onAfterDelete(){
-        if(static::cacheRecord()){
-            $this->clearInstanceCache();
-        }
+        $this->clearInstanceCache();
     }
 }
