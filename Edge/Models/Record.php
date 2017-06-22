@@ -2,7 +2,11 @@
 
 namespace Edge\Models;
 
-use Edge\Core\Exceptions, Edge\Core\Edge, Edge\Models\Adapters\MySQLAdapter, Edge\Core\Interfaces\EventHandler, Edge\Core\Interfaces\CachableRecord;
+use Edge\Core\Exceptions,
+    Edge\Core\Edge,
+    Edge\Models\Adapters\MySQLAdapter,
+    Edge\Core\Interfaces\EventHandler,
+    Edge\Core\Interfaces\CachableRecord;
 
 /**
  * Base class for all models that require persistence and
