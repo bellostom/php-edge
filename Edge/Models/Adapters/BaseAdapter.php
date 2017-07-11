@@ -342,7 +342,27 @@ abstract class BaseAdapter{
     public function in(array $args){
         $lastVar = $this->lastVar;
         $key = $this->lastWhere;
-        $this->{$lastVar}[$key] = $args;
+        if(!isset($this->{$lastVar}[$key])){
+            $this->{$lastVar}[$key] = $args;
+        }else{
+            $this->{$lastVar}[$key] = array_merge($this->{$lastVar}[$key], $args);
+        }
+        return $this;
+    }
+
+    /**
+     * Define not to select attributes
+     * @param $args
+     * @return $this
+     */
+    public function notIn(array $args){
+        $lastVar = $this->lastVar;
+        $key = $this->lastWhere;
+        if(!isset($this->{$lastVar}[$key.' not'])){
+            $this->{$lastVar}[$key.' not'] = $args;
+        }else{
+            $this->{$lastVar}[$key.' not'] = array_merge($this->{$lastVar}[$key.' not'], $args);
+        }
         return $this;
     }
 }
