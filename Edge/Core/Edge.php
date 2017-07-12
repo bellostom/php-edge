@@ -43,6 +43,15 @@ class Edge implements \ArrayAccess{
     }
 
     /**
+     * return container
+     *
+     * @return \Pimple
+     */
+    public function getContainer(){
+        return $this->container;
+    }
+
+    /**
      * Get or set the current user
      * If no userID variable exists in the session
      * load the Guest user
