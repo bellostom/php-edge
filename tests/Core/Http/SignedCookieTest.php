@@ -20,7 +20,7 @@ class SignedCookieTest extends EdgeWebTestCase{
 
     public function testSet(){
         $this->cookie->set("test", "edge", 1607731200);
-        $this->assertEquals("edge", $_COOKIE['test']);
+        $this->assertEquals("ZWRnZXxffDE2MDc3MzEyMDB8X3wwMTI2ODliNmRkYTFiZWEyODE3NmZjNDExZjVhNmQxM2IyYTMwYmI4", $_COOKIE['test']);
     }
 
     public function testGet(){
