@@ -11,7 +11,19 @@ class MysqlSlave {
     protected $user;
     protected $pass;
     protected $timezone = false;
+    protected $sql_mode = ' ';
 
+    /**
+     * MysqlSlave constructor.
+     *
+     * @param array $settings To set MySQL session sql_mode to MySQL ver. 5.7 default use a setting like:
+     *
+     * @example     'sql_mode' => 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,
+     *                             ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION',
+     *
+     *                        Do not pass 'sql_mode' setting to fallback to old handling of ' '.
+     *
+     */
     public function __construct(array $settings){
         $this->host = $settings['host'];
         $this->db = $settings['db'];
@@ -19,6 +31,9 @@ class MysqlSlave {
         $this->pass = $settings['pass'];
         if(array_key_exists('timezone', $settings)){
             $this->timezone = $settings['timezone'];
+        }
+        if (isset($settings['sql_mode'])) {
+            $this->sql_mode = $settings['sql_mode'];
         }
     }
 
@@ -31,6 +46,10 @@ class MysqlSlave {
         $this->link->set_charset('utf8');
         if($this->timezone !== false){
             $this->link->query(sprintf("SET time_zone='%s'", $this->timezone));
+        }
+        // Set @@SESSION.sql_mode for this session to overcome a possible different server @@GLOBAL.sql_mode.
+        if (isset($this->sql_mode)) {
+            $this->link->query(sprintf("SET SESSION sql_mode='%s'", $this->sql_mode));
         }
     }
 
