@@ -8,6 +8,7 @@ use Edge\Core\Exceptions\EdgeException,
  * Class responsible for loading configurations options and
  * bootstrapping the application
  * @property-read string $i18n use for localization
+ * @property-read  string $logger use for logging
  */
 class Edge implements \ArrayAccess{
 
