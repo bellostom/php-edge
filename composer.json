@@ -22,9 +22,9 @@
     "require-dev": {
         "phpunit/phpunit": "~4.0"
     },
-	"require": {
-		"php": ">=5.4.0",
+    "require": {
+        "php": ">=5.4.0",
         "symfony/dom-crawler" : "dev-master",
         "symfony/css-selector": "dev-master"
-	}
+    }
 }
