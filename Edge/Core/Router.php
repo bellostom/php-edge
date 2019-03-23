@@ -101,16 +101,21 @@ class Router{
         return null;
     }
 
-	protected function handleServerError($msg){
+    protected function handleServerError($msg){
         $edge = Edge::app();
-		$class = $edge->getConfig('serverError');
-        $this->controller = new $class[0];
-        $this->method = $class[1];
-        if($this->response->httpCode == 200){
+        $class = $edge->getConfig('serverError');
+        try {
+            $this->controller = new $class[0];
+            $this->method = $class[1];
+            if($this->response->httpCode == 200){
+                $this->response->httpCode = 500;
+            }
+            $this->response->body = call_user_func(array($this->controller, $this->method), $msg);
+        }catch(\Exception $e){
             $this->response->httpCode = 500;
+            $this->response->body = $e->getMessage();
         }
-		$this->response->body = call_user_func(array($this->controller, $this->method), $msg);
-	}
+    }
 
 	protected function handle404Error($message = "" ){
         $edge = Edge::app();
