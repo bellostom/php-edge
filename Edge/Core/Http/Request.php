@@ -35,6 +35,10 @@ class Request {
             $transformer = 'xml';
             $this->contentType = "application/xml";
         }
+        elseif(strstr($_SERVER['CONTENT_TYPE'], 'text/xml')){
+            $transformer = 'xml';
+            $this->contentType = "application/xml";
+        }
         else{
             $transformer = 'html';
         }
