@@ -23,6 +23,10 @@ class AccessControlTest extends EdgeWebTestCase{
      * @expectedException \Edge\Core\Exceptions\Forbidden
      */
     public function testThrowForbidden(){
+        // check whether memcached is running and skip tests if not.
+        if (!@stream_socket_client('127.0.0.1:3306', $errorNumber, $errorDescription, 0.5)) {
+            $this->markTestSkipped('SQL server not running at ' . '127.0.0.1:3306' . ' : ' . $errorNumber . ' - ' . $errorDescription);
+        }
         $filter = $this->getFilter([
             "permissions" => ["Delete User"],
             "user" => Edge::app()->user()
