@@ -9,6 +9,9 @@ class UserTest extends EdgeWebTestCase{
     protected $user;
 
     public function setUp(){
+        if (!@stream_socket_client('127.0.0.1:3306', $errorNumber, $errorDescription, 0.5)) {
+            $this->markTestSkipped('SQL server not running at ' . '127.0.0.1:3306' . ' : ' . $errorNumber . ' - ' . $errorDescription);
+        }
         parent::setUp();
         $user = new User(["salt" => "qEytjqCxtg1"]);
         $user->username = "thomas";
@@ -24,6 +27,9 @@ class UserTest extends EdgeWebTestCase{
     }
 
     public function testAdd(){
+        if (!@stream_socket_client('127.0.0.1:3306', $errorNumber, $errorDescription, 0.5)) {
+            $this->markTestSkipped('SQL server not running at ' . '127.0.0.1:3306' . ' : ' . $errorNumber . ' - ' . $errorDescription);
+        }
         $this->user->save();
         $this->assertEquals($this->user->username, User::getUserByUsername("thomas")->username);
     }

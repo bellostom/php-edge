@@ -123,7 +123,7 @@ JS;
 
         Layout::addJs([$file]);
         $this->assertCount(1, $layout->getJsFiles());
-        $this->assertEquals("/js/5000_645496fb76e116df583fc76b757cd1ef.js", $layout->getjsScript());
+        $this->assertEquals("/js/5000_06fe9333ab03ee381fce6d7aca5b0f51.js", $layout->getjsScript());
     }
 
     public function testaddJsWithAsterisk(){
@@ -153,7 +153,7 @@ JS;
 
         $layout = new Layout(null, ["/tmp/edge_files/*"], []);
         $this->assertCount(1, $layout->getJsFiles());
-        $this->assertEquals("/js/5000_d7cf2916fd9287fb6db2affddd59bce0.js", $layout->getjsScript());
+        $this->assertEquals("/js/5000_9d4b76c60fa1ce34a4be33ec1111c7e4.js", $layout->getjsScript());
     }
 
     public function testaddCss(){
@@ -179,6 +179,6 @@ CSS;
 
         Layout::addCss([$file]);
         $this->assertCount(1, $layout->getCssFiles());
-        $this->assertEquals("/css/5000_541e754eec404b8f7e5659038f70bb31.css", $layout->getCssScript());
+        $this->assertEquals("/css/5000_88bb602854eb362a44cda120aa59b063.css", $layout->getCssScript());
     }
 }
