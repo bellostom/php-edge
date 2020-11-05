@@ -1,6 +1,5 @@
 <?php
 namespace Edge\Core\Cache;
-use Edge\Core;
 
 class RedisCache extends BaseCache {
 	private $link;
@@ -9,6 +8,9 @@ class RedisCache extends BaseCache {
 		$this->link = new \Redis();
         list($host, $port) = explode(":", $settings["server"]);
         $this->link->connect($host, (int) $port);
+        if(array_key_exists("password", $settings)) {
+            $this->link->auth($settings['password']);
+        }
         parent::__construct($settings['namespace']);
 	}
 
