@@ -111,7 +111,7 @@ class MysqlSlave {
                 throw new Core\Exceptions\ForeignKeyException($message);
             }
             else{
-                throw new Core\Exceptions\EdgeException($message);
+                throw new Core\Exceptions\QueryException($message);
             }
         }
         return $res;
