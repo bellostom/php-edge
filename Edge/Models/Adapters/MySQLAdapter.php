@@ -53,10 +53,10 @@ class MySQLAdapter extends BaseAdapter{
      * a linked table for a many to many relationship
      *
      *
-        SELECT city.* FROM city
-        INNER JOIN country2city u
-        ON city.id = u.city_id
-        AND u.country_id = '1'
+    SELECT city.* FROM city
+    INNER JOIN country2city u
+    ON city.id = u.city_id
+    AND u.country_id = '1'
      *
      * @param $model
      * @param array $attrs
@@ -78,11 +78,7 @@ class MySQLAdapter extends BaseAdapter{
         return new MySQLResultSet(Edge::app()->db->dbQuery($q), $model);
     }
 
-    /**
-     * Save the object to the database
-     * @param \Edge\Models\Record $entry
-     */
-    public function save(Record $entry){
+    protected function onBeforeSave(Record $entry){
         $db = Edge::app()->writedb;
         $table = $entry->getTable();
         $pks = $entry->getPk();
@@ -96,6 +92,15 @@ class MySQLAdapter extends BaseAdapter{
                 }
             }
         }
+    }
+
+    /**
+     * Save the object to the database
+     * @param \Edge\Models\Record $entry
+     */
+    public function save(Record $entry){
+        $db = Edge::app()->writedb;
+        $this->onBeforeSave($entry);
         $data = array_map(function($v) use ($db){
             return sprintf('"%s"', $db->dbEscapeString($v));
         }, $entry->getAttributes());
@@ -109,7 +114,7 @@ class MySQLAdapter extends BaseAdapter{
      * assigned by MySQL
      * @param \Edge\Models\Record $entry
      */
-    private function setAutoIncrement(Record $entry){
+    protected function setAutoIncrement(Record $entry){
         $table = $entry->getTable();
         $pks = $entry->getPk();
         if(count($pks) > 0){
@@ -129,7 +134,7 @@ class MySQLAdapter extends BaseAdapter{
      * @param \Edge\Models\Record $entry
      * @return string
      */
-    private function getInsertQuery($data, Record $entry) {
+    protected function getInsertQuery($data, Record $entry) {
         $q = "INSERT INTO ".$entry::getTable()." (";
         $q .= join(",", array_keys($data)).") VALUES(";
         $q .= join(",", array_values($data)).")";
@@ -181,7 +186,7 @@ class MySQLAdapter extends BaseAdapter{
      * @return array
      * @throws \Exception
      */
-    private function getPkValues(Record $entry){
+    protected function getPkValues(Record $entry){
         $attrs = array();
         $pk = $entry::getPk();
         foreach($pk as $key){
@@ -198,10 +203,10 @@ class MySQLAdapter extends BaseAdapter{
      * Join the conditions array to be used as a WHERE
      * clause in a SQL query
      * $object->delete(array(
-            'conditions' => array(
-               'id' => array(10,20),
-               'lang' => 'uk'
-           )
+    'conditions' => array(
+    'id' => array(10,20),
+    'lang' => 'uk'
+    )
      * ));
      */
     public function joinConditions(array $conditions, $db, $clause='AND'){

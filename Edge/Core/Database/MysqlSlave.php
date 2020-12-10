@@ -2,6 +2,7 @@
 namespace Edge\Core\Database;
 
 use Edge\Core;
+use Edge\Core\Edge;
 
 class MysqlSlave {
 
@@ -94,25 +95,49 @@ class MysqlSlave {
         return $rs->fetch_object();
     }
 
+    public function prepareAndExecute($sql, array $values){
+        $types = str_repeat('s', count($values)); //String type for all variables if not specified
+
+        if(!$values) {
+            return $this->dbQuery($sql); //Use non-prepared query if no values to bind for efficiency
+        } else {
+            if(!$this->isAlive()) {
+                $this->connect();
+            }
+            Edge::app()->logger->debug($sql. " [".  join(",", $values)."]");
+            $stmt = $this->link->prepare($sql);
+            $stmt->bind_param($types, ...$values);
+            $result = $stmt->execute();
+            if(!$result){
+                $this->handleError($stmt->errno, $stmt->error);
+            }
+            return $stmt->get_result();
+        }
+
+    }
+
+    protected function handleError($err_no, $error){
+        $message = sprintf("Error executing query. Error was %s. Error Code %s ",
+            $error, $err_no);
+        if($err_no == 1213) {
+            throw new Core\Exceptions\DeadLockException($message);
+        }else if ($err_no == 1062) {
+            throw new Core\Exceptions\DuplicateEntry($message);
+        }else if ($err_no == 1451 || $err_no == 1452) {
+            throw new Core\Exceptions\ForeignKeyException($message);
+        }
+        else{
+            throw new Core\Exceptions\QueryException($message);
+        }
+    }
+
     public function dbQuery($q) {
         if(!$this->isAlive()) {
             $this->connect();
         }
         $res = $this->link->query($q);
         if(!$res) {
-            $err_no = $this->link->errno;
-            $message = sprintf("Error executing query %s. Error was %s. Error Code %s ",
-                $q, $this->link->error, $err_no);
-            if($err_no == 1213) {
-                throw new Core\Exceptions\DeadLockException($message);
-            }else if ($err_no == 1062) {
-                throw new Core\Exceptions\DuplicateEntry($message);
-            }else if ($err_no == 1451 || $err_no == 1452) {
-                throw new Core\Exceptions\ForeignKeyException($message);
-            }
-            else{
-                throw new Core\Exceptions\QueryException($message);
-            }
+            $this->handleError($this->link->errno, $this->link->error);
         }
         return $res;
     }
