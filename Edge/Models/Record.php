@@ -22,11 +22,7 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
      * These attributes are mapped to the DB record
      */
     protected $attributes = array();
-    /**
-     * @var string The adapter class which interacts
-     * with the persistence layer
-     */
-    protected static $adapterClass = 'Edge\Models\Adapters\MySQLAdapter';
+
     /**
      * @var array We only require 1 instance of each
      * adapter. Once instantiated for the 1st time,
@@ -158,12 +154,26 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
     }
 
     /**
+     * Return the DB adapter class
+     * If this is defined in the config use it. Otherwise
+     * fallback to mysql adapter by default
+     * @return mixed|string
+     */
+    protected static function getAdapterClass(){
+        $cls = Edge::app()->getConfig('adapterClass');
+        if(!$cls){
+            $cls = 'Edge\Models\Adapters\MySQLAdapter';
+        }
+        return $cls;
+    }
+
+    /**
      * Load the adapter class to interface with the selected
-     * persistance layer
+     * persistence layer
      * @return mixed
      */
     protected static function getAdapter(){
-        $className = static::$adapterClass;
+        $className = static::getAdapterClass();
         if(!isset(static::$adapterInstances[$className])){
             static::$adapterInstances[$className] = new $className();
         }

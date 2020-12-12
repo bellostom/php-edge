@@ -9,7 +9,9 @@ abstract class MongoRecord extends Record{
 
     protected static $_members = array('_id');
 
-    protected static $adapterClass = 'Edge\Models\Adapters\MongoAdapter';
+    protected static function getAdapterClass(){
+        return 'Edge\Models\Adapters\MongoAdapter';
+    }
 
     /**
      * Return an array with the primary keys
