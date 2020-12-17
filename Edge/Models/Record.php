@@ -24,14 +24,6 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
     protected $attributes = array();
 
     /**
-     * @var array We only require 1 instance of each
-     * adapter. Once instantiated for the 1st time,
-     * we store it here, so that it can be reused
-     * by other Records also
-     */
-    protected static $adapterInstances = array();
-
-    /**
      * @var array Each class extending Record
      * should define an array with the names of
      * its attributes
@@ -174,10 +166,7 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
      */
     protected static function getAdapter(){
         $className = static::getAdapterClass();
-        if(!isset(static::$adapterInstances[$className])){
-            static::$adapterInstances[$className] = new $className();
-        }
-        return static::$adapterInstances[$className];
+        return new $className();
     }
 
     /**
