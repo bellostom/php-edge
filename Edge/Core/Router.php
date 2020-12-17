@@ -110,6 +110,9 @@ class Router{
             if($this->response->httpCode == 200){
                 $this->response->httpCode = 500;
             }
+            if($this->request->getContentType() === 'text/html'){
+                $msg = htmlspecialchars($msg);
+            }
             $this->response->body = call_user_func(array($this->controller, $this->method), $msg);
         }catch(\Exception $e){
             $this->response->httpCode = 500;
@@ -123,6 +126,9 @@ class Router{
         $this->controller = new $class[0];
         $this->method = $class[1];
         $this->response->httpCode = 404;
+        if($this->request->getContentType() === 'text/html'){
+            $message = htmlspecialchars($message);
+        }
         $this->response->body = call_user_func(array($this->controller, $this->method), $this->request->getRequestUrl(), $message);
 	}
 
