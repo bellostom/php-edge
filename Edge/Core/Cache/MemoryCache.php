@@ -69,6 +69,10 @@ class MemoryCache extends BaseCache {
 	}
 
 	public function setValue($key, $value, $ttl=0) {
+        $ttlLength = strlen((string) $ttl);
+        if ($ttlLength != 10 && $ttl > 2592000) {
+            $ttl = 2500000;
+        }
 		return $this->link->set($key, $value, \MEMCACHE_COMPRESSED, $ttl);
 	}
 
