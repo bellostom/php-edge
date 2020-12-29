@@ -68,6 +68,13 @@ class MemoryCache extends BaseCache {
 		return $this->link->get($key);
 	}
 
+    /**
+     * Cache data to memcached
+     * @param $key
+     * @param $value
+     * @param int $ttl
+     * @return bool
+     */
 	public function setValue($key, $value, $ttl=0) {
         $ttlLength = strlen((string) $ttl);
         if ($ttlLength != 10 && $ttl > 2592000) {
