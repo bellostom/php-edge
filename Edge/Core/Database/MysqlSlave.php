@@ -135,6 +135,7 @@ class MysqlSlave {
         if(!$this->isAlive()) {
             $this->connect();
         }
+        Edge::app()->logger->debug($q);
         $res = $this->link->query($q);
         if(!$res) {
             $this->handleError($this->link->errno, $this->link->error);
