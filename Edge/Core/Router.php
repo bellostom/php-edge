@@ -51,6 +51,7 @@ class Router{
         $fatal = ($error && in_array($error['type'], [E_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR]));
         if ($fatal){
             $this->handleServerError($error["message"]);
+            Edge::app()->logger->err($error["message"]);
             Edge::app()->response->write();
         }
     }
