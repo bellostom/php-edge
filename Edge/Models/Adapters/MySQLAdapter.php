@@ -9,7 +9,6 @@ class MySQLAdapter extends BaseAdapter{
 
     public function executeQuery($sql){
         $db = $this->getDbConnection();
-        Edge::app()->logger->debug($sql);
         return $db->dbQuery($sql);
     }
 

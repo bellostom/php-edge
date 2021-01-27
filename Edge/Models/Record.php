@@ -6,7 +6,10 @@ use Edge\Core\Exceptions,
     Edge\Core\Edge,
     Edge\Models\Adapters\MySQLAdapter,
     Edge\Core\Interfaces\EventHandler,
-    Edge\Core\Interfaces\CachableRecord;
+    Edge\Core\Interfaces\CachableRecord,
+    PhpMyAdmin\SqlParser\Parser,
+    PhpMyAdmin\SqlParser\Statement,
+    PhpMyAdmin\SqlParser\Statements\SelectStatement;
 
 /**
  * Base class for all models that require persistence and
@@ -140,9 +143,93 @@ abstract class Record implements EventHandler, CachableRecord, \Serializable{
      * @return mixed
      */
     public static function sprintf($subject, array $values){
+        $cls = static::getAdapterClass();
         $keys = array_keys($values);
         $vals = array_values($values);
-        return str_replace($keys, $vals, $subject);
+        $query = str_replace($keys, $vals, $subject);
+        if(strpos($cls, "Prepared") !== false && Edge::app()->transformQueriestoPreparedStmts){
+            static::parseSqlQuery($subject, $values, $query);
+        }
+        return $query;
+    }
+
+    /**
+     * Extract all WHERE conditions and replace the placeholders
+     * in order the query to be used with prepared statements
+     * @param Statement $stmt
+     * @param array $values
+     */
+    protected static function parseStatement(Statement $stmt, array &$values, array $map){
+        $blackList = ["not"];
+        foreach ($stmt->where as $where) {
+            if (!$where->isOperator) {
+                $expr = $where->expr;
+                $expr = preg_replace_callback("/LIKE\s*([^)]+)/i", function ($matches) use (&$values, $map, $blackList, $expr) {
+                    $keys = array_keys($map);
+                    $vals = array_values($map);
+                    $values[] = trim(str_replace($keys, $vals, $matches[1]), "'");
+                    return 'LIKE ?';
+                },$expr);
+
+                $expr = preg_replace_callback("/'?:(\w+)'?/", function ($matches) use (&$values, $map, $blackList, $expr) {
+                    if (in_array($matches[1], $blackList)) {
+                        return $matches[1];
+                    }
+                    $key = ":" . $matches[1];
+                    preg_match("/IN\s*/i", $expr, $match);
+                    if (count($match) > 0) {
+                        $vs = array_map(function ($v) {
+                            return trim($v, "'");
+                        }, explode(",", $map[$key]));
+                        $values = array_merge($values, $vs);
+                        $placeholders = array_fill(0, count($vs), '?');
+                        return join(',', $placeholders);
+                    }
+                    $values[] = $map[$key];
+                    return '?';
+                }, $expr);
+
+                $where->expr = $expr;
+            }
+        }
+        if($stmt->union){
+            static::parseStatement($stmt->union[0][1], $values, $map);
+        }
+    }
+
+    protected static function applyExtraConditions(Statement $stmt, $originalQuery){
+        $parser = new Parser($originalQuery);
+        $_stmt = $parser->statements[0];
+        $stmt->join = $_stmt->join;
+        $stmt->expr = $_stmt->expr;
+        $stmt->from = $_stmt->from;
+        $stmt->group = $_stmt->group;
+        $stmt->order = $_stmt->order;
+        $stmt->limit = $_stmt->limit;
+        $stmt->having = $_stmt->having;
+    }
+
+    /**
+     * Parse a SELECT query and transform it to be
+     * compatible with prepare statements
+     * @param $query
+     * @return array|bool
+     */
+    protected static function parseSqlQuery($query, array $map, $parsedQuery){
+        $parser = new Parser($query);
+        $stmt = $parser->statements[0];
+        if($stmt instanceof SelectStatement && !$stmt->union && $stmt->where) {
+            $values = [];
+            static::parseStatement($stmt, $values, $map);
+            static::applyExtraConditions($stmt, $parsedQuery);
+            $q = $stmt->build();
+            if(count($values) > 0) {
+                Edge::app()->db->addQueryToMap($parsedQuery, [
+                    "q" => $q,
+                    "values" => $values
+                ]);
+            }
+        }
     }
 
     /**

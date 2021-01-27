@@ -13,6 +13,7 @@ class MysqlSlave {
     protected $pass;
     protected $timezone = false;
     protected $sql_mode = ' ';
+    protected $map = [];
 
     /**
      * MysqlSlave constructor.
@@ -36,6 +37,10 @@ class MysqlSlave {
         if (isset($settings['sql_mode'])) {
             $this->sql_mode = $settings['sql_mode'];
         }
+    }
+
+    public function addQueryToMap($q, array $val){
+        $this->map[$q] = $val;
     }
 
     protected function connect() {
@@ -134,6 +139,11 @@ class MysqlSlave {
     public function dbQuery($q) {
         if(!$this->isAlive()) {
             $this->connect();
+        }
+        if(isset($this->map[$q])){
+            $query = $this->map[$q]['q'];
+            $values = $this->map[$q]['values'];
+            return $this->prepareAndExecute($query, $values);
         }
         Edge::app()->logger->debug($q);
         $res = $this->link->query($q);

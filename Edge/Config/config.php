@@ -33,7 +33,7 @@ return array(
                 'pass' => ''
             )
         ),
-
+        'transformQueriestoPreparedStmts' => false,
         'isTransactional' => false,
 
         /**
