@@ -110,13 +110,19 @@ class MysqlSlave {
                 $this->connect();
             }
             Edge::app()->logger->debug($sql. " [".  join(",", $values)."]");
-            $stmt = $this->link->prepare($sql);
-            $stmt->bind_param($types, ...$values);
-            $result = $stmt->execute();
+            $statement = $this->link->stmt_init();
+            $result = $statement->prepare($sql);
             if(!$result){
-                $this->handleError($stmt->errno, $stmt->error);
+                $this->handleError($statement->errno, $statement->error);
             }
-            return $stmt->get_result();
+            $statement->bind_param($types, ...$values);
+            $result = $statement->execute();
+            if(!$result){
+                $this->handleError($statement->errno, $statement->error);
+            }
+            $data = $statement->get_result();
+            $statement->close();
+            return $data;
         }
 
     }
